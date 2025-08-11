@@ -1,9 +1,12 @@
 export interface Generus {
   id: number;
   name: string;
-  kelas: string;
-  sekolah: string;
-  status: 'Aktif' | 'Non-aktif';
+  jenisKelamin: 'Laki-laki' | 'Perempuan';
+  tahunLahir: number;
+  namaAyah: string;
+  namaIbu: string;
+  desa: string;
+  kelompok: string;
 }
 
 export interface Material {

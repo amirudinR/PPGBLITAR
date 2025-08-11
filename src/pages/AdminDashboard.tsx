@@ -42,10 +42,10 @@ export default function AdminDashboard() {
 
   // State for generus
   const [generus] = useState<Generus[]>([
-    { id: 1, name: 'Adi Saputra', kelas: 'Praremaja', sekolah: 'SMPN 1', status: 'Aktif' },
-    { id: 2, name: 'Budi Santoso', kelas: 'Remaja', sekolah: 'SMAN 2', status: 'Aktif' },
-    { id: 3, name: 'Citra Lestari', kelas: 'Caberawit', sekolah: 'SDN 3', status: 'Aktif' },
-    { id: 4, name: 'Dewi Anggraini', kelas: 'Praremaja', sekolah: 'SMPN 1', status: 'Non-aktif' },
+    { id: 1, name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2005, namaAyah: 'Ayah Adi', namaIbu: 'Ibu Adi', desa: 'Desa Maju', kelompok: 'Remaja 1' },
+    { id: 2, name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2006, namaAyah: 'Ayah Budi', namaIbu: 'Ibu Budi', desa: 'Desa Jaya', kelompok: 'Remaja 2' },
+    { id: 3, name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2007, namaAyah: 'Ayah Citra', namaIbu: 'Ibu Citra', desa: 'Desa Makmur', kelompok: 'Remaja 1' },
+    { id: 4, name: 'Dewi Anggraini', jenisKelamin: 'Perempuan', tahunLahir: 2005, namaAyah: 'Ayah Dewi', namaIbu: 'Ibu Dewi', desa: 'Desa Sejahtera', kelompok: 'Remaja 2' },
   ]);
 
   const handleAddMaterial = () => {
