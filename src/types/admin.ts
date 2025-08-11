@@ -12,8 +12,14 @@ export interface Generus {
 export interface Material {
   id: string;
   title: string;
-  description: string;
   date: string;
+  bacaan: string;
+  menulis: string;
+  hafalan: string;
+  praktekIbadah: string;
+  keilmuan: string;
+  tatakrama: string;
+  kemandirian: string;
 }
 
 export interface User {

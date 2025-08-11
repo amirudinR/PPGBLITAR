@@ -1,14 +1,32 @@
 import React from 'react';
 import { Material } from '@/types/admin';
-import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface MaterialsSectionProps {
   materials: Material[];
-  newMaterial: { title: string; description: string };
-  setNewMaterial: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
+  newMaterial: Omit<Material, 'id' | 'date'>;
+  setNewMaterial: React.Dispatch<React.SetStateAction<Omit<Material, 'id' | 'date'>>>;
   onAddMaterial: () => void;
   onDeleteMaterial: (id: string) => void;
 }
+
+const materialFields: (keyof Omit<Material, 'id' | 'date' | 'title'>)[] = [
+  'bacaan', 'menulis', 'hafalan', 'praktekIbadah', 'keilmuan', 'tatakrama', 'kemandirian'
+];
+
+const fieldLabels: Record<string, string> = {
+  bacaan: 'Materi Bacaan',
+  menulis: 'Makna / Menulis',
+  hafalan: 'Hafalan',
+  praktekIbadah: 'Praktek Ibadah',
+  keilmuan: 'Keilmuan dan Kefahaman',
+  tatakrama: 'Tatakrama',
+  kemandirian: 'Kemandirian'
+};
 
 export default function MaterialsSection({
   materials,
@@ -17,46 +35,44 @@ export default function MaterialsSection({
   onAddMaterial,
   onDeleteMaterial,
 }: MaterialsSectionProps) {
+  const handleInputChange = (field: keyof typeof newMaterial, value: string) => {
+    setNewMaterial(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Kelola Materi</h2>
       
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h3 className="text-lg font-semibold mb-4">Tambah Materi Baru</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Judul Materi</label>
-            <input
-              type="text"
+            <Label htmlFor="title" className="text-base">Judul Materi</Label>
+            <Input
+              id="title"
               value={newMaterial.title}
-              onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Masukkan judul materi"
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              className="mt-1"
+              placeholder="Contoh: Materi Pekan 1"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-            <textarea
-              value={newMaterial.description}
-              onChange={(e) => setNewMaterial({ ...newMaterial, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              placeholder="Masukkan deskripsi materi"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Upload File</label>
-            <div className="flex items-center space-x-2">
-              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 flex items-center space-x-2">
-                <Upload className="w-4 h-4" />
-                <span>Pilih File</span>
-              </button>
-              <span className="text-sm text-gray-500">Belum ada file dipilih</span>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            {materialFields.map(field => (
+              <div key={field}>
+                <Label htmlFor={field}>{fieldLabels[field]}</Label>
+                <Textarea
+                  id={field}
+                  value={newMaterial[field]}
+                  onChange={(e) => handleInputChange(field, e.target.value)}
+                  className="mt-1"
+                  placeholder={`Isi materi untuk ${fieldLabels[field]}`}
+                />
+              </div>
+            ))}
           </div>
           <button
             onClick={onAddMaterial}
-            className="w-full md:w-auto px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center justify-center space-x-2"
+            className="w-full md:w-auto px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center justify-center space-x-2 mt-4"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Materi</span>
@@ -68,30 +84,41 @@ export default function MaterialsSection({
         <div className="p-4 border-b">
           <h3 className="text-lg font-semibold">Daftar Materi</h3>
         </div>
-        <div className="divide-y divide-gray-200">
+        <Accordion type="single" collapsible className="w-full">
           {materials.map((material) => (
-            <div key={material.id} className="p-4 hover:bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{material.title}</h4>
-                  <p className="text-sm text-gray-500">{material.description}</p>
-                  <p className="text-xs text-gray-400 mt-1">Ditambahkan: {material.date}</p>
+            <AccordionItem value={material.id} key={material.id}>
+              <AccordionTrigger className="px-4 text-base hover:no-underline">
+                <div className="flex justify-between w-full pr-4">
+                  <span>{material.title}</span>
+                  <span className="text-sm text-gray-500 font-normal">{material.date}</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <div className="space-y-4">
+                  {materialFields.map(field => (
+                    <div key={field}>
+                      <h4 className="font-semibold text-gray-800">{fieldLabels[field]}</h4>
+                      <p className="text-gray-600 whitespace-pre-wrap">{material[field] || '-'}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center space-x-2 mt-4 pt-4 border-t">
+                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded flex items-center space-x-2 text-sm">
                     <Edit className="w-4 h-4" />
+                    <span>Edit</span>
                   </button>
                   <button
                     onClick={() => onDeleteMaterial(material.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded flex items-center space-x-2 text-sm"
                   >
                     <Trash2 className="w-4 h-4" />
+                    <span>Hapus</span>
                   </button>
                 </div>
-              </div>
-            </div>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       </div>
     </div>
   );

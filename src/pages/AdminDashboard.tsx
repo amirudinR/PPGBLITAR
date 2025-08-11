@@ -23,10 +23,29 @@ export default function AdminDashboard() {
   
   // State for materials
   const [materials, setMaterials] = useState<Material[]>([
-    { id: '1', title: 'Pengenalan React', description: 'Dasar-dasar React dan komponennya', date: '2024-01-15' },
-    { id: '2', title: 'State Management', description: 'Menggunakan useState dan useEffect', date: '2024-01-16' },
+    { 
+      id: '1', 
+      title: 'Adab & Ibadah Sehari-hari', 
+      date: '2024-07-28',
+      bacaan: 'Al-Quran Juz 1, halaman 5',
+      menulis: 'Menulis surat Al-Fatihah beserta artinya',
+      hafalan: 'Doa sebelum dan sesudah makan',
+      praktekIbadah: 'Praktik wudhu yang benar',
+      keilmuan: 'Memahami rukun iman',
+      tatakrama: 'Adab berbicara dengan orang tua',
+      kemandirian: 'Merapikan tempat tidur sendiri'
+    },
   ]);
-  const [newMaterial, setNewMaterial] = useState({ title: '', description: '' });
+  const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id' | 'date'>>({
+    title: '',
+    bacaan: '',
+    menulis: '',
+    hafalan: '',
+    praktekIbadah: '',
+    keilmuan: '',
+    tatakrama: '',
+    kemandirian: ''
+  });
 
   // State for users
   const [users, setUsers] = useState<User[]>([
@@ -70,14 +89,18 @@ export default function AdminDashboard() {
   }, [activeSection]);
 
   const handleAddMaterial = () => {
-    if (newMaterial.title && newMaterial.description) {
-      setMaterials([...materials, {
-        id: (materials.length + 1).toString(),
-        title: newMaterial.title,
-        description: newMaterial.description,
-        date: new Date().toISOString().split('T')[0]
-      }]);
-      setNewMaterial({ title: '', description: '' });
+    if (newMaterial.title) {
+      const materialToAdd: Material = {
+        id: (materials.length + 2).toString(),
+        date: new Date().toISOString().split('T')[0],
+        ...newMaterial
+      };
+      setMaterials([...materials, materialToAdd]);
+      // Reset form
+      setNewMaterial({
+        title: '', bacaan: '', menulis: '', hafalan: '', praktekIbadah: '',
+        keilmuan: '', tatakrama: '', kemandirian: ''
+      });
     }
   };
 
