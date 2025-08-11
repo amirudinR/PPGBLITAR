@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
-import { Material, User, Attendance, Generus } from '@/types/admin';
+import { Material, User, Attendance, Generus, KELAS_LIST } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
       id: '1', 
       jenisMateri: 'Materi bacaan',
       rincianMateri: 'Al-Quran Juz 1, halaman 5-6',
-      kelas: 'Praremaja',
+      kelas: 'SD 1',
       semester: 'Ganjil',
       bulan: 'Juli'
     },
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
       id: '2', 
       jenisMateri: 'Hafalan',
       rincianMateri: 'Doa sebelum dan sesudah makan',
-      kelas: 'Caberawit',
+      kelas: 'Paud/TK',
       semester: 'Ganjil',
       bulan: 'Juli'
     },
@@ -43,15 +43,15 @@ export default function AdminDashboard() {
       id: '3', 
       jenisMateri: 'Tatakrama',
       rincianMateri: 'Adab berbicara dengan orang tua dan guru',
-      kelas: 'Remaja',
-      semester: 'Ganjil',
-      bulan: 'Agustus'
+      kelas: 'SD 6',
+      semester: 'Genap',
+      bulan: 'Februari'
     },
   ]);
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
     jenisMateri: 'Materi bacaan',
     rincianMateri: '',
-    kelas: '',
+    kelas: KELAS_LIST[0],
     semester: 'Ganjil',
     bulan: ''
   });
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
       setNewMaterial({
         jenisMateri: 'Materi bacaan',
         rincianMateri: '',
-        kelas: '',
+        kelas: KELAS_LIST[0],
         semester: 'Ganjil',
         bulan: ''
       });

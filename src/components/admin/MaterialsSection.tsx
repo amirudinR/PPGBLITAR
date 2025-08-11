@@ -1,5 +1,5 @@
-import React from 'react';
-import { Material, JENIS_MATERI, JenisMateri } from '@/types/admin';
+import React, { useEffect } from 'react';
+import { Material, JENIS_MATERI, KELAS_LIST, SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +30,12 @@ export default function MaterialsSection({
     setNewMaterial(prev => ({ ...prev, [field]: value as any }));
   };
 
+  useEffect(() => {
+    setNewMaterial(prev => ({ ...prev, bulan: '' }));
+  }, [newMaterial.semester, setNewMaterial]);
+
+  const currentMonths = newMaterial.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Kelola Materi</h2>
@@ -50,7 +56,14 @@ export default function MaterialsSection({
           </div>
           <div>
             <Label htmlFor="kelas">Kelas</Label>
-            <Input id="kelas" value={newMaterial.kelas} onChange={(e) => handleInputChange('kelas', e.target.value)} className="mt-1" placeholder="Contoh: Praremaja" />
+            <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
+              <SelectTrigger id="kelas" className="mt-1">
+                <SelectValue placeholder="Pilih Kelas" />
+              </SelectTrigger>
+              <SelectContent>
+                {KELAS_LIST.map(kelas => <SelectItem key={kelas} value={kelas}>{kelas}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="semester">Semester</Label>
@@ -66,7 +79,14 @@ export default function MaterialsSection({
           </div>
           <div>
             <Label htmlFor="bulan">Bulan</Label>
-            <Input id="bulan" value={newMaterial.bulan} onChange={(e) => handleInputChange('bulan', e.target.value)} className="mt-1" placeholder="Contoh: Juli" />
+            <Select value={newMaterial.bulan} onValueChange={(value) => handleSelectChange('bulan', value)} disabled={!newMaterial.semester}>
+              <SelectTrigger id="bulan" className="mt-1">
+                <SelectValue placeholder="Pilih Bulan" />
+              </SelectTrigger>
+              <SelectContent>
+                {currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div className="col-span-1 md:col-span-2 lg:col-span-3">
             <Label htmlFor="rincianMateri">Rincian Materi</Label>

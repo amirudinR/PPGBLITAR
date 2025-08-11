@@ -21,11 +21,19 @@ export const JENIS_MATERI = [
 
 export type JenisMateri = typeof JENIS_MATERI[number];
 
+export const KELAS_LIST = [
+  'Paud/TK', 'SD 1', 'SD 2', 'SD 3', 'SD 4', 'SD 5', 'SD 6'
+] as const;
+export type Kelas = typeof KELAS_LIST[number];
+
+export const SEMESTER_GANJIL_MONTHS = ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as const;
+export const SEMESTER_GENAP_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'] as const;
+
 export interface Material {
   id: string;
   jenisMateri: JenisMateri;
   rincianMateri: string;
-  kelas: string;
+  kelas: Kelas;
   semester: 'Ganjil' | 'Genap';
   bulan: string;
 }
