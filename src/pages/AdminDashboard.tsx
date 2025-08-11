@@ -25,26 +25,35 @@ export default function AdminDashboard() {
   const [materials, setMaterials] = useState<Material[]>([
     { 
       id: '1', 
-      title: 'Adab & Ibadah Sehari-hari', 
-      date: '2024-07-28',
-      bacaan: 'Al-Quran Juz 1, halaman 5',
-      menulis: 'Menulis surat Al-Fatihah beserta artinya',
-      hafalan: 'Doa sebelum dan sesudah makan',
-      praktekIbadah: 'Praktik wudhu yang benar',
-      keilmuan: 'Memahami rukun iman',
-      tatakrama: 'Adab berbicara dengan orang tua',
-      kemandirian: 'Merapikan tempat tidur sendiri'
+      jenisMateri: 'Materi bacaan',
+      rincianMateri: 'Al-Quran Juz 1, halaman 5-6',
+      kelas: 'Praremaja',
+      semester: 'Ganjil',
+      bulan: 'Juli'
+    },
+    { 
+      id: '2', 
+      jenisMateri: 'Hafalan',
+      rincianMateri: 'Doa sebelum dan sesudah makan',
+      kelas: 'Caberawit',
+      semester: 'Ganjil',
+      bulan: 'Juli'
+    },
+    { 
+      id: '3', 
+      jenisMateri: 'Tatakrama',
+      rincianMateri: 'Adab berbicara dengan orang tua dan guru',
+      kelas: 'Remaja',
+      semester: 'Ganjil',
+      bulan: 'Agustus'
     },
   ]);
-  const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id' | 'date'>>({
-    title: '',
-    bacaan: '',
-    menulis: '',
-    hafalan: '',
-    praktekIbadah: '',
-    keilmuan: '',
-    tatakrama: '',
-    kemandirian: ''
+  const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
+    jenisMateri: 'Materi bacaan',
+    rincianMateri: '',
+    kelas: '',
+    semester: 'Ganjil',
+    bulan: ''
   });
 
   // State for users
@@ -89,17 +98,19 @@ export default function AdminDashboard() {
   }, [activeSection]);
 
   const handleAddMaterial = () => {
-    if (newMaterial.title) {
+    if (newMaterial.rincianMateri && newMaterial.kelas && newMaterial.bulan) {
       const materialToAdd: Material = {
         id: (materials.length + 2).toString(),
-        date: new Date().toISOString().split('T')[0],
         ...newMaterial
       };
       setMaterials([...materials, materialToAdd]);
       // Reset form
       setNewMaterial({
-        title: '', bacaan: '', menulis: '', hafalan: '', praktekIbadah: '',
-        keilmuan: '', tatakrama: '', kemandirian: ''
+        jenisMateri: 'Materi bacaan',
+        rincianMateri: '',
+        kelas: '',
+        semester: 'Ganjil',
+        bulan: ''
       });
     }
   };

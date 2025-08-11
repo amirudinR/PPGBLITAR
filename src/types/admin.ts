@@ -9,17 +9,25 @@ export interface Generus {
   kelompok: string;
 }
 
+export const JENIS_MATERI = [
+  'Materi bacaan', 
+  'Makna/Menulis', 
+  'Hafalan', 
+  'Praktek Ibadah', 
+  'Keilmuan dan Kefahaman', 
+  'Tatakrama', 
+  'Kemandirian'
+] as const;
+
+export type JenisMateri = typeof JENIS_MATERI[number];
+
 export interface Material {
   id: string;
-  title: string;
-  date: string;
-  bacaan: string;
-  menulis: string;
-  hafalan: string;
-  praktekIbadah: string;
-  keilmuan: string;
-  tatakrama: string;
-  kemandirian: string;
+  jenisMateri: JenisMateri;
+  rincianMateri: string;
+  kelas: string;
+  semester: 'Ganjil' | 'Genap';
+  bulan: string;
 }
 
 export interface User {
