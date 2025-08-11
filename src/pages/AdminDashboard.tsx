@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
-import { Material, User, Attendance } from '@/types/admin';
+import { Material, User, Attendance, Generus } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
 import AccountsSection from '@/components/admin/AccountsSection';
+import GenerusSection from '@/components/admin/GenerusSection';
 
 const menuItems = [
+    { id: 'generus', label: 'Data Generus' },
     { id: 'kehadiran', label: 'Kehadiran' },
     { id: 'materi', label: 'Materi' },
     { id: 'akun', label: 'Akun' },
 ];
 
 export default function AdminDashboard() {
-  const [activeSection, setActiveSection] = useState('kehadiran');
+  const [activeSection, setActiveSection] = useState('generus');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // State for materials
@@ -36,6 +38,14 @@ export default function AdminDashboard() {
     { id: 2, studentName: 'Jane Smith', date: '2024-01-15', status: 'Hadir' },
     { id: 3, studentName: 'John Doe', date: '2024-01-16', status: 'Izin' },
     { id: 4, studentName: 'Jane Smith', date: '2024-01-16', status: 'Tidak Hadir' },
+  ]);
+
+  // State for generus
+  const [generus] = useState<Generus[]>([
+    { id: 1, name: 'Adi Saputra', kelas: 'Praremaja', sekolah: 'SMPN 1', status: 'Aktif' },
+    { id: 2, name: 'Budi Santoso', kelas: 'Remaja', sekolah: 'SMAN 2', status: 'Aktif' },
+    { id: 3, name: 'Citra Lestari', kelas: 'Caberawit', sekolah: 'SDN 3', status: 'Aktif' },
+    { id: 4, name: 'Dewi Anggraini', kelas: 'Praremaja', sekolah: 'SMPN 1', status: 'Non-aktif' },
   ]);
 
   const handleAddMaterial = () => {
@@ -64,6 +74,8 @@ export default function AdminDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
+      case 'generus':
+        return <GenerusSection generus={generus} />;
       case 'kehadiran':
         return <AttendanceSection attendance={attendance} />;
       case 'materi':

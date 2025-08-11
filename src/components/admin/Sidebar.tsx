@@ -1,7 +1,8 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap } from 'lucide-react';
 
 const menuItems = [
+  { id: 'generus', label: 'Data Generus', icon: GraduationCap },
   { id: 'kehadiran', label: 'Kehadiran', icon: Calendar },
   { id: 'materi', label: 'Materi', icon: BookOpen },
   { id: 'akun', label: 'Akun', icon: Users },
