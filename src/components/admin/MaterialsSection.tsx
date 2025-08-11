@@ -7,7 +7,7 @@ interface MaterialsSectionProps {
   newMaterial: { title: string; description: string };
   setNewMaterial: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
   onAddMaterial: () => void;
-  onDeleteMaterial: (id: number) => void;
+  onDeleteMaterial: (id: string) => void;
 }
 
 export default function MaterialsSection({

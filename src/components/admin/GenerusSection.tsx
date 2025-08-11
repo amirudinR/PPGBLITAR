@@ -1,12 +1,14 @@
 import React from 'react';
 import { Generus } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface GenerusSectionProps {
   generus: Generus[];
+  loading: boolean;
 }
 
-export default function GenerusSection({ generus }: GenerusSectionProps) {
+export default function GenerusSection({ generus, loading }: GenerusSectionProps) {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -31,27 +33,48 @@ export default function GenerusSection({ generus }: GenerusSectionProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {generus.map((item) => (
-              <tr key={item.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.jenisKelamin}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.tahunLahir}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.namaAyah}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.namaIbu}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.desa}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.kelompok}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index}>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[150px]" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[100px]" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[80px]" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[120px]" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[120px]" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[100px]" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-[100px]" /></td>
+                  <td className="px-6 py-4 text-center"><Skeleton className="h-8 w-[70px] mx-auto" /></td>
+                </tr>
+              ))
+            ) : generus.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center py-10 text-gray-500">
+                  Tidak ada data. Pastikan koleksi 'generus' ada di Firestore.
                 </td>
               </tr>
-            ))}
+            ) : (
+              generus.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.jenisKelamin}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.tahunLahir}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.namaAyah}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.namaIbu}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.desa}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.kelompok}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

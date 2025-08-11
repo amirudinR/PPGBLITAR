@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { Material, User, Attendance, Generus } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
@@ -6,6 +6,9 @@ import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
 import AccountsSection from '@/components/admin/AccountsSection';
 import GenerusSection from '@/components/admin/GenerusSection';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { showError } from '@/utils/toast';
 
 const menuItems = [
     { id: 'generus', label: 'Data Generus' },
@@ -20,38 +23,56 @@ export default function AdminDashboard() {
   
   // State for materials
   const [materials, setMaterials] = useState<Material[]>([
-    { id: 1, title: 'Pengenalan React', description: 'Dasar-dasar React dan komponennya', date: '2024-01-15' },
-    { id: 2, title: 'State Management', description: 'Menggunakan useState dan useEffect', date: '2024-01-16' },
+    { id: '1', title: 'Pengenalan React', description: 'Dasar-dasar React dan komponennya', date: '2024-01-15' },
+    { id: '2', title: 'State Management', description: 'Menggunakan useState dan useEffect', date: '2024-01-16' },
   ]);
   const [newMaterial, setNewMaterial] = useState({ title: '', description: '' });
 
   // State for users
   const [users, setUsers] = useState<User[]>([
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Student', status: 'Active' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Student', status: 'Active' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Teacher', status: 'Active' },
+    { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Student', status: 'Active' },
+    { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'Student', status: 'Active' },
+    { id: '3', name: 'Bob Johnson', email: 'bob@example.com', role: 'Teacher', status: 'Active' },
   ]);
 
   // State for attendance
   const [attendance] = useState<Attendance[]>([
-    { id: 1, studentName: 'John Doe', date: '2024-01-15', status: 'Hadir' },
-    { id: 2, studentName: 'Jane Smith', date: '2024-01-15', status: 'Hadir' },
-    { id: 3, studentName: 'John Doe', date: '2024-01-16', status: 'Izin' },
-    { id: 4, studentName: 'Jane Smith', date: '2024-01-16', status: 'Tidak Hadir' },
+    { id: '1', studentName: 'John Doe', date: '2024-01-15', status: 'Hadir' },
+    { id: '2', studentName: 'Jane Smith', date: '2024-01-15', status: 'Hadir' },
+    { id: '3', studentName: 'John Doe', date: '2024-01-16', status: 'Izin' },
+    { id: '4', studentName: 'Jane Smith', date: '2024-01-16', status: 'Tidak Hadir' },
   ]);
 
   // State for generus
-  const [generus] = useState<Generus[]>([
-    { id: 1, name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2005, namaAyah: 'Ayah Adi', namaIbu: 'Ibu Adi', desa: 'Desa Maju', kelompok: 'Remaja 1' },
-    { id: 2, name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2006, namaAyah: 'Ayah Budi', namaIbu: 'Ibu Budi', desa: 'Desa Jaya', kelompok: 'Remaja 2' },
-    { id: 3, name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2007, namaAyah: 'Ayah Citra', namaIbu: 'Ibu Citra', desa: 'Desa Makmur', kelompok: 'Remaja 1' },
-    { id: 4, name: 'Dewi Anggraini', jenisKelamin: 'Perempuan', tahunLahir: 2005, namaAyah: 'Ayah Dewi', namaIbu: 'Ibu Dewi', desa: 'Desa Sejahtera', kelompok: 'Remaja 2' },
-  ]);
+  const [generus, setGenerus] = useState<Generus[]>([]);
+  const [loadingGenerus, setLoadingGenerus] = useState(true);
+
+  useEffect(() => {
+    const fetchGenerus = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "generus"));
+        const generusData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Generus[];
+        setGenerus(generusData);
+      } catch (error) {
+        console.error("Error fetching generus data: ", error);
+        showError("Gagal memuat data generus.");
+      } finally {
+        setLoadingGenerus(false);
+      }
+    };
+
+    if (activeSection === 'generus') {
+        fetchGenerus();
+    }
+  }, [activeSection]);
 
   const handleAddMaterial = () => {
     if (newMaterial.title && newMaterial.description) {
       setMaterials([...materials, {
-        id: materials.length + 1,
+        id: (materials.length + 1).toString(),
         title: newMaterial.title,
         description: newMaterial.description,
         date: new Date().toISOString().split('T')[0]
@@ -60,11 +81,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteMaterial = (id: number) => {
+  const handleDeleteMaterial = (id: string) => {
     setMaterials(materials.filter(m => m.id !== id));
   };
 
-  const handleDeleteUser = (id: number) => {
+  const handleDeleteUser = (id: string) => {
     setUsers(users.filter(u => u.id !== id));
   };
 
@@ -75,7 +96,7 @@ export default function AdminDashboard() {
   const renderSection = () => {
     switch (activeSection) {
       case 'generus':
-        return <GenerusSection generus={generus} />;
+        return <GenerusSection generus={generus} loading={loadingGenerus} />;
       case 'kehadiran':
         return <AttendanceSection attendance={attendance} />;
       case 'materi':

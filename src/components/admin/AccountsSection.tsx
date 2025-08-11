@@ -4,7 +4,7 @@ import { Edit, Trash2 } from 'lucide-react';
 
 interface AccountsSectionProps {
   users: User[];
-  onDeleteUser: (id: number) => void;
+  onDeleteUser: (id: string) => void;
 }
 
 const getStatusColor = (status: string) => {

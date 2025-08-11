@@ -1,5 +1,5 @@
 export interface Generus {
-  id: number;
+  id: string;
   name: string;
   jenisKelamin: 'Laki-laki' | 'Perempuan';
   tahunLahir: number;
@@ -10,14 +10,14 @@ export interface Generus {
 }
 
 export interface Material {
-  id: number;
+  id: string;
   title: string;
   description: string;
   date: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -25,7 +25,7 @@ export interface User {
 }
 
 export interface Attendance {
-  id: number;
+  id: string;
   studentName: string;
   date: string;
   status: 'Hadir' | 'Tidak Hadir' | 'Izin';
