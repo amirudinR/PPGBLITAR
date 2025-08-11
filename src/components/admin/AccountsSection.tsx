@@ -1,6 +1,6 @@
 import React from 'react';
 import { User } from '@/types/admin';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Plus } from 'lucide-react';
 
 interface AccountsSectionProps {
   users: User[];
@@ -17,7 +17,13 @@ const getStatusColor = (status: string) => {
 export default function AccountsSection({ users, onDeleteUser }: AccountsSectionProps) {
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Daftar Akun Pengguna</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Daftar Akun Pengguna</h2>
+        <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Tambah Akun</span>
+        </button>
+      </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
         <table className="min-w-full table-auto">
           <thead className="bg-gray-50">
@@ -34,7 +40,7 @@ export default function AccountsSection({ users, onDeleteUser }: AccountsSection
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
+                <td className="px-6 py-4 whitespace-nowrap capitalize">{user.role}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                     {user.status}

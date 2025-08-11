@@ -58,9 +58,12 @@ export default function AdminDashboard() {
 
   // State for users
   const [users, setUsers] = useState<User[]>([
-    { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Student', status: 'Active' },
-    { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'Student', status: 'Active' },
-    { id: '3', name: 'Bob Johnson', email: 'bob@example.com', role: 'Teacher', status: 'Active' },
+    { id: '1', name: 'Super Admin', email: 'super@admin.com', role: 'adminsuper', status: 'Active' },
+    { id: '2', name: 'Admin Daerah', email: 'admin@daerah.com', role: 'admin', status: 'Active' },
+    { id: '3', name: 'Kepala Desa', email: 'kades@desa.com', role: 'desa', status: 'Active' },
+    { id: '4', name: 'Ketua Kelompok', email: 'kakel@kelompok.com', role: 'kelompok', status: 'Active' },
+    { id: '5', name: 'Guru Ngaji', email: 'guru@ngaji.com', role: 'guru', status: 'Active' },
+    { id: '6', name: 'Orang Tua Murid', email: 'ortu@murid.com', role: 'orangtua', status: 'Active' },
   ]);
 
   // State for attendance
