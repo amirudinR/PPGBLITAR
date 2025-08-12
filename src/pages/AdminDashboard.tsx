@@ -20,6 +20,7 @@ const menuItems = [
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('generus');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // State for materials
   const [materials, setMaterials] = useState<Material[]>([
@@ -151,14 +152,20 @@ export default function AdminDashboard() {
     alert('Logging out...');
   };
 
+  const filteredGenerus = generus.filter(g => 
+    g.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const renderSection = () => {
     switch (activeSection) {
       case 'generus':
         return <GenerusSection 
-          generus={generus}
+          generus={filteredGenerus}
           newGenerus={newGenerus}
           setNewGenerus={setNewGenerus}
           onAddGenerus={handleAddGenerus}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />;
       case 'kehadiran':
         return <AttendanceSection attendance={attendance} />;
