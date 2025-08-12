@@ -79,6 +79,7 @@ export default function AdminDashboard() {
     { id: '1', name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2005, pendidikan: 'SMA 2', namaAyah: 'Ayah Adi', statusAyah: 'jm', namaIbu: 'Ibu Adi', statusIbu: 'hum', desa: 'Desa Maju', kelompok: 'Remaja 1' },
     { id: '2', name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2012, pendidikan: 'SD 6', namaAyah: 'Ayah Budi', statusAyah: 'jm', namaIbu: 'Ibu Budi', statusIbu: 'jm', desa: 'Desa Jaya', kelompok: 'Caberawit' },
     { id: '3', name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2018, pendidikan: 'Paud/TK', namaAyah: 'Ayah Citra', statusAyah: 'hum', namaIbu: 'Ibu Citra', statusIbu: 'hum', desa: 'Desa Makmur', kelompok: 'Caberawit' },
+    { id: '4', name: 'Doni Firmansyah', jenisKelamin: 'Laki-laki', tahunLahir: 2004, pendidikan: 'Lulus Sekolah', namaAyah: 'Ayah Doni', statusAyah: 'jm', namaIbu: 'Ibu Doni', statusIbu: 'hum', desa: 'Desa Sejahtera', kelompok: 'Pra Nikah' },
   ]);
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
     name: '',

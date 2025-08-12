@@ -18,6 +18,7 @@ export const PENDIDIKAN_LIST = [
   'SD 1', 'SD 2', 'SD 3', 'SD 4', 'SD 5', 'SD 6',
   'SMP 1', 'SMP 2', 'SMP 3',
   'SMA 1', 'SMA 2', 'SMA 3',
+  'Lulus Sekolah',
   'MAHASISWA',
   'Lulus S1', 'Lulus S2', 'Lulus S3'
 ] as const;

@@ -41,6 +41,7 @@ const getJenjangUsia = (pendidikan: Pendidikan): string => {
     case 'SMA 2':
     case 'SMA 3':
       return 'Remaja';
+    case 'Lulus Sekolah':
     case 'MAHASISWA':
     case 'Lulus S1':
     case 'Lulus S2':
