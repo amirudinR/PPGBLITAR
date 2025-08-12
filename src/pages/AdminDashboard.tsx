@@ -74,12 +74,43 @@ export default function AdminDashboard() {
     { id: '4', studentName: 'Jane Smith', date: '2024-01-16', status: 'Tidak Hadir' },
   ]);
 
-  // State for generus - using mock data temporarily
-  const [generus] = useState<Generus[]>([
+  // State for generus
+  const [generus, setGenerus] = useState<Generus[]>([
     { id: '1', name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2005, namaAyah: 'Ayah Adi', namaIbu: 'Ibu Adi', desa: 'Desa Maju', kelompok: 'Remaja 1' },
     { id: '2', name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2006, namaAyah: 'Ayah Budi', namaIbu: 'Ibu Budi', desa: 'Desa Jaya', kelompok: 'Remaja 2' },
     { id: '3', name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2007, namaAyah: 'Ayah Citra', namaIbu: 'Ibu Citra', desa: 'Desa Makmur', kelompok: 'Remaja 1' },
   ]);
+  const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
+    name: '',
+    jenisKelamin: 'Laki-laki',
+    tahunLahir: 2010,
+    namaAyah: '',
+    namaIbu: '',
+    desa: '',
+    kelompok: ''
+  });
+
+  const handleAddGenerus = () => {
+    if (!newGenerus.name || !newGenerus.desa || !newGenerus.kelompok) {
+        showError("Nama, Desa, dan Kelompok harus diisi.");
+        return false;
+    }
+    const generusToAdd: Generus = {
+        id: `gen-${Date.now()}`,
+        ...newGenerus
+    };
+    setGenerus(prev => [...prev, generusToAdd]);
+    setNewGenerus({
+        name: '',
+        jenisKelamin: 'Laki-laki',
+        tahunLahir: 2010,
+        namaAyah: '',
+        namaIbu: '',
+        desa: '',
+        kelompok: ''
+    });
+    return true;
+  };
 
   const handleAddMaterial = () => {
     if (newMaterial.rincianMateri && newMaterial.kelas && newMaterial.bulan) {
@@ -114,7 +145,12 @@ export default function AdminDashboard() {
   const renderSection = () => {
     switch (activeSection) {
       case 'generus':
-        return <GenerusSection generus={generus} />;
+        return <GenerusSection 
+          generus={generus}
+          newGenerus={newGenerus}
+          setNewGenerus={setNewGenerus}
+          onAddGenerus={handleAddGenerus}
+        />;
       case 'kehadiran':
         return <AttendanceSection attendance={attendance} />;
       case 'materi':
