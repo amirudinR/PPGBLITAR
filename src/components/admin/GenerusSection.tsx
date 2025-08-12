@@ -58,56 +58,58 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
                 Isi formulir di bawah ini untuk menambahkan data generus baru.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nama Generus</Label>
-                <Input id="name" value={newGenerus.name} onChange={(e) => handleInputChange('name', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="jenisKelamin">Jenis Kelamin</Label>
-                <Select value={newGenerus.jenisKelamin} onValueChange={(value) => handleSelectChange('jenisKelamin', value)}>
-                  <SelectTrigger id="jenisKelamin">
-                    <SelectValue placeholder="Pilih Jenis Kelamin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                    <SelectItem value="Perempuan">Perempuan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tahunLahir">Tahun Lahir</Label>
-                <Input id="tahunLahir" type="number" value={newGenerus.tahunLahir} onChange={(e) => handleInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="desa">Desa</Label>
-                <Input id="desa" value={newGenerus.desa} onChange={(e) => handleInputChange('desa', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="kelompok">Kelompok</Label>
-                <Input id="kelompok" value={newGenerus.kelompok} onChange={(e) => handleInputChange('kelompok', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="namaAyah">Nama Ayah</Label>
-                <Input id="namaAyah" value={newGenerus.namaAyah} onChange={(e) => handleInputChange('namaAyah', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="statusAyah">Status Ayah</Label>
-                <Select value={newGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
-                    <SelectTrigger id="statusAyah"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="namaIbu">Nama Ibu</Label>
-                <Input id="namaIbu" value={newGenerus.namaIbu} onChange={(e) => handleInputChange('namaIbu', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="statusIbu">Status Ibu</Label>
-                <Select value={newGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
-                    <SelectTrigger id="statusIbu"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                </Select>
+            <div className="max-h-[60vh] overflow-y-auto pr-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nama Generus</Label>
+                  <Input id="name" value={newGenerus.name} onChange={(e) => handleInputChange('name', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="jenisKelamin">Jenis Kelamin</Label>
+                  <Select value={newGenerus.jenisKelamin} onValueChange={(value) => handleSelectChange('jenisKelamin', value)}>
+                    <SelectTrigger id="jenisKelamin">
+                      <SelectValue placeholder="Pilih Jenis Kelamin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                      <SelectItem value="Perempuan">Perempuan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tahunLahir">Tahun Lahir</Label>
+                  <Input id="tahunLahir" type="number" value={newGenerus.tahunLahir} onChange={(e) => handleInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="desa">Desa</Label>
+                  <Input id="desa" value={newGenerus.desa} onChange={(e) => handleInputChange('desa', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="kelompok">Kelompok</Label>
+                  <Input id="kelompok" value={newGenerus.kelompok} onChange={(e) => handleInputChange('kelompok', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="namaAyah">Nama Ayah</Label>
+                  <Input id="namaAyah" value={newGenerus.namaAyah} onChange={(e) => handleInputChange('namaAyah', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="statusAyah">Status Ayah</Label>
+                  <Select value={newGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
+                      <SelectTrigger id="statusAyah"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                      <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="namaIbu">Nama Ibu</Label>
+                  <Input id="namaIbu" value={newGenerus.namaIbu} onChange={(e) => handleInputChange('namaIbu', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="statusIbu">Status Ibu</Label>
+                  <Select value={newGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
+                      <SelectTrigger id="statusIbu"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                      <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <DialogFooter>
