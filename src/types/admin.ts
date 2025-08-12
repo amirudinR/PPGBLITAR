@@ -4,7 +4,9 @@ export interface Generus {
   jenisKelamin: 'Laki-laki' | 'Perempuan';
   tahunLahir: number;
   namaAyah: string;
+  statusAyah: 'jm' | 'hum' | '';
   namaIbu: string;
+  statusIbu: 'jm' | 'hum' | '';
   desa: string;
   kelompok: string;
 }

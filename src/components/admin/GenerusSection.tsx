@@ -92,8 +92,22 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
                 <Input id="namaAyah" value={newGenerus.namaAyah} onChange={(e) => handleInputChange('namaAyah', e.target.value)} />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="statusAyah">Status Ayah</Label>
+                <Select value={newGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
+                    <SelectTrigger id="statusAyah"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="namaIbu">Nama Ibu</Label>
                 <Input id="namaIbu" value={newGenerus.namaIbu} onChange={(e) => handleInputChange('namaIbu', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="statusIbu">Status Ibu</Label>
+                <Select value={newGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
+                    <SelectTrigger id="statusIbu"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
@@ -108,19 +122,20 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Generus</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun Lahir</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ayah</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ibu</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desa</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelompok</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ayah</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ayah</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ibu</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ibu</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {generus.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-10 text-gray-500">
+                <td colSpan={10} className="text-center py-10 text-gray-500">
                   Tidak ada data.
                 </td>
               </tr>
@@ -128,12 +143,13 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
               generus.map((item) => (
                 <tr key={item.id}>
                   <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.jenisKelamin}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.tahunLahir}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.namaAyah}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.namaIbu}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.desa}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.kelompok}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.namaAyah}</td>
+                  <td className="px-6 py-4 whitespace-nowrap uppercase">{item.statusAyah}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.namaIbu}</td>
+                  <td className="px-6 py-4 whitespace-nowrap uppercase">{item.statusIbu}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
                       <Edit className="w-4 h-4" />
