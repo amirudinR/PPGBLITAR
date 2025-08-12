@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
-import { Material, User, Attendance, Generus, KELAS_LIST, PENDIDIKAN_LIST } from '@/types/admin';
+import { Material, User, Attendance, Generus, KELAS_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
@@ -76,16 +76,17 @@ export default function AdminDashboard() {
 
   // State for generus
   const [generus, setGenerus] = useState<Generus[]>([
-    { id: '1', name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2005, pendidikan: 'SMA 2', namaAyah: 'Ayah Adi', statusAyah: 'jm', namaIbu: 'Ibu Adi', statusIbu: 'hum', desa: 'Desa Maju', kelompok: 'Remaja 1' },
-    { id: '2', name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2012, pendidikan: 'SD 6', namaAyah: 'Ayah Budi', statusAyah: 'jm', namaIbu: 'Ibu Budi', statusIbu: 'jm', desa: 'Desa Jaya', kelompok: 'Caberawit' },
-    { id: '3', name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2018, pendidikan: 'Paud/TK', namaAyah: 'Ayah Citra', statusAyah: 'hum', namaIbu: 'Ibu Citra', statusIbu: 'hum', desa: 'Desa Makmur', kelompok: 'Caberawit' },
-    { id: '4', name: 'Doni Firmansyah', jenisKelamin: 'Laki-laki', tahunLahir: 2004, pendidikan: 'Lulus Sekolah', namaAyah: 'Ayah Doni', statusAyah: 'jm', namaIbu: 'Ibu Doni', statusIbu: 'hum', desa: 'Desa Sejahtera', kelompok: 'Pra Nikah' },
+    { id: '1', name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2005, pendidikan: 'SMA 2', statusMondok: 'Boarding school di Samarinda', namaAyah: 'Ayah Adi', statusAyah: 'jm', namaIbu: 'Ibu Adi', statusIbu: 'hum', desa: 'Desa Maju', kelompok: 'Remaja 1' },
+    { id: '2', name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2012, pendidikan: 'SD 6', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Ayah Budi', statusAyah: 'jm', namaIbu: 'Ibu Budi', statusIbu: 'jm', desa: 'Desa Jaya', kelompok: 'Caberawit' },
+    { id: '3', name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2018, pendidikan: 'Paud/TK', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Ayah Citra', statusAyah: 'hum', namaIbu: 'Ibu Citra', statusIbu: 'hum', desa: 'Desa Makmur', kelompok: 'Caberawit' },
+    { id: '4', name: 'Doni Firmansyah', jenisKelamin: 'Laki-laki', tahunLahir: 2004, pendidikan: 'Lulus Sekolah', statusMondok: 'Mubaligh/Mubalighot', namaAyah: 'Ayah Doni', statusAyah: 'jm', namaIbu: 'Ibu Doni', statusIbu: 'hum', desa: 'Desa Sejahtera', kelompok: 'Pra Nikah' },
   ]);
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
     name: '',
     jenisKelamin: 'Laki-laki',
     tahunLahir: 2010,
     pendidikan: PENDIDIKAN_LIST[0],
+    statusMondok: STATUS_MONDOK_LIST[3],
     namaAyah: '',
     statusAyah: '',
     namaIbu: '',
@@ -109,6 +110,7 @@ export default function AdminDashboard() {
         jenisKelamin: 'Laki-laki',
         tahunLahir: 2010,
         pendidikan: PENDIDIKAN_LIST[0],
+        statusMondok: STATUS_MONDOK_LIST[3],
         namaAyah: '',
         statusAyah: '',
         namaIbu: '',

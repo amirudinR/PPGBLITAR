@@ -4,6 +4,7 @@ export interface Generus {
   jenisKelamin: 'Laki-laki' | 'Perempuan';
   tahunLahir: number;
   pendidikan: Pendidikan;
+  statusMondok: StatusMondok;
   namaAyah: string;
   statusAyah: 'jm' | 'hum' | '';
   namaIbu: string;
@@ -23,6 +24,15 @@ export const PENDIDIKAN_LIST = [
   'Lulus S1', 'Lulus S2', 'Lulus S3'
 ] as const;
 export type Pendidikan = typeof PENDIDIKAN_LIST[number];
+
+export const STATUS_MONDOK_LIST = [
+  'Boarding school di Samarinda',
+  'Boarding school di luar Samarinda',
+  'Mubaligh/Mubalighot',
+  'Tidak Sedang Mondok',
+  'Hadis Besar'
+] as const;
+export type StatusMondok = typeof STATUS_MONDOK_LIST[number];
 
 export const JENIS_MATERI = [
   'Materi bacaan', 
