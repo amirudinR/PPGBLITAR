@@ -105,12 +105,15 @@ export default function GenerusSection({
   const renderSearchInput = () => {
     if (dropdownCategories.includes(filterCategory)) {
       return (
-        <Select value={searchTerm} onValueChange={(value) => onSearchChange(value || '')}>
+        <Select 
+          value={searchTerm} 
+          onValueChange={(value) => onSearchChange(value === '--all--' ? '' : value || '')}
+        >
           <SelectTrigger className="w-full flex-grow md:w-[200px]">
             <SelectValue placeholder={`Pilih ${GENERUS_FILTER_FIELDS.find(f => f.value === filterCategory)?.label}...`} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Semua</SelectItem>
+            <SelectItem value="--all--">Semua</SelectItem>
             {searchOptions.map(option => (
               <SelectItem key={option} value={option}>{option}</SelectItem>
             ))}
