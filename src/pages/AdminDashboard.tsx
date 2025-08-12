@@ -37,7 +37,18 @@ export default function AdminDashboard() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [generus, setGenerus] = useState<Generus[]>([]);
+  const [generus, setGenerus] = useState<Generus[]>([
+    { id: '1', name: 'Adi Saputra', jenisKelamin: 'Laki-laki', tahunLahir: 2007, pendidikan: 'SMP 3', statusMondok: 'Boarding school di Samarinda', namaAyah: 'Bambang', statusAyah: 'jm', namaIbu: 'Sumarni', statusIbu: 'hum', desa: 'Desa Maju', kelompok: 'Pra Remaja' },
+    { id: '2', name: 'Budi Santoso', jenisKelamin: 'Laki-laki', tahunLahir: 2014, pendidikan: 'SD 4', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Joko', statusAyah: 'jm', namaIbu: 'Siti', statusIbu: 'jm', desa: 'Desa Jaya', kelompok: 'Caberawit' },
+    { id: '3', name: 'Citra Lestari', jenisKelamin: 'Perempuan', tahunLahir: 2018, pendidikan: 'Paud/TK', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Agus', statusAyah: 'hum', namaIbu: 'Wati', statusIbu: 'hum', desa: 'Desa Makmur', kelompok: 'Caberawit' },
+    { id: '4', name: 'Doni Firmansyah', jenisKelamin: 'Laki-laki', tahunLahir: 2004, pendidikan: 'Lulus Sekolah', statusMondok: 'Mubaligh/Mubalighot', namaAyah: 'Eko', statusAyah: 'jm', namaIbu: 'Yuni', statusIbu: 'hum', desa: 'Desa Sejahtera', kelompok: 'Pra Nikah' },
+    { id: '5', name: 'Eka Putri', jenisKelamin: 'Perempuan', tahunLahir: 2002, pendidikan: 'MAHASISWA', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Hadi', statusAyah: 'hum', namaIbu: 'Rina', statusIbu: 'hum', desa: 'Desa Maju', kelompok: 'Pra Nikah' },
+    { id: '6', name: 'Fajar Nugroho', jenisKelamin: 'Laki-laki', tahunLahir: 2006, pendidikan: 'SMA 1', statusMondok: 'Boarding school di luar Samarinda', namaAyah: 'Imam', statusAyah: 'jm', namaIbu: 'Dewi', statusIbu: 'jm', desa: 'Desa Jaya', kelompok: 'Remaja' },
+    { id: '7', name: 'Gita Wulandari', jenisKelamin: 'Perempuan', tahunLahir: 2000, pendidikan: 'Lulus S1', statusMondok: 'Hadis Besar', namaAyah: 'Budi', statusAyah: 'hum', namaIbu: 'Lina', statusIbu: 'hum', desa: 'Desa Makmur', kelompok: 'Pra Nikah' },
+    { id: '8', name: 'Hadi Prasetyo', jenisKelamin: 'Laki-laki', tahunLahir: 2016, pendidikan: 'SD 2', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Toni', statusAyah: 'jm', namaIbu: 'Maya', statusIbu: 'jm', desa: 'Desa Sejahtera', kelompok: 'Caberawit' },
+    { id: '9', name: 'Indah Permata', jenisKelamin: 'Perempuan', tahunLahir: 2008, pendidikan: 'SMP 2', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Rudi', statusAyah: 'hum', namaIbu: 'Dina', statusIbu: 'hum', desa: 'Desa Maju', kelompok: 'Pra Remaja' },
+    { id: '10', name: 'Joko Susilo', jenisKelamin: 'Laki-laki', tahunLahir: 2005, pendidikan: 'SMA 3', statusMondok: 'Tidak Sedang Mondok', namaAyah: 'Herman', statusAyah: 'jm', namaIbu: 'Sari', statusIbu: 'jm', desa: 'Desa Jaya', kelompok: 'Remaja' }
+  ]);
   const [desas, setDesas] = useState<Desa[]>([]);
   const [kelompok, setKelompok] = useState<Kelompok[]>([]);
   
@@ -57,10 +68,9 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [desasSnap, kelompokSnap, generusSnap] = await Promise.all([
+      const [desasSnap, kelompokSnap] = await Promise.all([
         getDocs(collection(db, "desa")),
         getDocs(collection(db, "kelompok")),
-        getDocs(collection(db, "generus")),
       ]);
 
       const desasData = desasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Desa[];
@@ -72,9 +82,6 @@ export default function AdminDashboard() {
         return { id: doc.id, ...data, desaName: desa?.name || 'N/A' } as Kelompok;
       });
       setKelompok(kelompokData);
-
-      const generusData = generusSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Generus[];
-      setGenerus(generusData);
 
     } catch (error) {
       console.error("Error fetching data: ", error);
