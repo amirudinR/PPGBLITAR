@@ -113,10 +113,10 @@ export default function AdminDashboard() {
     { id: '2', name: 'Desa Jaya' },
     { id: '3', name: 'Desa Makmur' },
   ]);
-  const [kelompok] = useState<Kelompok[]>([
-    { id: '1', name: 'Remaja 1' },
-    { id: '2', name: 'Caberawit' },
-    { id: '3', name: 'Pra Nikah' },
+  const [kelompok, setKelompok] = useState<Kelompok[]>([
+    { id: '1', name: 'Remaja 1', desaId: '1', desaName: 'Desa Maju' },
+    { id: '2', name: 'Caberawit', desaId: '2', desaName: 'Desa Jaya' },
+    { id: '3', name: 'Pra Nikah', desaId: '1', desaName: 'Desa Maju' },
   ]);
 
   const handleAddGenerus = () => {
@@ -196,6 +196,40 @@ export default function AdminDashboard() {
     setDesas(prev => prev.filter(d => d.id !== id));
   };
 
+  const handleAddKelompok = (name: string, desaId: string) => {
+    if (!name.trim() || !desaId) {
+      showError("Nama kelompok dan desa harus diisi.");
+      return false;
+    }
+    const desa = desas.find(d => d.id === desaId);
+    if (!desa) return false;
+
+    const newKelompok: Kelompok = {
+      id: `kelompok-${Date.now()}`,
+      name: name.trim(),
+      desaId,
+      desaName: desa.name,
+    };
+    setKelompok(prev => [...prev, newKelompok]);
+    return true;
+  };
+
+  const handleUpdateKelompok = (id: string, newName: string, newDesaId: string) => {
+    if (!newName.trim() || !newDesaId) {
+      showError("Nama kelompok dan desa harus diisi.");
+      return false;
+    }
+    const desa = desas.find(d => d.id === newDesaId);
+    if (!desa) return false;
+
+    setKelompok(prev => prev.map(k => k.id === id ? { ...k, name: newName.trim(), desaId: newDesaId, desaName: desa.name } : k));
+    return true;
+  };
+
+  const handleDeleteKelompok = (id: string) => {
+    setKelompok(prev => prev.filter(k => k.id !== id));
+  };
+
   const handleLogout = () => {
     alert('Logging out...');
   };
@@ -250,7 +284,13 @@ export default function AdminDashboard() {
           onDeleteDesa={handleDeleteDesa}
         />;
       case 'kelompok':
-        return <KelompokSection kelompok={kelompok} />;
+        return <KelompokSection 
+          kelompok={kelompok} 
+          desas={desas}
+          onAddKelompok={handleAddKelompok}
+          onUpdateKelompok={handleUpdateKelompok}
+          onDeleteKelompok={handleDeleteKelompok}
+        />;
       default:
         return null;
     }

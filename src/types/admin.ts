@@ -100,4 +100,6 @@ export interface Desa {
 export interface Kelompok {
     id: string;
     name: string;
+    desaId: string;
+    desaName: string;
 }
