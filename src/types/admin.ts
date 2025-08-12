@@ -3,6 +3,7 @@ export interface Generus {
   name: string;
   jenisKelamin: 'Laki-laki' | 'Perempuan';
   tahunLahir: number;
+  pendidikan: Pendidikan;
   namaAyah: string;
   statusAyah: 'jm' | 'hum' | '';
   namaIbu: string;
@@ -10,6 +11,17 @@ export interface Generus {
   desa: string;
   kelompok: string;
 }
+
+export const PENDIDIKAN_LIST = [
+  'Belum sekolah',
+  'Paud/TK',
+  'SD 1', 'SD 2', 'SD 3', 'SD 4', 'SD 5', 'SD 6',
+  'SMP 1', 'SMP 2', 'SMP 3',
+  'SMA 1', 'SMA 2', 'SMA 3',
+  'MAHASISWA',
+  'Lulus S1', 'Lulus S2', 'Lulus S3'
+] as const;
+export type Pendidikan = typeof PENDIDIKAN_LIST[number];
 
 export const JENIS_MATERI = [
   'Materi bacaan', 

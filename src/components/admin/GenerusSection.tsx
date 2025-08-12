@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Generus } from '@/types/admin';
+import { Generus, PENDIDIKAN_LIST } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import {
   Dialog,
@@ -81,6 +81,17 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
                   <Input id="tahunLahir" type="number" value={newGenerus.tahunLahir} onChange={(e) => handleInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="pendidikan">Pendidikan</Label>
+                  <Select value={newGenerus.pendidikan} onValueChange={(value) => handleSelectChange('pendidikan', value)}>
+                    <SelectTrigger id="pendidikan">
+                      <SelectValue placeholder="Pilih Pendidikan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="desa">Desa</Label>
                   <Input id="desa" value={newGenerus.desa} onChange={(e) => handleInputChange('desa', e.target.value)} />
                 </div>
@@ -125,6 +136,7 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Generus</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun Lahir</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendidikan</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desa</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelompok</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ayah</th>
@@ -146,6 +158,7 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
                 <tr key={item.id}>
                   <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.tahunLahir}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.pendidikan}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.desa}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.kelompok}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.namaAyah}</td>
