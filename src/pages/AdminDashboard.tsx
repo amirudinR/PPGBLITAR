@@ -153,17 +153,11 @@ export default function AdminDashboard() {
     alert('Logging out...');
   };
 
-  const filteredGenerus = generus.filter(g => {
-    if (!searchTerm) return true;
-    const value = g[filterCategory as keyof Generus];
-    return value ? String(value).toLowerCase().includes(searchTerm.toLowerCase()) : false;
-  });
-
   const renderSection = () => {
     switch (activeSection) {
       case 'generus':
         return <GenerusSection 
-          generus={filteredGenerus}
+          allGenerus={generus}
           newGenerus={newGenerus}
           setNewGenerus={setNewGenerus}
           onAddGenerus={handleAddGenerus}
