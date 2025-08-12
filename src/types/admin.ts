@@ -34,6 +34,17 @@ export const STATUS_MONDOK_LIST = [
 ] as const;
 export type StatusMondok = typeof STATUS_MONDOK_LIST[number];
 
+export const GENERUS_FILTER_FIELDS = [
+    { value: 'name', label: 'Nama Generus' },
+    { value: 'tahunLahir', label: 'Tahun Lahir' },
+    { value: 'pendidikan', label: 'Pendidikan' },
+    { value: 'statusMondok', label: 'Status Mondok' },
+    { value: 'desa', label: 'Desa' },
+    { value: 'kelompok', label: 'Kelompok' },
+    { value: 'namaAyah', label: 'Nama Ayah' },
+    { value: 'namaIbu', label: 'Nama Ibu' },
+] as const;
+
 export const JENIS_MATERI = [
   'Materi bacaan', 
   'Makna/Menulis', 

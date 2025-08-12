@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST } from '@/types/admin';
+import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS } from '@/types/admin';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import {
   Dialog,
@@ -22,6 +22,8 @@ interface GenerusSectionProps {
   onAddGenerus: () => boolean;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  filterCategory: string;
+  onFilterCategoryChange: (value: string) => void;
 }
 
 const getJenjangUsia = (pendidikan: Pendidikan): string => {
@@ -54,7 +56,16 @@ const getJenjangUsia = (pendidikan: Pendidikan): string => {
   }
 };
 
-export default function GenerusSection({ generus, newGenerus, setNewGenerus, onAddGenerus, searchTerm, onSearchChange }: GenerusSectionProps) {
+export default function GenerusSection({ 
+  generus, 
+  newGenerus, 
+  setNewGenerus, 
+  onAddGenerus, 
+  searchTerm, 
+  onSearchChange,
+  filterCategory,
+  onFilterCategoryChange
+}: GenerusSectionProps) {
   const [open, setOpen] = useState(false);
 
   const handleSave = () => {
@@ -77,15 +88,25 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold">Data Generus</h2>
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-64">
+          <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input 
-              placeholder="Cari nama generus..." 
+              placeholder="Cari..." 
               className="pl-10"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
+          <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by" />
+            </SelectTrigger>
+            <SelectContent>
+              {GENERUS_FILTER_FIELDS.map(field => (
+                <SelectItem key={field.value} value={field.value}>{field.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="flex-shrink-0">
@@ -161,7 +182,7 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
                     <Select value={newGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
                         <SelectTrigger id="statusAyah"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
                         <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                    </Select>
+                  </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="namaIbu">Nama Ibu</Label>
@@ -172,7 +193,7 @@ export default function GenerusSection({ generus, newGenerus, setNewGenerus, onA
                     <Select value={newGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
                         <SelectTrigger id="statusIbu"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
                         <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                    </Select>
+                  </Select>
                   </div>
                 </div>
               </div>
