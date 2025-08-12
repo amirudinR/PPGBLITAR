@@ -108,7 +108,7 @@ export default function AdminDashboard() {
   });
 
   // State for Data Master
-  const [desas] = useState<Desa[]>([
+  const [desas, setDesas] = useState<Desa[]>([
     { id: '1', name: 'Desa Maju' },
     { id: '2', name: 'Desa Jaya' },
     { id: '3', name: 'Desa Makmur' },
@@ -152,7 +152,6 @@ export default function AdminDashboard() {
         ...newMaterial
       };
       setMaterials([...materials, materialToAdd]);
-      // Reset form
       setNewMaterial({
         jenisMateri: 'Materi bacaan',
         rincianMateri: '',
@@ -169,6 +168,32 @@ export default function AdminDashboard() {
 
   const handleDeleteUser = (id: string) => {
     setUsers(users.filter(u => u.id !== id));
+  };
+
+  const handleAddDesa = (name: string) => {
+    if (!name.trim()) {
+      showError("Nama desa tidak boleh kosong.");
+      return false;
+    }
+    const newDesa: Desa = {
+      id: `desa-${Date.now()}`,
+      name: name.trim(),
+    };
+    setDesas(prev => [...prev, newDesa]);
+    return true;
+  };
+
+  const handleUpdateDesa = (id: string, newName: string) => {
+    if (!newName.trim()) {
+      showError("Nama desa tidak boleh kosong.");
+      return false;
+    }
+    setDesas(prev => prev.map(d => d.id === id ? { ...d, name: newName.trim() } : d));
+    return true;
+  };
+
+  const handleDeleteDesa = (id: string) => {
+    setDesas(prev => prev.filter(d => d.id !== id));
   };
 
   const handleLogout = () => {
@@ -218,7 +243,12 @@ export default function AdminDashboard() {
       case 'akun':
         return <AccountsSection users={users} onDeleteUser={handleDeleteUser} />;
       case 'desa':
-        return <DesaSection desas={desas} />;
+        return <DesaSection 
+          desas={desas} 
+          onAddDesa={handleAddDesa}
+          onUpdateDesa={handleUpdateDesa}
+          onDeleteDesa={handleDeleteDesa}
+        />;
       case 'kelompok':
         return <KelompokSection kelompok={kelompok} />;
       default:
