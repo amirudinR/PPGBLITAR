@@ -91,3 +91,13 @@ export interface Attendance {
   date: string;
   status: 'Hadir' | 'Tidak Hadir' | 'Izin';
 }
+
+export interface Desa {
+    id: string;
+    name: string;
+}
+
+export interface Kelompok {
+    id: string;
+    name: string;
+}

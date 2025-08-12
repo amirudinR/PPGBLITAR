@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
-import { Material, User, Attendance, Generus, KELAS_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
+import { Material, User, Attendance, Generus, KELAS_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST, Desa, Kelompok } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
 import AccountsSection from '@/components/admin/AccountsSection';
 import GenerusSection from '@/components/admin/GenerusSection';
+import DesaSection from '@/components/admin/DesaSection';
+import KelompokSection from '@/components/admin/KelompokSection';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { showError } from '@/utils/toast';
 
 const menuItems = [
-    { id: 'generus', label: 'Data Generus' },
-    { id: 'kehadiran', label: 'Kehadiran' },
-    { id: 'materi', label: 'Materi' },
-    { id: 'akun', label: 'Akun' },
+  { 
+    id: 'master', 
+    label: 'Data Master', 
+    children: [
+      { id: 'akun', label: 'Akun' },
+      { id: 'desa', label: 'Desa' },
+      { id: 'kelompok', label: 'Kelompok' },
+    ]
+  },
+  { id: 'generus', label: 'Data Generus' },
+  { id: 'kehadiran', label: 'Kehadiran' },
+  { id: 'materi', label: 'Materi' },
 ];
 
 export default function AdminDashboard() {
@@ -97,6 +107,18 @@ export default function AdminDashboard() {
     kelompok: ''
   });
 
+  // State for Data Master
+  const [desas] = useState<Desa[]>([
+    { id: '1', name: 'Desa Maju' },
+    { id: '2', name: 'Desa Jaya' },
+    { id: '3', name: 'Desa Makmur' },
+  ]);
+  const [kelompok] = useState<Kelompok[]>([
+    { id: '1', name: 'Remaja 1' },
+    { id: '2', name: 'Caberawit' },
+    { id: '3', name: 'Pra Nikah' },
+  ]);
+
   const handleAddGenerus = () => {
     if (!newGenerus.name || !newGenerus.desa || !newGenerus.kelompok) {
         showError("Nama, Desa, dan Kelompok harus diisi.");
@@ -153,6 +175,21 @@ export default function AdminDashboard() {
     alert('Logging out...');
   };
 
+  const getPageTitle = () => {
+    for (const item of menuItems) {
+      if (item.id === activeSection) {
+        return item.label;
+      }
+      if (item.children) {
+        const child = item.children.find(c => c.id === activeSection);
+        if (child) {
+          return child.label;
+        }
+      }
+    }
+    return 'Dashboard';
+  };
+
   const renderSection = () => {
     switch (activeSection) {
       case 'generus':
@@ -180,6 +217,10 @@ export default function AdminDashboard() {
         );
       case 'akun':
         return <AccountsSection users={users} onDeleteUser={handleDeleteUser} />;
+      case 'desa':
+        return <DesaSection desas={desas} />;
+      case 'kelompok':
+        return <KelompokSection kelompok={kelompok} />;
       default:
         return null;
     }
@@ -201,7 +242,7 @@ export default function AdminDashboard() {
             <Menu className="w-6 h-6" />
           </button>
           <h2 className="text-lg font-semibold">
-            {menuItems.find(item => item.id === activeSection)?.label}
+            {getPageTitle()}
           </h2>
           <div className="w-6" />
         </div>
