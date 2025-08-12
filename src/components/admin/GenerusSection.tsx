@@ -1,14 +1,12 @@
 import React from 'react';
 import { Generus } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface GenerusSectionProps {
   generus: Generus[];
-  loading: boolean;
 }
 
-export default function GenerusSection({ generus, loading }: GenerusSectionProps) {
+export default function GenerusSection({ generus }: GenerusSectionProps) {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -33,23 +31,10 @@ export default function GenerusSection({ generus, loading }: GenerusSectionProps
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[150px]" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[100px]" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[80px]" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[120px]" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[120px]" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[100px]" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-[100px]" /></td>
-                  <td className="px-6 py-4 text-center"><Skeleton className="h-8 w-[70px] mx-auto" /></td>
-                </tr>
-              ))
-            ) : generus.length === 0 ? (
+            {generus.length === 0 ? (
               <tr>
                 <td colSpan={8} className="text-center py-10 text-gray-500">
-                  Tidak ada data. Pastikan koleksi 'generus' ada di Firestore.
+                  Tidak ada data.
                 </td>
               </tr>
             ) : (
