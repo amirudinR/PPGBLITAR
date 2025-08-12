@@ -13,8 +13,8 @@ import { showSuccess } from '@/utils/toast';
 interface KelompokSectionProps {
   kelompok: Kelompok[];
   desas: Desa[];
-  onAddKelompok: (name: string, desaId: string) => boolean;
-  onUpdateKelompok: (id: string, newName: string, newDesaId: string) => boolean;
+  onAddKelompok: (name: string, desaId: string) => Promise<boolean>;
+  onUpdateKelompok: (id: string, newName: string, newDesaId: string) => Promise<boolean>;
   onDeleteKelompok: (id: string) => void;
 }
 
@@ -34,12 +34,12 @@ export default function KelompokSection({ kelompok, desas, onAddKelompok, onUpda
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let success = false;
     if (isEditMode) {
-      success = onUpdateKelompok(kelompokData.id, kelompokData.name, kelompokData.desaId);
+      success = await onUpdateKelompok(kelompokData.id, kelompokData.name, kelompokData.desaId);
     } else {
-      success = onAddKelompok(kelompokData.name, kelompokData.desaId);
+      success = await onAddKelompok(kelompokData.name, kelompokData.desaId);
     }
 
     if (success) {

@@ -19,7 +19,7 @@ interface GenerusSectionProps {
   allGenerus: Generus[];
   newGenerus: Omit<Generus, 'id'>;
   setNewGenerus: React.Dispatch<React.SetStateAction<Omit<Generus, 'id'>>>;
-  onAddGenerus: () => boolean;
+  onAddGenerus: () => Promise<boolean>;
   searchTerm: string;
   onSearchChange: (value: string) => void;
   filterCategory: string;
@@ -87,8 +87,8 @@ export default function GenerusSection({
     });
   }, [allGenerus, searchTerm, filterCategory]);
 
-  const handleSave = () => {
-    const success = onAddGenerus();
+  const handleSave = async () => {
+    const success = await onAddGenerus();
     if (success) {
       setOpen(false);
     }

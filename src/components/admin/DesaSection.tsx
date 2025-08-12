@@ -11,8 +11,8 @@ import { showSuccess } from '@/utils/toast';
 
 interface DesaSectionProps {
   desas: Desa[];
-  onAddDesa: (name: string) => boolean;
-  onUpdateDesa: (id: string, newName: string) => boolean;
+  onAddDesa: (name: string) => Promise<boolean>;
+  onUpdateDesa: (id: string, newName: string) => Promise<boolean>;
   onDeleteDesa: (id: string) => void;
 }
 
@@ -22,8 +22,8 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
   const [newDesaName, setNewDesaName] = useState('');
   const [editingDesa, setEditingDesa] = useState<Desa | null>(null);
 
-  const handleAdd = () => {
-    const success = onAddDesa(newDesaName);
+  const handleAdd = async () => {
+    const success = await onAddDesa(newDesaName);
     if (success) {
       setNewDesaName('');
       setIsAddDialogOpen(false);
@@ -31,9 +31,9 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
     }
   };
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (editingDesa && newDesaName) {
-      const success = onUpdateDesa(editingDesa.id, newDesaName);
+      const success = await onUpdateDesa(editingDesa.id, newDesaName);
       if (success) {
         setEditingDesa(null);
         setNewDesaName('');
