@@ -6,16 +6,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface MaterialsSectionProps {
   materials: Material[];
   newMaterial: Omit<Material, 'id'>;
   setNewMaterial: React.Dispatch<React.SetStateAction<Omit<Material, 'id'>>>;
-  onAddMaterial: () => void;
+  onAddMaterial: () => Promise<boolean>;
   onUpdateMaterial: (id: string, updatedData: Omit<Material, 'id'>) => Promise<boolean>;
   onDeleteMaterial: (id: string) => void;
 }
@@ -28,6 +27,7 @@ export default function MaterialsSection({
   onUpdateMaterial,
   onDeleteMaterial,
 }: MaterialsSectionProps) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
@@ -42,6 +42,13 @@ export default function MaterialsSection({
   useEffect(() => {
     setNewMaterial(prev => ({ ...prev, targetBulan: '' }));
   }, [newMaterial.semester, setNewMaterial]);
+
+  const handleAdd = async () => {
+    const success = await onAddMaterial();
+    if (success) {
+      setIsAddDialogOpen(false);
+    }
+  };
 
   const openEditDialog = (material: Material) => {
     setEditingMaterial(material);
@@ -69,73 +76,70 @@ export default function MaterialsSection({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Kelola Materi</h2>
-      
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Tambah Materi Baru</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="judulMateri">Judul Materi</Label>
-              <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
-                <SelectTrigger id="judulMateri" className="mt-1">
-                  <SelectValue placeholder="Pilih Judul Materi" />
-                </SelectTrigger>
-                <SelectContent>
-                  {JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Kelola Materi</h2>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Materi
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tambah Materi Baru</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="judulMateri">Judul Materi</Label>
+                  <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
+                    <SelectTrigger id="judulMateri" className="mt-1">
+                      <SelectValue placeholder="Pilih Judul Materi" />
+                    </SelectTrigger>
+                    <SelectContent>{JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="kelas">Kelas</Label>
+                  <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
+                    <SelectTrigger id="kelas" className="mt-1">
+                      <SelectValue placeholder="Pilih Kelas" />
+                    </SelectTrigger>
+                    <SelectContent>{KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="semester">Semester</Label>
+                  <Select value={newMaterial.semester} onValueChange={(value) => handleSelectChange('semester', value)}>
+                    <SelectTrigger id="semester" className="mt-1">
+                      <SelectValue placeholder="Pilih Semester" />
+                    </SelectTrigger>
+                    <SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="targetBulan">Target Bulan</Label>
+                  <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
+                    <SelectTrigger id="targetBulan" className="mt-1">
+                      <SelectValue placeholder="Pilih Bulan" />
+                    </SelectTrigger>
+                    <SelectContent>{currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="rincianMateri">Rincian Materi</Label>
+                <Textarea id="rincianMateri" value={newMaterial.rincianMateri} onChange={(e) => handleInputChange('rincianMateri', e.target.value)} className="mt-1" />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="kelas">Kelas</Label>
-              <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
-                <SelectTrigger id="kelas" className="mt-1">
-                  <SelectValue placeholder="Pilih Kelas" />
-                </SelectTrigger>
-                <SelectContent>
-                  {KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="semester">Semester</Label>
-              <Select value={newMaterial.semester} onValueChange={(value) => handleSelectChange('semester', value)}>
-                <SelectTrigger id="semester" className="mt-1">
-                  <SelectValue placeholder="Pilih Semester" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Ganjil">Ganjil</SelectItem>
-                  <SelectItem value="Genap">Genap</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="targetBulan">Target Bulan</Label>
-              <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
-                <SelectTrigger id="targetBulan" className="mt-1">
-                  <SelectValue placeholder="Pilih Bulan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="rincianMateri">Rincian Materi</Label>
-            <Textarea id="rincianMateri" value={newMaterial.rincianMateri} onChange={(e) => handleInputChange('rincianMateri', e.target.value)} className="mt-1" placeholder="Isi rincian materi di sini" />
-          </div>
-          <button
-            onClick={onAddMaterial}
-            className="w-full md:w-auto px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center justify-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Materi</span>
-          </button>
-        </CardContent>
-      </Card>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
+              <Button onClick={handleAdd}>Simpan</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <div className="bg-white rounded-lg shadow overflow-auto">
         <Table>

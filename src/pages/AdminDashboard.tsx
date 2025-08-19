@@ -267,7 +267,7 @@ export default function AdminDashboard() {
   };
 
   const handleAddMaterial = async () => {
-    if (!newMaterial.judulMateri) { showError("Judul materi harus diisi."); return; }
+    if (!newMaterial.judulMateri) { showError("Judul materi harus diisi."); return false; }
     try {
       await addDoc(collection(db, "materials"), newMaterial);
       fetchData();
@@ -275,8 +275,10 @@ export default function AdminDashboard() {
         judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: ''
       });
       showSuccess("Materi berhasil ditambahkan.");
+      return true;
     } catch (e) {
       showError("Gagal menambahkan materi.");
+      return false;
     }
   };
 
