@@ -93,12 +93,7 @@ export default function AdminDashboard() {
   // States
   const [materials, setMaterials] = useState<Material[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [attendance, setAttendance] = useState<Attendance[]>([
-    { id: '1', studentName: 'Adi Saputra', date: '2024-07-01', status: 'Hadir', desa: 'Desa Maju', kelompok: 'Pra Remaja' },
-    { id: '2', studentName: 'Budi Santoso', date: '2024-07-01', status: 'Hadir', desa: 'Desa Jaya', kelompok: 'Caberawit' },
-    { id: '3', studentName: 'Citra Lestari', date: '2024-07-01', status: 'Izin', desa: 'Desa Makmur', kelompok: 'Caberawit' },
-    { id: '4', studentName: 'Adi Saputra', date: '2024-06-01', status: 'Tidak Hadir', desa: 'Desa Maju', kelompok: 'Pra Remaja' },
-  ]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [generus, setGenerus] = useState<Generus[]>([]);
   const [desas, setDesas] = useState<Desa[]>([]);
   const [kelompok, setKelompok] = useState<Kelompok[]>([]);
@@ -123,11 +118,12 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [desasSnap, kelompokSnap, generusSnap, usersSnap] = await Promise.all([
+      const [desasSnap, kelompokSnap, generusSnap, usersSnap, attendanceSnap] = await Promise.all([
         getDocs(collection(db, "desa")),
         getDocs(collection(db, "kelompok")),
         getDocs(collection(db, "generus")),
         getDocs(collection(db, "users")),
+        getDocs(collection(db, "attendance")),
       ]);
 
       const desasData = desasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Desa[];
@@ -145,6 +141,9 @@ export default function AdminDashboard() {
       
       const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as User[];
       setUsers(usersData);
+      
+      const attendanceData = attendanceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Attendance[];
+      setAttendance(attendanceData);
 
     } catch (error) {
       console.error("Error fetching data: ", error);
