@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Menu } from 'lucide-react';
-import { Material, User, Attendance, Generus, PENDIDIKAN_LIST, STATUS_MONDOK_LIST, Desa, Kelompok } from '@/types/admin';
+import { Material, User, Attendance, Generus, KELAS_MATERI_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST, Desa, Kelompok } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   // New data states
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
-    judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil', targetBulan: ''
+    judulMateri: '', rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: ''
   });
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
     name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
       await addDoc(collection(db, "materials"), newMaterial);
       fetchData();
       setNewMaterial({
-        judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil', targetBulan: ''
+        judulMateri: '', rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: ''
       });
       showSuccess("Materi berhasil ditambahkan.");
     } catch (e) {

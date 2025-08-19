@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Material, PENDIDIKAN_LIST } from '@/types/admin';
+import { Material, KELAS_MATERI_LIST } from '@/types/admin';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,13 +53,13 @@ export default function MaterialsSection({
               <Input id="judulMateri" value={newMaterial.judulMateri} onChange={(e) => handleInputChange('judulMateri', e.target.value)} className="mt-1" placeholder="Contoh: Fiqih Wudhu" />
             </div>
             <div>
-              <Label htmlFor="pendidikan">Pendidikan</Label>
-              <Select value={newMaterial.pendidikan} onValueChange={(value) => handleSelectChange('pendidikan', value)}>
-                <SelectTrigger id="pendidikan" className="mt-1">
-                  <SelectValue placeholder="Pilih Pendidikan" />
+              <Label htmlFor="kelas">Kelas</Label>
+              <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
+                <SelectTrigger id="kelas" className="mt-1">
+                  <SelectValue placeholder="Pilih Kelas" />
                 </SelectTrigger>
                 <SelectContent>
-                  {PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  {KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -107,7 +107,7 @@ export default function MaterialsSection({
             <TableRow>
               <TableHead>Judul Materi</TableHead>
               <TableHead>Rincian Materi</TableHead>
-              <TableHead>Pendidikan</TableHead>
+              <TableHead>Kelas</TableHead>
               <TableHead>Semester</TableHead>
               <TableHead>Target Bulan</TableHead>
               <TableHead className="text-center">Aksi</TableHead>
@@ -118,7 +118,7 @@ export default function MaterialsSection({
               <TableRow key={material.id}>
                 <TableCell className="font-medium">{material.judulMateri}</TableCell>
                 <TableCell className="whitespace-pre-wrap max-w-sm">{material.rincianMateri}</TableCell>
-                <TableCell>{material.pendidikan}</TableCell>
+                <TableCell>{material.kelas}</TableCell>
                 <TableCell>{material.semester}</TableCell>
                 <TableCell>{material.targetBulan}</TableCell>
                 <TableCell className="text-center">

@@ -25,6 +25,14 @@ export const PENDIDIKAN_LIST = [
 ] as const;
 export type Pendidikan = typeof PENDIDIKAN_LIST[number];
 
+export const KELAS_MATERI_LIST = [
+  'Paud/TK',
+  'SD 1', 'SD 2', 'SD 3', 'SD 4', 'SD 5', 'SD 6',
+  'SMP 1', 'SMP 2', 'SMP 3',
+  'SMA 1', 'SMA 2', 'SMA 3',
+] as const;
+export type KelasMateri = typeof KELAS_MATERI_LIST[number];
+
 export const getJenjangUsia = (pendidikan: Pendidikan): string => {
   switch (pendidikan) {
     case 'Belum sekolah': case 'Paud/TK': case 'SD 1': case 'SD 2': case 'SD 3': case 'SD 4': case 'SD 5': case 'SD 6':
@@ -64,7 +72,7 @@ export interface Material {
   id: string;
   judulMateri: string;
   rincianMateri: string;
-  pendidikan: Pendidikan;
+  kelas: KelasMateri;
   semester: 'Ganjil' | 'Genap';
   targetBulan: string;
 }
