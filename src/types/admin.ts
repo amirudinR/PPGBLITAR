@@ -66,7 +66,11 @@ export interface Material {
   rincianMateri: string;
   pendidikan: Pendidikan;
   semester: 'Ganjil' | 'Genap';
+  targetBulan: string;
 }
+
+export const SEMESTER_GANJIL_MONTHS = ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as const;
+export const SEMESTER_GENAP_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'] as const;
 
 export const ROLES = ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] as const;
 export type Role = typeof ROLES[number];

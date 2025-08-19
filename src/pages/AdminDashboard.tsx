@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   // New data states
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
-    judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil'
+    judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil', targetBulan: ''
   });
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
     name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
       await addDoc(collection(db, "materials"), newMaterial);
       fetchData();
       setNewMaterial({
-        judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil'
+        judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil', targetBulan: ''
       });
       showSuccess("Materi berhasil ditambahkan.");
     } catch (e) {

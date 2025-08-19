@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Material, PENDIDIKAN_LIST } from '@/types/admin';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
 
 interface MaterialsSectionProps {
   materials: Material[];
@@ -30,6 +31,12 @@ export default function MaterialsSection({
   const handleSelectChange = (field: keyof typeof newMaterial, value: string) => {
     setNewMaterial(prev => ({ ...prev, [field]: value as any }));
   };
+
+  useEffect(() => {
+    setNewMaterial(prev => ({ ...prev, targetBulan: '' }));
+  }, [newMaterial.semester, setNewMaterial]);
+
+  const currentMonths = newMaterial.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
 
   return (
     <div>
@@ -68,6 +75,17 @@ export default function MaterialsSection({
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label htmlFor="targetBulan">Target Bulan</Label>
+              <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
+                <SelectTrigger id="targetBulan" className="mt-1">
+                  <SelectValue placeholder="Pilih Bulan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div>
             <Label htmlFor="rincianMateri">Rincian Materi</Label>
@@ -91,6 +109,7 @@ export default function MaterialsSection({
               <TableHead>Rincian Materi</TableHead>
               <TableHead>Pendidikan</TableHead>
               <TableHead>Semester</TableHead>
+              <TableHead>Target Bulan</TableHead>
               <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -101,6 +120,7 @@ export default function MaterialsSection({
                 <TableCell className="whitespace-pre-wrap max-w-sm">{material.rincianMateri}</TableCell>
                 <TableCell>{material.pendidikan}</TableCell>
                 <TableCell>{material.semester}</TableCell>
+                <TableCell>{material.targetBulan}</TableCell>
                 <TableCell className="text-center">
                   <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
                     <Edit className="w-4 h-4" />
