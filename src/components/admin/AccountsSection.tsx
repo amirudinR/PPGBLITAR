@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Desa, Kelompok, ROLES } from '@/types/admin';
+import { User, Desa, Kelompok, ROLES, Role } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -37,6 +37,15 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
     }
   };
 
+  const handleRoleChange = (role: Role) => {
+    setNewUser(prev => ({
+      ...prev,
+      role,
+      desa: '',
+      kelompok: ''
+    }));
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -53,21 +62,46 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
               <DialogTitle>Tambah Akun Baru</DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-4">
-              <Input placeholder="Nama" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
-              <Input type="email" placeholder="Email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
-              <Input type="password" placeholder="Password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
-              <Select value={newUser.role} onValueChange={role => setNewUser({...newUser, role: role as any})}>
-                <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
-                <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={newUser.desa} onValueChange={desa => setNewUser({...newUser, desa})}>
-                <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
-                <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={newUser.kelompok} onValueChange={kelompok => setNewUser({...newUser, kelompok})}>
-                <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
-                <SelectContent>{kelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <div>
+                <Label>Peran</Label>
+                <Select value={newUser.role} onValueChange={(value) => handleRoleChange(value as Role)}>
+                  <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
+                  <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+
+              {['desa', 'kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+                <div>
+                  <Label>Desa</Label>
+                  <Select value={newUser.desa} onValueChange={desa => setNewUser({...newUser, desa})}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
+                    <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {['kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+                <div>
+                  <Label>Kelompok</Label>
+                  <Select value={newUser.kelompok} onValueChange={kelompok => setNewUser({...newUser, kelompok})}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
+                    <SelectContent>{kelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              <div>
+                <Label>Nama</Label>
+                <Input placeholder="Nama Lengkap" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" placeholder="Email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+              </div>
+              <div>
+                <Label>Password</Label>
+                <Input type="password" placeholder="Password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
+              </div>
             </div>
             <DialogFooter>
               <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
