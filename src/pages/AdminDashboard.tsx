@@ -93,7 +93,12 @@ export default function AdminDashboard() {
   // States
   const [materials, setMaterials] = useState<Material[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([
+    { id: '1', studentName: 'Adi Saputra', date: '2024-07-01', status: 'Hadir', desa: 'Desa Maju', kelompok: 'Pra Remaja' },
+    { id: '2', studentName: 'Budi Santoso', date: '2024-07-01', status: 'Hadir', desa: 'Desa Jaya', kelompok: 'Caberawit' },
+    { id: '3', studentName: 'Citra Lestari', date: '2024-07-01', status: 'Izin', desa: 'Desa Makmur', kelompok: 'Caberawit' },
+    { id: '4', studentName: 'Adi Saputra', date: '2024-06-01', status: 'Tidak Hadir', desa: 'Desa Maju', kelompok: 'Pra Remaja' },
+  ]);
   const [generus, setGenerus] = useState<Generus[]>([]);
   const [desas, setDesas] = useState<Desa[]>([]);
   const [kelompok, setKelompok] = useState<Kelompok[]>([]);
@@ -112,6 +117,8 @@ export default function AdminDashboard() {
     desa: '', kelompok: ''
   });
   const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -300,6 +307,16 @@ export default function AdminDashboard() {
         />;
       case 'akun':
         return <AccountsSection users={users} onDeleteUser={() => {}} />;
+      case 'kehadiran':
+        return <AttendanceSection 
+          attendance={attendance}
+          desas={desas}
+          kelompok={kelompok}
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
+        />;
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }

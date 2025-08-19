@@ -88,8 +88,10 @@ export interface User {
 export interface Attendance {
   id: string;
   studentName: string;
-  date: string;
+  date: string; // YYYY-MM-DD
   status: 'Hadir' | 'Tidak Hadir' | 'Izin';
+  desa: string;
+  kelompok: string;
 }
 
 export interface Desa {
