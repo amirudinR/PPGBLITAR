@@ -304,6 +304,32 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAddUser = async (user: Omit<User, 'id'>) => {
+    if (!user.name || !user.email || !user.password) {
+      showError("Nama, email, dan password harus diisi.");
+      return false;
+    }
+    try {
+      await addDoc(collection(db, "users"), user);
+      fetchData();
+      showSuccess("Akun berhasil ditambahkan.");
+      return true;
+    } catch (e) {
+      showError("Gagal menambahkan akun.");
+      return false;
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "users", id));
+      fetchData();
+      showSuccess("Akun berhasil dihapus.");
+    } catch (e) {
+      showError("Gagal menghapus akun.");
+    }
+  };
+
   const handleLogout = () => alert('Logging out...');
 
   const getPageTitle = () => {
@@ -349,7 +375,13 @@ export default function AdminDashboard() {
           onUpdateKelompok={handleUpdateKelompok} onDeleteKelompok={handleDeleteKelompok}
         />;
       case 'akun':
-        return <AccountsSection users={users} onDeleteUser={() => {}} />;
+        return <AccountsSection 
+          users={users} 
+          desas={desas}
+          kelompok={kelompok}
+          onAddUser={handleAddUser}
+          onDeleteUser={handleDeleteUser} 
+        />;
       case 'materi':
         return (
           <MaterialsSection

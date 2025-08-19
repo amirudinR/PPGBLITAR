@@ -1,9 +1,18 @@
-import React from 'react';
-import { User } from '@/types/admin';
+import React, { useState } from 'react';
+import { User, Desa, Kelompok, ROLES } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface AccountsSectionProps {
   users: User[];
+  desas: Desa[];
+  kelompok: Kelompok[];
+  onAddUser: (user: Omit<User, 'id'>) => Promise<boolean>;
   onDeleteUser: (id: string) => void;
 }
 
@@ -14,53 +23,93 @@ const getStatusColor = (status: string) => {
     }
 };
 
-export default function AccountsSection({ users, onDeleteUser }: AccountsSectionProps) {
+export default function AccountsSection({ users, desas, kelompok, onAddUser, onDeleteUser }: AccountsSectionProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
+    name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: ''
+  });
+
+  const handleSave = async () => {
+    const success = await onAddUser(newUser);
+    if (success) {
+      setIsDialogOpen(false);
+      setNewUser({ name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: '' });
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Akun Pengguna</h2>
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Tambah Akun</span>
-        </button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              <span>Tambah Akun</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tambah Akun Baru</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <Input placeholder="Nama" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
+              <Input type="email" placeholder="Email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+              <Input type="password" placeholder="Password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
+              <Select value={newUser.role} onValueChange={role => setNewUser({...newUser, role: role as any})}>
+                <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
+                <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={newUser.desa} onValueChange={desa => setNewUser({...newUser, desa})}>
+                <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
+                <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={newUser.kelompok} onValueChange={kelompok => setNewUser({...newUser, kelompok})}>
+                <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
+                <SelectContent>{kelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button onClick={handleSave}>Simpan</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peran</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nama</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Desa</TableHead>
+              <TableHead>Kelompok</TableHead>
+              <TableHead>Password</TableHead>
+              <TableHead className="text-center">Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap capitalize">{user.role}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+              <TableRow key={user.id}>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                     {user.status}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteUser(user.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell>{user.desa || '-'}</TableCell>
+                <TableCell>{user.kelompok || '-'}</TableCell>
+                <TableCell>{user.password || '******'}</TableCell>
+                <TableCell className="text-center">
+                  <Button variant="ghost" size="icon"><Edit className="w-4 h-4 text-blue-600" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => onDeleteUser(user.id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

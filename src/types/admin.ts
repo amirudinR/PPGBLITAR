@@ -101,6 +101,9 @@ export interface User {
   email: string;
   role: Role;
   status: string;
+  desa?: string;
+  kelompok?: string;
+  password?: string;
 }
 
 export interface Attendance {
