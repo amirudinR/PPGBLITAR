@@ -15,22 +15,40 @@ interface DashboardSectionProps {
     users: number;
   };
   generusData: Generus[];
-  selectedEducation: string;
-  setSelectedEducation: (value: string) => void;
+  dashboardFilterCategory: string;
+  setDashboardFilterCategory: (value: string) => void;
+  dashboardFilterValue: string;
+  setDashboardFilterValue: (value: string) => void;
 }
 
-export default function DashboardSection({ stats, generusData, selectedEducation, setSelectedEducation }: DashboardSectionProps) {
-  const educationOptions = useMemo(() => {
-    const uniqueEducation = [...new Set(generusData.map(g => g.pendidikan))];
-    return ['Semua', ...uniqueEducation.sort()];
-  }, [generusData]);
+const filterCategories = [
+    { value: 'pendidikan', label: 'Pendidikan' },
+    { value: 'desa', label: 'Desa' },
+    { value: 'kelompok', label: 'Kelompok' },
+    { value: 'statusMondok', label: 'Status Mondok' },
+];
+
+export default function DashboardSection({ 
+    stats, 
+    generusData, 
+    dashboardFilterCategory, 
+    setDashboardFilterCategory, 
+    dashboardFilterValue, 
+    setDashboardFilterValue 
+}: DashboardSectionProps) {
+
+  const valueOptions = useMemo(() => {
+    if (!dashboardFilterCategory) return [];
+    const uniqueValues = [...new Set(generusData.map(g => g[dashboardFilterCategory as keyof Generus]))];
+    return ['Semua', ...uniqueValues.map(String).sort()];
+  }, [generusData, dashboardFilterCategory]);
 
   const filteredGenerus = useMemo(() => {
-    if (!selectedEducation || selectedEducation === 'Semua') {
+    if (!dashboardFilterValue || dashboardFilterValue === 'Semua') {
       return generusData;
     }
-    return generusData.filter(g => g.pendidikan === selectedEducation);
-  }, [generusData, selectedEducation]);
+    return generusData.filter(g => String(g[dashboardFilterCategory as keyof Generus]) === dashboardFilterValue);
+  }, [generusData, dashboardFilterCategory, dashboardFilterValue]);
 
   const genderData = useMemo(() => {
     const dataToUse = filteredGenerus;
@@ -41,6 +59,11 @@ export default function DashboardSection({ stats, generusData, selectedEducation
       { name: 'Perempuan', value: perempuan },
     ];
   }, [filteredGenerus]);
+
+  const handleCategoryChange = (value: string) => {
+    setDashboardFilterCategory(value);
+    setDashboardFilterValue('Semua');
+  };
 
   return (
     <div>
@@ -54,15 +77,25 @@ export default function DashboardSection({ stats, generusData, selectedEducation
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6">
         <Card>
           <CardHeader>
-            <CardTitle>Filter Generus Berdasarkan Pendidikan</CardTitle>
+            <CardTitle>Filter Generus</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Select value={selectedEducation} onValueChange={setSelectedEducation}>
+          <CardContent className="flex flex-col md:flex-row gap-4">
+            <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Pilih tingkat pendidikan..." />
+                <SelectValue placeholder="Pilih Kategori..." />
               </SelectTrigger>
               <SelectContent>
-                {educationOptions.map(option => (
+                {filterCategories.map(option => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih Nilai..." />
+              </SelectTrigger>
+              <SelectContent>
+                {valueOptions.map(option => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}
               </SelectContent>

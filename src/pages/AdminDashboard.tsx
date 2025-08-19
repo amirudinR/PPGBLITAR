@@ -34,64 +34,14 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('name');
-  const [selectedEducation, setSelectedEducation] = useState('Semua');
+  const [dashboardFilterCategory, setDashboardFilterCategory] = useState('pendidikan');
+  const [dashboardFilterValue, setDashboardFilterValue] = useState('Semua');
   
   // States
   const [materials, setMaterials] = useState<Material[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [generus, setGenerus] = useState<Generus[]>([
-    {"id":"1","name":"Adi Saputra","jenisKelamin":"Laki-laki","tahunLahir":2007,"pendidikan":"SMP 3","statusMondok":"Boarding school di Samarinda","namaAyah":"Bambang","statusAyah":"jm","namaIbu":"Sumarni","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Remaja"},
-    {"id":"2","name":"Budi Santoso","jenisKelamin":"Laki-laki","tahunLahir":2014,"pendidikan":"SD 4","statusMondok":"Tidak Sedang Mondok","namaAyah":"Joko","statusAyah":"jm","namaIbu":"Siti","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Caberawit"},
-    {"id":"3","name":"Citra Lestari","jenisKelamin":"Perempuan","tahunLahir":2018,"pendidikan":"Paud/TK","statusMondok":"Tidak Sedang Mondok","namaAyah":"Agus","statusAyah":"hum","namaIbu":"Wati","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Caberawit"},
-    {"id":"4","name":"Doni Firmansyah","jenisKelamin":"Laki-laki","tahunLahir":2004,"pendidikan":"Lulus Sekolah","statusMondok":"Mubaligh/Mubalighot","namaAyah":"Eko","statusAyah":"jm","namaIbu":"Yuni","statusIbu":"hum","desa":"Desa Sejahtera","kelompok":"Pra Nikah"},
-    {"id":"5","name":"Eka Putri","jenisKelamin":"Perempuan","tahunLahir":2002,"pendidikan":"MAHASISWA","statusMondok":"Tidak Sedang Mondok","namaAyah":"Hadi","statusAyah":"hum","namaIbu":"Rina","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Nikah"},
-    {"id":"6","name":"Fajar Nugroho","jenisKelamin":"Laki-laki","tahunLahir":2006,"pendidikan":"SMA 1","statusMondok":"Boarding school di luar Samarinda","namaAyah":"Imam","statusAyah":"jm","namaIbu":"Dewi","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Remaja"},
-    {"id":"7","name":"Gita Wulandari","jenisKelamin":"Perempuan","tahunLahir":2000,"pendidikan":"Lulus S1","statusMondok":"Hadis Besar","namaAyah":"Budi","statusAyah":"hum","namaIbu":"Lina","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Pra Nikah"},
-    {"id":"8","name":"Hadi Prasetyo","jenisKelamin":"Laki-laki","tahunLahir":2016,"pendidikan":"SD 2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Toni","statusAyah":"jm","namaIbu":"Maya","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Caberawit"},
-    {"id":"9","name":"Indah Permata","jenisKelamin":"Perempuan","tahunLahir":2008,"pendidikan":"SMP 2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Rudi","statusAyah":"hum","namaIbu":"Dina","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Remaja"},
-    {"id":"10","name":"Joko Susilo","jenisKelamin":"Laki-laki","tahunLahir":2005,"pendidikan":"SMA 3","statusMondok":"Tidak Sedang Mondok","namaAyah":"Herman","statusAyah":"jm","namaIbu":"Sari","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Remaja"},
-    {"id":"11","name":"Kartika Sari","jenisKelamin":"Perempuan","tahunLahir":2015,"pendidikan":"SD 3","statusMondok":"Tidak Sedang Mondok","namaAyah":"Surya","statusAyah":"hum","namaIbu":"Nia","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Caberawit"},
-    {"id":"12","name":"Lutfi Hakim","jenisKelamin":"Laki-laki","tahunLahir":2009,"pendidikan":"SMP 1","statusMondok":"Boarding school di Samarinda","namaAyah":"Ahmad","statusAyah":"jm","namaIbu":"Fitri","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Pra Remaja"},
-    {"id":"13","name":"Mega Utami","jenisKelamin":"Perempuan","tahunLahir":2003,"pendidikan":"MAHASISWA","statusMondok":"Tidak Sedang Mondok","namaAyah":"Wahyu","statusAyah":"hum","namaIbu":"Lestari","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Nikah"},
-    {"id":"14","name":"Nanda Pratama","jenisKelamin":"Laki-laki","tahunLahir":2017,"pendidikan":"SD 1","statusMondok":"Tidak Sedang Mondok","namaAyah":"Dedi","statusAyah":"jm","namaIbu":"Indah","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Caberawit"},
-    {"id":"15","name":"Olivia Putri","jenisKelamin":"Perempuan","tahunLahir":2007,"pendidikan":"SMA 1","statusMondok":"Boarding school di luar Samarinda","namaAyah":"Bayu","statusAyah":"hum","namaIbu":"Putri","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Remaja"},
-    {"id":"16","name":"Putra Wijaya","jenisKelamin":"Laki-laki","tahunLahir":1999,"pendidikan":"Lulus S2","statusMondok":"Hadis Besar","namaAyah":"Candra","statusAyah":"jm","namaIbu":"Wulan","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Pra Nikah"},
-    {"id":"17","name":"Queen Aisyah","jenisKelamin":"Perempuan","tahunLahir":2019,"pendidikan":"Belum sekolah","statusMondok":"Tidak Sedang Mondok","namaAyah":"Rian","statusAyah":"hum","namaIbu":"Bella","statusIbu":"hum","desa":"Desa Maju","kelompok":"Caberawit"},
-    {"id":"18","name":"Rizky Maulana","jenisKelamin":"Laki-laki","tahunLahir":2013,"pendidikan":"SD 5","statusMondok":"Tidak Sedang Mondok","namaAyah":"Faisal","statusAyah":"jm","namaIbu":"Ratih","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Caberawit"},
-    {"id":"19","name":"Siti Aminah","jenisKelamin":"Perempuan","tahunLahir":2006,"pendidikan":"SMA 2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Heru","statusAyah":"hum","namaIbu":"Anisa","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Remaja"},
-    {"id":"20","name":"Taufik Hidayat","jenisKelamin":"Laki-laki","tahunLahir":2010,"pendidikan":"SD 6","statusMondok":"Boarding school di Samarinda","namaAyah":"Irfan","statusAyah":"jm","namaIbu":"Farida","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Caberawit"},
-    {"id":"21","name":"Umar Abdullah","jenisKelamin":"Laki-laki","tahunLahir":2008,"pendidikan":"SMP 2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Zainal","statusAyah":"jm","namaIbu":"Zahra","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Remaja"},
-    {"id":"22","name":"Vina Lestari","jenisKelamin":"Perempuan","tahunLahir":2001,"pendidikan":"Lulus S1","statusMondok":"Tidak Sedang Mondok","namaAyah":"Yusuf","statusAyah":"hum","namaIbu":"Yasmin","statusIbu":"hum","desa":"Desa Jaya","kelompok":"Pra Nikah"},
-    {"id":"23","name":"Wahyu Ramadhan","jenisKelamin":"Laki-laki","tahunLahir":2005,"pendidikan":"SMA 3","statusMondok":"Boarding school di luar Samarinda","namaAyah":"Tegar","statusAyah":"jm","namaIbu":"Tari","statusIbu":"jm","desa":"Desa Makmur","kelompok":"Remaja"},
-    {"id":"24","name":"Xavier Nugraha","jenisKelamin":"Laki-laki","tahunLahir":2012,"pendidikan":"SD 6","statusMondok":"Tidak Sedang Mondok","namaAyah":"Udin","statusAyah":"jm","namaIbu":"Uli","statusIbu":"hum","desa":"Desa Sejahtera","kelompok":"Caberawit"},
-    {"id":"25","name":"Yulia Anggraini","jenisKelamin":"Perempuan","tahunLahir":2003,"pendidikan":"MAHASISWA","statusMondok":"Tidak Sedang Mondok","namaAyah":"Vino","statusAyah":"hum","namaIbu":"Vira","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Nikah"},
-    {"id":"26","name":"Zidan Al-Ghifari","jenisKelamin":"Laki-laki","tahunLahir":2007,"pendidikan":"SMP 3","statusMondok":"Tidak Sedang Mondok","namaAyah":"Wawan","statusAyah":"jm","namaIbu":"Winda","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Pra Remaja"},
-    {"id":"27","name":"Amanda Putri","jenisKelamin":"Perempuan","tahunLahir":2014,"pendidikan":"SD 4","statusMondok":"Tidak Sedang Mondok","namaAyah":"Xander","statusAyah":"hum","namaIbu":"Xena","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Caberawit"},
-    {"id":"28","name":"Bayu Segara","jenisKelamin":"Laki-laki","tahunLahir":2018,"pendidikan":"Paud/TK","statusMondok":"Tidak Sedang Mondok","namaAyah":"Yanto","statusAyah":"jm","namaIbu":"Yanti","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Caberawit"},
-    {"id":"29","name":"Cindy Claudia","jenisKelamin":"Perempuan","tahunLahir":2004,"pendidikan":"Lulus Sekolah","statusMondok":"Mubaligh/Mubalighot","namaAyah":"Zaki","statusAyah":"hum","namaIbu":"Zia","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Nikah"},
-    {"id":"30","name":"Dimas Anggara","jenisKelamin":"Laki-laki","tahunLahir":2002,"pendidikan":"MAHASISWA","statusMondok":"Tidak Sedang Mondok","namaAyah":"Arif","statusAyah":"jm","namaIbu":"Ari","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Pra Nikah"},
-    {"id":"31","name":"Elisa Sari","jenisKelamin":"Perempuan","tahunLahir":2006,"pendidikan":"SMA 1","statusMondok":"Boarding school di Samarinda","namaAyah":"Bima","statusAyah":"hum","namaIbu":"Bunga","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Remaja"},
-    {"id":"32","name":"Farhan Jauhari","jenisKelamin":"Laki-laki","tahunLahir":2000,"pendidikan":"Lulus S1","statusMondok":"Hadis Besar","namaAyah":"Cipto","statusAyah":"jm","namaIbu":"Citra","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Pra Nikah"},
-    {"id":"33","name":"Grace Natalie","jenisKelamin":"Perempuan","tahunLahir":2016,"pendidikan":"SD 2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Dodo","statusAyah":"hum","namaIbu":"Dedeh","statusIbu":"hum","desa":"Desa Maju","kelompok":"Caberawit"},
-    {"id":"34","name":"Hendra Gunawan","jenisKelamin":"Laki-laki","tahunLahir":2008,"pendidikan":"SMP 2","statusMondok":"Boarding school di luar Samarinda","namaAyah":"Endang","statusAyah":"jm","namaIbu":"Eni","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Pra Remaja"},
-    {"id":"35","name":"Irene Agustin","jenisKelamin":"Perempuan","tahunLahir":2005,"pendidikan":"SMA 3","statusMondok":"Tidak Sedang Mondok","namaAyah":"Fadli","statusAyah":"hum","namaIbu":"Fifi","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Remaja"},
-    {"id":"36","name":"Kevin Sanjaya","jenisKelamin":"Laki-laki","tahunLahir":2015,"pendidikan":"SD 3","statusMondok":"Tidak Sedang Mondok","namaAyah":"Gilang","statusAyah":"jm","namaIbu":"Gita","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Caberawit"},
-    {"id":"37","name":"Laura Basuki","jenisKelamin":"Perempuan","tahunLahir":2009,"pendidikan":"SMP 1","statusMondok":"Tidak Sedang Mondok","namaAyah":"Hengky","statusAyah":"hum","namaIbu":"Hesti","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Remaja"},
-    {"id":"38","name":"Muhammad Zidan","jenisKelamin":"Laki-laki","tahunLahir":2003,"pendidikan":"MAHASISWA","statusMondok":"Boarding school di Samarinda","namaAyah":"Iwan","statusAyah":"jm","namaIbu":"Ika","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Pra Nikah"},
-    {"id":"39","name":"Nadia Zerlinda","jenisKelamin":"Perempuan","tahunLahir":2017,"pendidikan":"SD 1","statusMondok":"Tidak Sedang Mondok","namaAyah":"Jamal","statusAyah":"hum","namaIbu":"Jeni","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Caberawit"},
-    {"id":"40","name":"Oscar Daniel","jenisKelamin":"Laki-laki","tahunLahir":2007,"pendidikan":"SMA 1","statusMondok":"Tidak Sedang Mondok","namaAyah":"Kiki","statusAyah":"jm","namaIbu":"Kania","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Remaja"},
-    {"id":"41","name":"Putri Marino","jenisKelamin":"Perempuan","tahunLahir":1999,"pendidikan":"Lulus S2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Lutfi","statusAyah":"hum","namaIbu":"Lala","statusIbu":"hum","desa":"Desa Maju","kelompok":"Pra Nikah"},
-    {"id":"42","name":"Randy Pangalila","jenisKelamin":"Laki-laki","tahunLahir":2019,"pendidikan":"Belum sekolah","statusMondok":"Tidak Sedang Mondok","namaAyah":"Maman","statusAyah":"jm","namaIbu":"Mimi","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Caberawit"},
-    {"id":"43","name":"Sandra Dewi","jenisKelamin":"Perempuan","tahunLahir":2013,"pendidikan":"SD 5","statusMondok":"Boarding school di luar Samarinda","namaAyah":"Nono","statusAyah":"hum","namaIbu":"Nani","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Caberawit"},
-    {"id":"44","name":"Teuku Rassya","jenisKelamin":"Laki-laki","tahunLahir":2006,"pendidikan":"SMA 2","statusMondok":"Tidak Sedang Mondok","namaAyah":"Oman","statusAyah":"jm","namaIbu":"Oki","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Remaja"},
-    {"id":"45","name":"Vanessa Angel","jenisKelamin":"Perempuan","tahunLahir":2010,"pendidikan":"SD 6","statusMondok":"Tidak Sedang Mondok","namaAyah":"Pandu","statusAyah":"hum","namaIbu":"Popi","statusIbu":"hum","desa":"Desa Maju","kelompok":"Caberawit"},
-    {"id":"46","name":"Willy Dozan","jenisKelamin":"Laki-laki","tahunLahir":2008,"pendidikan":"SMP 2","statusMondok":"Boarding school di Samarinda","namaAyah":"Qomar","statusAyah":"jm","namaIbu":"Qiqi","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Pra Remaja"},
-    {"id":"47","name":"Yuki Kato","jenisKelamin":"Perempuan","tahunLahir":2001,"pendidikan":"Lulus S1","statusMondok":"Mubaligh/Mubalighot","namaAyah":"Rahmat","statusAyah":"hum","namaIbu":"Rara","statusIbu":"hum","desa":"Desa Makmur","kelompok":"Pra Nikah"},
-    {"id":"48","name":"Zayn Malik","jenisKelamin":"Laki-laki","tahunLahir":2005,"pendidikan":"SMA 3","statusMondok":"Tidak Sedang Mondok","namaAyah":"Samsul","statusAyah":"jm","namaIbu":"Susi","statusIbu":"jm","desa":"Desa Sejahtera","kelompok":"Remaja"},
-    {"id":"49","name":"Aurel Hermansyah","jenisKelamin":"Perempuan","tahunLahir":2012,"pendidikan":"SD 6","statusMondok":"Tidak Sedang Mondok","namaAyah":"Tatang","statusAyah":"hum","namaIbu":"Tuti","statusIbu":"hum","desa":"Desa Maju","kelompok":"Caberawit"},
-    {"id":"50","name":"Brian Domani","jenisKelamin":"Laki-laki","tahunLahir":2003,"pendidikan":"MAHASISWA","statusMondok":"Tidak Sedang Mondok","namaAyah":"Ujang","statusAyah":"jm","namaIbu":"Uut","statusIbu":"jm","desa":"Desa Jaya","kelompok":"Pra Nikah"}
-  ]);
+  const [generus, setGenerus] = useState<Generus[]>([]);
   const [desas, setDesas] = useState<Desa[]>([]);
   const [kelompok, setKelompok] = useState<Kelompok[]>([]);
   
@@ -111,9 +61,10 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [desasSnap, kelompokSnap, usersSnap] = await Promise.all([
+      const [desasSnap, kelompokSnap, generusSnap, usersSnap] = await Promise.all([
         getDocs(collection(db, "desa")),
         getDocs(collection(db, "kelompok")),
+        getDocs(collection(db, "generus")),
         getDocs(collection(db, "users")),
       ]);
 
@@ -126,6 +77,9 @@ export default function AdminDashboard() {
         return { id: doc.id, ...data, desaName: desa?.name || 'N/A' } as Kelompok;
       });
       setKelompok(kelompokData);
+
+      const generusData = generusSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Generus[];
+      setGenerus(generusData);
       
       const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as User[];
       setUsers(usersData);
@@ -198,8 +152,8 @@ export default function AdminDashboard() {
   const handleAddGenerus = async () => {
     if (!newGenerus.name) { showError("Nama harus diisi."); return false; }
     try {
-      const docRef = await addDoc(collection(db, "generus"), newGenerus);
-      setGenerus(prev => [...prev, { id: docRef.id, ...newGenerus }]);
+      await addDoc(collection(db, "generus"), newGenerus);
+      fetchData();
       setNewGenerus({
         name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],
         statusMondok: STATUS_MONDOK_LIST[3], namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
@@ -228,8 +182,10 @@ export default function AdminDashboard() {
         return <DashboardSection 
           stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length }} 
           generusData={generus}
-          selectedEducation={selectedEducation}
-          setSelectedEducation={setSelectedEducation}
+          dashboardFilterCategory={dashboardFilterCategory}
+          setDashboardFilterCategory={setDashboardFilterCategory}
+          dashboardFilterValue={dashboardFilterValue}
+          setDashboardFilterValue={setDashboardFilterValue}
         />;
       case 'generus':
         return <GenerusSection 
