@@ -280,6 +280,18 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleUpdateMaterial = async (id: string, updatedData: Omit<Material, 'id'>) => {
+    try {
+      await updateDoc(doc(db, "materials", id), updatedData);
+      fetchData();
+      showSuccess("Materi berhasil diperbarui.");
+      return true;
+    } catch (e) {
+      showError("Gagal memperbarui materi.");
+      return false;
+    }
+  };
+
   const handleDeleteMaterial = async (id: string) => {
     try {
       await deleteDoc(doc(db, "materials", id));
@@ -343,6 +355,7 @@ export default function AdminDashboard() {
             newMaterial={newMaterial}
             setNewMaterial={setNewMaterial}
             onAddMaterial={handleAddMaterial}
+            onUpdateMaterial={handleUpdateMaterial}
             onDeleteMaterial={handleDeleteMaterial}
           />
         );

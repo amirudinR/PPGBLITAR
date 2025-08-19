@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Material, KELAS_MATERI_LIST, JUDUL_MATERI_LIST } from '@/types/admin';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface MaterialsSectionProps {
   materials: Material[];
   newMaterial: Omit<Material, 'id'>;
   setNewMaterial: React.Dispatch<React.SetStateAction<Omit<Material, 'id'>>>;
   onAddMaterial: () => void;
+  onUpdateMaterial: (id: string, updatedData: Omit<Material, 'id'>) => Promise<boolean>;
   onDeleteMaterial: (id: string) => void;
 }
 
@@ -22,8 +25,12 @@ export default function MaterialsSection({
   newMaterial,
   setNewMaterial,
   onAddMaterial,
+  onUpdateMaterial,
   onDeleteMaterial,
 }: MaterialsSectionProps) {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+
   const handleInputChange = (field: keyof typeof newMaterial, value: string) => {
     setNewMaterial(prev => ({ ...prev, [field]: value }));
   };
@@ -36,7 +43,29 @@ export default function MaterialsSection({
     setNewMaterial(prev => ({ ...prev, targetBulan: '' }));
   }, [newMaterial.semester, setNewMaterial]);
 
+  const openEditDialog = (material: Material) => {
+    setEditingMaterial(material);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditChange = (field: keyof Omit<Material, 'id'>, value: string) => {
+    if (editingMaterial) {
+      setEditingMaterial({ ...editingMaterial, [field]: value as any });
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editingMaterial) return;
+    const { id, ...updatedData } = editingMaterial;
+    const success = await onUpdateMaterial(id, updatedData);
+    if (success) {
+      setIsEditDialogOpen(false);
+      setEditingMaterial(null);
+    }
+  };
+
   const currentMonths = newMaterial.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
+  const editMonths = editingMaterial?.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
 
   return (
     <div>
@@ -129,7 +158,7 @@ export default function MaterialsSection({
                 <TableCell>{material.semester}</TableCell>
                 <TableCell>{material.targetBulan}</TableCell>
                 <TableCell className="text-center">
-                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
+                  <button onClick={() => openEditDialog(material)} className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
@@ -144,6 +173,57 @@ export default function MaterialsSection({
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Materi</DialogTitle>
+            <DialogDescription>Perbarui detail materi di bawah ini.</DialogDescription>
+          </DialogHeader>
+          {editingMaterial && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="editJudulMateri">Judul Materi</Label>
+                  <Select value={editingMaterial.judulMateri} onValueChange={(value) => handleEditChange('judulMateri', value)}>
+                    <SelectTrigger id="editJudulMateri" className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editKelas">Kelas</Label>
+                  <Select value={editingMaterial.kelas} onValueChange={(value) => handleEditChange('kelas', value)}>
+                    <SelectTrigger id="editKelas" className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editSemester">Semester</Label>
+                  <Select value={editingMaterial.semester} onValueChange={(value) => handleEditChange('semester', value)}>
+                    <SelectTrigger id="editSemester" className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editTargetBulan">Target Bulan</Label>
+                  <Select value={editingMaterial.targetBulan} onValueChange={(value) => handleEditChange('targetBulan', value)} disabled={!editingMaterial.semester}>
+                    <SelectTrigger id="editTargetBulan" className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{editMonths?.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="editRincianMateri">Rincian Materi</Label>
+                <Textarea id="editRincianMateri" value={editingMaterial.rincianMateri} onChange={(e) => handleEditChange('rincianMateri', e.target.value)} className="mt-1" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsEditDialogOpen(false)}>Batal</Button>
+            <Button onClick={handleUpdate}>Simpan Perubahan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
