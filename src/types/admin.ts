@@ -25,6 +25,21 @@ export const PENDIDIKAN_LIST = [
 ] as const;
 export type Pendidikan = typeof PENDIDIKAN_LIST[number];
 
+export const getJenjangUsia = (pendidikan: Pendidikan): string => {
+  switch (pendidikan) {
+    case 'Belum sekolah': case 'Paud/TK': case 'SD 1': case 'SD 2': case 'SD 3': case 'SD 4': case 'SD 5': case 'SD 6':
+      return 'Caberawit';
+    case 'SMP 1': case 'SMP 2': case 'SMP 3':
+      return 'Pra Remaja';
+    case 'SMA 1': case 'SMA 2': case 'SMA 3':
+      return 'Remaja';
+    case 'Lulus Sekolah': case 'MAHASISWA': case 'Lulus S1': case 'Lulus S2': case 'Lulus S3':
+      return 'Pra Nikah';
+    default:
+      return '-';
+  }
+};
+
 export const STATUS_MONDOK_LIST = [
   'Boarding school di Samarinda',
   'Boarding school di luar Samarinda',

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Attendance, Desa, Kelompok } from '@/types/admin';
+import { Attendance, Desa, Generus, getJenjangUsia } from '@/types/admin';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,11 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface AttendanceSectionProps {
   attendance: Attendance[];
   desas: Desa[];
-  kelompok: Kelompok[];
-  selectedMonth: string;
-  setSelectedMonth: (month: string) => void;
-  selectedYear: string;
-  setSelectedYear: (year: string) => void;
+  generusData: Generus[];
+  startMonth: string;
+  setStartMonth: (month: string) => void;
+  startYear: string;
+  setStartYear: (year: string) => void;
+  endMonth: string;
+  setEndMonth: (month: string) => void;
+  endYear: string;
+  setEndYear: (year: string) => void;
 }
 
 const months = [
@@ -26,7 +30,7 @@ const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).
 
 type Summary = {
   [desa: string]: {
-    [kelompok: string]: {
+    [jenjang: string]: {
       hadir: number;
       izin: number;
       tidakHadir: number;
@@ -37,30 +41,37 @@ type Summary = {
 export default function AttendanceSection({
   attendance,
   desas,
-  selectedMonth,
-  setSelectedMonth,
-  selectedYear,
-  setSelectedYear,
+  generusData,
+  startMonth, setStartMonth, startYear, setStartYear,
+  endMonth, setEndMonth, endYear, setEndYear
 }: AttendanceSectionProps) {
 
   const summaryData = useMemo<Summary>(() => {
+    const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, 1);
+    const endDate = new Date(parseInt(endYear), parseInt(endMonth), 0); // Day 0 of next month gives last day of current month
+
     const filtered = attendance.filter(a => {
-      const date = new Date(a.date);
-      return date.getFullYear().toString() === selectedYear && (date.getMonth() + 1).toString().padStart(2, '0') === selectedMonth;
+      const recordDate = new Date(a.date);
+      return recordDate >= startDate && recordDate <= endDate;
     });
 
     return filtered.reduce<Summary>((acc, record) => {
-      const { desa, kelompok, status } = record;
-      if (!acc[desa]) acc[desa] = {};
-      if (!acc[desa][kelompok]) acc[desa][kelompok] = { hadir: 0, izin: 0, tidakHadir: 0 };
+      const student = generusData.find(g => g.name === record.studentName);
+      if (!student) return acc;
 
-      if (status === 'Hadir') acc[desa][kelompok].hadir++;
-      else if (status === 'Izin') acc[desa][kelompok].izin++;
-      else if (status === 'Tidak Hadir') acc[desa][kelompok].tidakHadir++;
+      const jenjang = getJenjangUsia(student.pendidikan);
+      const { desa, status } = record;
+
+      if (!acc[desa]) acc[desa] = {};
+      if (!acc[desa][jenjang]) acc[desa][jenjang] = { hadir: 0, izin: 0, tidakHadir: 0 };
+
+      if (status === 'Hadir') acc[desa][jenjang].hadir++;
+      else if (status === 'Izin') acc[desa][jenjang].izin++;
+      else if (status === 'Tidak Hadir') acc[desa][jenjang].tidakHadir++;
       
       return acc;
     }, {});
-  }, [attendance, selectedMonth, selectedYear]);
+  }, [attendance, generusData, startMonth, startYear, endMonth, endYear]);
 
   return (
     <div>
@@ -70,23 +81,27 @@ export default function AttendanceSection({
         <CardHeader>
           <CardTitle>Filter Periode</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col md:flex-row gap-4">
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih Bulan" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih Tahun" />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex gap-2">
+                <Select value={startMonth} onValueChange={setStartMonth}>
+                    <SelectTrigger><SelectValue placeholder="Bulan Mulai" /></SelectTrigger>
+                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={startYear} onValueChange={setStartYear}>
+                    <SelectTrigger><SelectValue placeholder="Tahun Mulai" /></SelectTrigger>
+                    <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                </Select>
+            </div>
+            <div className="flex gap-2">
+                <Select value={endMonth} onValueChange={setEndMonth}>
+                    <SelectTrigger><SelectValue placeholder="Bulan Selesai" /></SelectTrigger>
+                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={endYear} onValueChange={setEndYear}>
+                    <SelectTrigger><SelectValue placeholder="Tahun Selesai" /></SelectTrigger>
+                    <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                </Select>
+            </div>
         </CardContent>
       </Card>
 
@@ -103,16 +118,16 @@ export default function AttendanceSection({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Kelompok</TableHead>
+                        <TableHead>Jenjang Usia</TableHead>
                         <TableHead className="text-center">Hadir</TableHead>
                         <TableHead className="text-center">Izin</TableHead>
                         <TableHead className="text-center">Tidak Hadir</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {Object.entries(desaSummary).map(([kelompokName, stats]) => (
-                        <TableRow key={kelompokName}>
-                          <TableCell>{kelompokName}</TableCell>
+                      {Object.entries(desaSummary).map(([jenjang, stats]) => (
+                        <TableRow key={jenjang}>
+                          <TableCell>{jenjang}</TableCell>
                           <TableCell className="text-center">{stats.hadir}</TableCell>
                           <TableCell className="text-center">{stats.izin}</TableCell>
                           <TableCell className="text-center">{stats.tidakHadir}</TableCell>

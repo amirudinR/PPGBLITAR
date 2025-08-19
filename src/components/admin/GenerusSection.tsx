@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS } from '@/types/admin';
+import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia } from '@/types/admin';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import {
   Dialog,
@@ -27,36 +27,6 @@ interface GenerusSectionProps {
 }
 
 const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok'];
-
-const getJenjangUsia = (pendidikan: Pendidikan): string => {
-  switch (pendidikan) {
-    case 'Belum sekolah':
-    case 'Paud/TK':
-    case 'SD 1':
-    case 'SD 2':
-    case 'SD 3':
-    case 'SD 4':
-    case 'SD 5':
-    case 'SD 6':
-      return 'Caberawit';
-    case 'SMP 1':
-    case 'SMP 2':
-    case 'SMP 3':
-      return 'Pra Remaja';
-    case 'SMA 1':
-    case 'SMA 2':
-    case 'SMA 3':
-      return 'Remaja';
-    case 'Lulus Sekolah':
-    case 'MAHASISWA':
-    case 'Lulus S1':
-    case 'Lulus S2':
-    case 'Lulus S3':
-      return 'Pra Nikah';
-    default:
-      return '-';
-  }
-};
 
 export default function GenerusSection({ 
   allGenerus,

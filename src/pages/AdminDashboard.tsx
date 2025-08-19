@@ -112,8 +112,10 @@ export default function AdminDashboard() {
     desa: '', kelompok: ''
   });
   const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
+  const [startYear, setStartYear] = useState(new Date().getFullYear().toString());
+  const [endMonth, setEndMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
+  const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -310,11 +312,15 @@ export default function AdminDashboard() {
         return <AttendanceSection 
           attendance={attendance}
           desas={desas}
-          kelompok={kelompok}
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
+          generusData={generus}
+          startMonth={startMonth}
+          setStartMonth={setStartMonth}
+          startYear={startYear}
+          setStartYear={setStartYear}
+          endMonth={endMonth}
+          setEndMonth={setEndMonth}
+          endYear={endYear}
+          setEndYear={setEndYear}
         />;
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
