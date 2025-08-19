@@ -23,6 +23,15 @@ const getStatusColor = (status: string) => {
     }
 };
 
+const ROLE_LABELS: Record<Role, string> = {
+  adminsuper: 'Admin Super',
+  admin: 'Admin',
+  desa: 'PJP Desa',
+  kelompok: 'PJP Kelompok',
+  guru: 'Guru',
+  orangtua: 'Orang Tua'
+};
+
 export default function AccountsSection({ users, desas, kelompok, onAddUser, onDeleteUser }: AccountsSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
@@ -66,7 +75,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
                 <Label>Peran</Label>
                 <Select value={newUser.role} onValueChange={(value) => handleRoleChange(value as Role)}>
                   <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
-                  <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                  <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
 
@@ -116,6 +125,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
             <TableRow>
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Peran</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Desa</TableHead>
               <TableHead>Kelompok</TableHead>
@@ -128,6 +138,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
               <TableRow key={user.id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
+                <TableCell>{ROLE_LABELS[user.role]}</TableCell>
                 <TableCell>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                     {user.status}
