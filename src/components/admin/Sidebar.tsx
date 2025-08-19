@@ -1,8 +1,9 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2 } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const menuItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { 
     id: 'master', 
     label: 'Data Master', 
