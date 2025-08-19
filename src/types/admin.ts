@@ -60,33 +60,12 @@ export const GENERUS_FILTER_FIELDS = [
     { value: 'namaIbu', label: 'Nama Ibu' },
 ] as const;
 
-export const JENIS_MATERI = [
-  'Materi bacaan', 
-  'Makna/Menulis', 
-  'Hafalan', 
-  'Praktek Ibadah', 
-  'Keilmuan dan Kefahaman', 
-  'Tatakrama', 
-  'Kemandirian'
-] as const;
-
-export type JenisMateri = typeof JENIS_MATERI[number];
-
-export const KELAS_LIST = [
-  'Paud/TK', 'SD 1', 'SD 2', 'SD 3', 'SD 4', 'SD 5', 'SD 6'
-] as const;
-export type Kelas = typeof KELAS_LIST[number];
-
-export const SEMESTER_GANJIL_MONTHS = ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as const;
-export const SEMESTER_GENAP_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'] as const;
-
 export interface Material {
   id: string;
-  jenisMateri: JenisMateri;
+  judulMateri: string;
   rincianMateri: string;
-  kelas: Kelas;
+  pendidikan: Pendidikan;
   semester: 'Ganjil' | 'Genap';
-  bulan: string;
 }
 
 export const ROLES = ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] as const;

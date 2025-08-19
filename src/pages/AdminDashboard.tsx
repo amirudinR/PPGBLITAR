@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Menu } from 'lucide-react';
-import { Material, User, Attendance, Generus, KELAS_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST, Desa, Kelompok } from '@/types/admin';
+import { Material, User, Attendance, Generus, PENDIDIKAN_LIST, STATUS_MONDOK_LIST, Desa, Kelompok } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSection from '@/components/admin/MaterialsSection';
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   // New data states
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
-    jenisMateri: 'Materi bacaan', rincianMateri: '', kelas: KELAS_LIST[0], semester: 'Ganjil', bulan: ''
+    judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil'
   });
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
     name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],
@@ -120,12 +120,13 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [desasSnap, kelompokSnap, generusSnap, usersSnap, attendanceSnap] = await Promise.all([
+      const [desasSnap, kelompokSnap, generusSnap, usersSnap, attendanceSnap, materialsSnap] = await Promise.all([
         getDocs(collection(db, "desa")),
         getDocs(collection(db, "kelompok")),
         getDocs(collection(db, "generus")),
         getDocs(collection(db, "users")),
         getDocs(collection(db, "attendance")),
+        getDocs(collection(db, "materials")),
       ]);
 
       const desasData = desasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Desa[];
@@ -146,6 +147,9 @@ export default function AdminDashboard() {
       
       const attendanceData = attendanceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Attendance[];
       setAttendance(attendanceData);
+      
+      const materialsData = materialsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Material[];
+      setMaterials(materialsData);
 
     } catch (error) {
       console.error("Error fetching data: ", error);
@@ -262,6 +266,30 @@ export default function AdminDashboard() {
     } catch (e) { showError("Gagal menambahkan generus."); return false; }
   };
 
+  const handleAddMaterial = async () => {
+    if (!newMaterial.judulMateri) { showError("Judul materi harus diisi."); return; }
+    try {
+      await addDoc(collection(db, "materials"), newMaterial);
+      fetchData();
+      setNewMaterial({
+        judulMateri: '', rincianMateri: '', pendidikan: PENDIDIKAN_LIST[0], semester: 'Ganjil'
+      });
+      showSuccess("Materi berhasil ditambahkan.");
+    } catch (e) {
+      showError("Gagal menambahkan materi.");
+    }
+  };
+
+  const handleDeleteMaterial = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "materials", id));
+      fetchData();
+      showSuccess("Materi berhasil dihapus.");
+    } catch (e) {
+      showError("Gagal menghapus materi.");
+    }
+  };
+
   const handleLogout = () => alert('Logging out...');
 
   const getPageTitle = () => {
@@ -308,6 +336,16 @@ export default function AdminDashboard() {
         />;
       case 'akun':
         return <AccountsSection users={users} onDeleteUser={() => {}} />;
+      case 'materi':
+        return (
+          <MaterialsSection
+            materials={materials}
+            newMaterial={newMaterial}
+            setNewMaterial={setNewMaterial}
+            onAddMaterial={handleAddMaterial}
+            onDeleteMaterial={handleDeleteMaterial}
+          />
+        );
       case 'kehadiran':
         return <AttendanceSection 
           attendance={attendance}
