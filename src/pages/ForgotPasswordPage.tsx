@@ -26,13 +26,12 @@ export default function ForgotPasswordPage() {
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Your e-mail</Label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="youremail@example.com"
+                  placeholder="Your e-mail"
                   className="bg-white text-gray-900 rounded-full pl-12 py-6"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
