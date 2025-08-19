@@ -177,7 +177,10 @@ export default function AdminDashboard() {
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <DashboardSection stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length }} />;
+        return <DashboardSection 
+          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length }} 
+          generusData={generus}
+        />;
       case 'generus':
         return <GenerusSection 
           allGenerus={generus} newGenerus={newGenerus} setNewGenerus={setNewGenerus}
