@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Menu } from 'lucide-react';
 import { Material, User, Attendance, Generus, KELAS_MATERI_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST, Desa, Kelompok, JUDUL_MATERI_LIST } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
@@ -168,6 +168,27 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     fetchData();
   }, [fetchData]);
 
+  const filteredData = useMemo(() => {
+    if (!currentUser || ['adminsuper', 'admin'].includes(currentUser.role)) {
+      return {
+        generus, users, desas, kelompok, attendance, materials
+      };
+    }
+    if (currentUser.role === 'desa') {
+      const userDesa = currentUser.desa;
+      return {
+        generus: generus.filter(g => g.desa === userDesa),
+        users: users.filter(u => u.desa === userDesa),
+        desas: desas.filter(d => d.name === userDesa),
+        kelompok: kelompok.filter(k => k.desaName === userDesa),
+        attendance: attendance.filter(a => a.desa === userDesa),
+        materials, // Materials are not filtered by desa for now
+      };
+    }
+    // Add more role filtering here if needed
+    return { generus, users, desas, kelompok, attendance, materials };
+  }, [currentUser, generus, users, desas, kelompok, attendance, materials]);
+
   const handlePopulateGenerus = async () => {
     if (desas.length === 0 || kelompok.length === 0) {
       showError("Harap tambahkan data Desa dan Kelompok terlebih dahulu.");
@@ -314,8 +335,12 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       showError("Nama, email, dan password harus diisi.");
       return false;
     }
+    const userToAdd = { ...user };
+    if (currentUser?.role === 'desa' && !userToAdd.desa) {
+      userToAdd.desa = currentUser.desa;
+    }
     try {
-      await addDoc(collection(db, "users"), user);
+      await addDoc(collection(db, "users"), userToAdd);
       fetchData();
       showSuccess("Akun berhasil ditambahkan.");
       return true;
@@ -350,8 +375,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     switch (activeSection) {
       case 'dashboard':
         return <DashboardSection 
-          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length }} 
-          generusData={generus}
+          stats={{ generus: filteredData.generus.length, desa: filteredData.desas.length, kelompok: filteredData.kelompok.length, users: filteredData.users.length }} 
+          generusData={filteredData.generus}
           dashboardFilterCategory={dashboardFilterCategory}
           setDashboardFilterCategory={setDashboardFilterCategory}
           dashboardFilterValue={dashboardFilterValue}
@@ -363,32 +388,33 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'generus':
         return <GenerusSection 
-          allGenerus={generus} newGenerus={newGenerus} setNewGenerus={setNewGenerus}
+          allGenerus={filteredData.generus} newGenerus={newGenerus} setNewGenerus={setNewGenerus}
           onAddGenerus={handleAddGenerus} searchTerm={searchTerm} onSearchChange={setSearchTerm}
           filterCategory={filterCategory} onFilterCategoryChange={setFilterCategory}
         />;
       case 'desa':
         return <DesaSection 
-          desas={desas} onAddDesa={handleAddDesa} onUpdateDesa={handleUpdateDesa}
+          desas={filteredData.desas} onAddDesa={handleAddDesa} onUpdateDesa={handleUpdateDesa}
           onDeleteDesa={handleDeleteDesa}
         />;
       case 'kelompok':
         return <KelompokSection 
-          kelompok={kelompok} desas={desas} onAddKelompok={handleAddKelompok}
+          kelompok={filteredData.kelompok} desas={filteredData.desas} onAddKelompok={handleAddKelompok}
           onUpdateKelompok={handleUpdateKelompok} onDeleteKelompok={handleDeleteKelompok}
         />;
       case 'akun':
         return <AccountsSection 
-          users={users} 
-          desas={desas}
-          kelompok={kelompok}
+          users={filteredData.users} 
+          desas={filteredData.desas}
+          kelompok={filteredData.kelompok}
           onAddUser={handleAddUser}
           onDeleteUser={handleDeleteUser} 
+          currentUser={currentUser}
         />;
       case 'materi':
         return (
           <MaterialsSection
-            materials={materials}
+            materials={filteredData.materials}
             newMaterial={newMaterial}
             setNewMaterial={setNewMaterial}
             onAddMaterial={handleAddMaterial}
@@ -398,9 +424,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         );
       case 'kehadiran':
         return <AttendanceSection 
-          attendance={attendance}
-          desas={desas}
-          generusData={generus}
+          attendance={filteredData.attendance}
+          desas={filteredData.desas}
+          generusData={filteredData.generus}
           startMonth={startMonth}
           setStartMonth={setStartMonth}
           startYear={startYear}
@@ -420,6 +446,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       <Sidebar
         activeSection={activeSection} setActiveSection={setActiveSection}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout}
+        currentUser={currentUser}
       />
       <div className="flex-1 overflow-auto">
         <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between">

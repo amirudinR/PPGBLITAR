@@ -14,6 +14,7 @@ interface AccountsSectionProps {
   kelompok: Kelompok[];
   onAddUser: (user: Omit<User, 'id'>) => Promise<boolean>;
   onDeleteUser: (id: string) => void;
+  currentUser: User | null;
 }
 
 const getStatusColor = (status: string) => {
@@ -32,7 +33,7 @@ const ROLE_LABELS: Record<Role, string> = {
   orangtua: 'Orang Tua'
 };
 
-export default function AccountsSection({ users, desas, kelompok, onAddUser, onDeleteUser }: AccountsSectionProps) {
+export default function AccountsSection({ users, desas, kelompok, onAddUser, onDeleteUser, currentUser }: AccountsSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
     name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: ''
@@ -50,9 +51,19 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
     setNewUser(prev => ({
       ...prev,
       role,
-      desa: '',
+      desa: currentUser?.role === 'desa' ? currentUser.desa : '',
       kelompok: ''
     }));
+  };
+
+  const creatableRoles = () => {
+    if (currentUser?.role === 'desa') {
+      return ROLES.filter(r => ['kelompok', 'guru', 'orangtua'].includes(r));
+    }
+    if (currentUser?.role === 'admin') {
+      return ROLES.filter(r => r !== 'adminsuper');
+    }
+    return ROLES;
   };
 
   return (
@@ -75,14 +86,18 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
                 <Label>Peran</Label>
                 <Select value={newUser.role} onValueChange={(value) => handleRoleChange(value as Role)}>
                   <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
-                  <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}</SelectContent>
+                  <SelectContent>{creatableRoles().map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
 
               {['desa', 'kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
                 <div>
                   <Label>Desa</Label>
-                  <Select value={newUser.desa} onValueChange={desa => setNewUser({...newUser, desa})}>
+                  <Select 
+                    value={newUser.desa} 
+                    onValueChange={desa => setNewUser({...newUser, desa})}
+                    disabled={currentUser?.role === 'desa'}
+                  >
                     <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
                     <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
                   </Select>

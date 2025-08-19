@@ -1,22 +1,24 @@
 import React from 'react';
 import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { User } from '@/types/admin';
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
   { 
     id: 'master', 
     label: 'Data Master', 
     icon: Database, 
+    roles: ['adminsuper', 'admin', 'desa'],
     children: [
-      { id: 'akun', label: 'Akun', icon: Users },
-      { id: 'desa', label: 'Desa', icon: Home },
-      { id: 'kelompok', label: 'Kelompok', icon: Users2 },
+      { id: 'akun', label: 'Akun', icon: Users, roles: ['adminsuper', 'admin', 'desa'] },
+      { id: 'desa', label: 'Desa', icon: Home, roles: ['adminsuper', 'admin'] },
+      { id: 'kelompok', label: 'Kelompok', icon: Users2, roles: ['adminsuper', 'admin', 'desa'] },
     ]
   },
-  { id: 'generus', label: 'Data Generus', icon: GraduationCap },
-  { id: 'kehadiran', label: 'Kehadiran', icon: Calendar },
-  { id: 'materi', label: 'Materi', icon: BookOpen },
+  { id: 'generus', label: 'Data Generus', icon: GraduationCap, roles: ['adminsuper', 'admin', 'desa'] },
+  { id: 'kehadiran', label: 'Kehadiran', icon: Calendar, roles: ['adminsuper', 'admin', 'desa'] },
+  { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin'] },
 ];
 
 interface SidebarProps {
@@ -25,6 +27,7 @@ interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   onLogout: () => void;
+  currentUser: User | null;
 }
 
 export default function Sidebar({
@@ -33,8 +36,21 @@ export default function Sidebar({
   sidebarOpen,
   setSidebarOpen,
   onLogout,
+  currentUser,
 }: SidebarProps) {
-  const parentOfActive = menuItems.find(item => item.children?.some(child => child.id === activeSection))?.id;
+  const userRole = currentUser?.role || 'orangtua';
+
+  const visibleMenuItems = menuItems.filter(item => item.roles.includes(userRole)).map(item => {
+    if (item.children) {
+      return {
+        ...item,
+        children: item.children.filter(child => child.roles.includes(userRole))
+      };
+    }
+    return item;
+  });
+
+  const parentOfActive = visibleMenuItems.find(item => item.children?.some(child => child.id === activeSection))?.id;
 
   return (
     <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -46,7 +62,7 @@ export default function Sidebar({
       </div>
       <nav className="p-4">
         <Accordion type="multiple" defaultValue={parentOfActive ? [parentOfActive] : []}>
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
             if (item.children) {
               return (
