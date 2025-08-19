@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia } from '@/types/admin';
+import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok } from '@/types/admin';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import {
   Dialog,
@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 
 interface GenerusSectionProps {
   allGenerus: Generus[];
+  desas: Desa[];
+  kelompok: Kelompok[];
   newGenerus: Omit<Generus, 'id'>;
   setNewGenerus: React.Dispatch<React.SetStateAction<Omit<Generus, 'id'>>>;
   onAddGenerus: () => Promise<boolean>;
@@ -30,6 +32,8 @@ const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 
 
 export default function GenerusSection({ 
   allGenerus,
+  desas,
+  kelompok,
   newGenerus, 
   setNewGenerus, 
   onAddGenerus, 
@@ -71,6 +75,15 @@ export default function GenerusSection({
   const handleSelectChange = (field: keyof typeof newGenerus, value: string) => {
     setNewGenerus(prev => ({ ...prev, [field]: value as any }));
   };
+  
+  const handleDesaChange = (desaName: string) => {
+    setNewGenerus(prev => ({ ...prev, desa: desaName, kelompok: '' }));
+  };
+
+  const filteredKelompok = useMemo(() => {
+    if (!newGenerus.desa) return [];
+    return kelompok.filter(k => k.desaName === newGenerus.desa);
+  }, [newGenerus.desa, kelompok]);
 
   const renderSearchInput = () => {
     if (dropdownCategories.includes(filterCategory)) {
@@ -183,11 +196,25 @@ export default function GenerusSection({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="desa">Desa</Label>
-                    <Input id="desa" value={newGenerus.desa} onChange={(e) => handleInputChange('desa', e.target.value)} />
+                    <Select value={newGenerus.desa} onValueChange={handleDesaChange}>
+                      <SelectTrigger id="desa">
+                        <SelectValue placeholder="Pilih Desa" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="kelompok">Kelompok</Label>
-                    <Input id="kelompok" value={newGenerus.kelompok} onChange={(e) => handleInputChange('kelompok', e.target.value)} />
+                    <Select value={newGenerus.kelompok} onValueChange={(value) => handleSelectChange('kelompok', value)} disabled={!newGenerus.desa}>
+                      <SelectTrigger id="kelompok">
+                        <SelectValue placeholder="Pilih Kelompok" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="namaAyah">Nama Ayah</Label>

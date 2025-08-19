@@ -388,9 +388,16 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'generus':
         return <GenerusSection 
-          allGenerus={filteredData.generus} newGenerus={newGenerus} setNewGenerus={setNewGenerus}
-          onAddGenerus={handleAddGenerus} searchTerm={searchTerm} onSearchChange={setSearchTerm}
-          filterCategory={filterCategory} onFilterCategoryChange={setFilterCategory}
+          allGenerus={filteredData.generus} 
+          desas={filteredData.desas}
+          kelompok={filteredData.kelompok}
+          newGenerus={newGenerus} 
+          setNewGenerus={setNewGenerus}
+          onAddGenerus={handleAddGenerus} 
+          searchTerm={searchTerm} 
+          onSearchChange={setSearchTerm}
+          filterCategory={filterCategory} 
+          onFilterCategoryChange={setFilterCategory}
         />;
       case 'desa':
         return <DesaSection 
