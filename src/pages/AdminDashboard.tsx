@@ -13,6 +13,11 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
 
+interface AdminDashboardProps {
+  currentUser: User | null;
+  handleLogout: () => void;
+}
+
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard' },
   { 
@@ -82,7 +87,7 @@ const generusSeedData: Omit<Generus, 'id' | 'desa' | 'kelompok'>[] = [
     {"name":"Brian Domani","jenisKelamin":"Laki-laki","tahunLahir":2003,"pendidikan":"MAHASISWA","statusMondok":"Tidak Sedang Mondok","namaAyah":"Ujang","statusAyah":"jm","namaIbu":"Uut","statusIbu":"jm"}
 ];
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -329,8 +334,6 @@ export default function AdminDashboard() {
       showError("Gagal menghapus akun.");
     }
   };
-
-  const handleLogout = () => alert('Logging out...');
 
   const getPageTitle = () => {
     for (const item of menuItems) {

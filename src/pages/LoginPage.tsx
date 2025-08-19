@@ -1,17 +1,48 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { showError, showSuccess } from '@/utils/toast';
+import { User } from '@/types/admin';
 
-export default function LoginPage() {
+interface LoginPageProps {
+  setCurrentUser: (user: User) => void;
+}
+
+export default function LoginPage({ setCurrentUser }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // Placeholder for login logic
-    alert(`Logging in with Email: ${email} and Password: ${password}`);
+  const handleLogin = async () => {
+    if (!email || !password) {
+      showError("Email dan password harus diisi.");
+      return;
+    }
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email), where("password", "==", password));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        showError("Email atau password salah.");
+      } else {
+        const userDoc = querySnapshot.docs[0];
+        const userData = { id: userDoc.id, ...userDoc.data() } as User;
+        
+        setCurrentUser(userData);
+        showSuccess(`Selamat datang, ${userData.name}!`);
+        navigate('/admin');
+      }
+    } catch (error) {
+      console.error("Error logging in: ", error);
+      showError("Terjadi kesalahan saat mencoba login.");
+    }
   };
 
   return (
