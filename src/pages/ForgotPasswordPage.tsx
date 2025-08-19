@@ -21,8 +21,8 @@ export default function ForgotPasswordPage() {
       <div className="flex flex-col items-center justify-center bg-blue-600 p-8 text-white">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold">Forgot Password?</h1>
-            <p className="mt-2 text-blue-200">No worries, we'll send you reset instructions.</p>
+            <h1 className="text-4xl font-bold">Lupa Password?</h1>
+            <p className="mt-2 text-blue-200">Jangan khawatir, kami akan mengirimkan instruksi reset.</p>
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Your e-mail"
+                  placeholder="Email Anda"
                   className="bg-white text-gray-900 rounded-full pl-12 py-6"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -42,12 +42,12 @@ export default function ForgotPasswordPage() {
               className="w-full bg-yellow-400 text-blue-900 rounded-full py-6 font-semibold hover:bg-yellow-500"
               onClick={handleResetPassword}
             >
-              Send Reset Link
+              Kirim Link Reset
             </Button>
             <div className="text-center">
               <Link to="/login" className="text-sm text-blue-200 hover:underline flex items-center justify-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
-                Back to Sign in
+                Kembali ke Halaman Masuk
               </Link>
             </div>
           </div>

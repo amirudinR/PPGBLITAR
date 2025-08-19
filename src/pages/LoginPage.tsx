@@ -53,7 +53,7 @@ export default function LoginPage({ setCurrentUser }: LoginPageProps) {
       <div className="flex flex-col items-center justify-center bg-blue-600 p-8 text-white">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-left">
-            <h1 className="text-4xl font-bold">Welcome!</h1>
+            <h1 className="text-4xl font-bold">Selamat Datang!</h1>
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
@@ -62,7 +62,7 @@ export default function LoginPage({ setCurrentUser }: LoginPageProps) {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Your e-mail"
+                  placeholder="Email Anda"
                   className="bg-white text-gray-900 rounded-full pl-12 py-6"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -75,31 +75,25 @@ export default function LoginPage({ setCurrentUser }: LoginPageProps) {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Your password"
+                  placeholder="Password Anda"
                   className="bg-white text-gray-900 rounded-full pl-12 py-6"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between pt-2">
-                <Button 
-                    className="w-auto bg-yellow-400 text-blue-900 rounded-full px-8 py-6 font-semibold hover:bg-yellow-500"
-                    onClick={() => alert('Create account functionality not implemented yet.')}
-                >
-                    Create account
-                </Button>
+            <div className="flex items-center justify-end pt-2">
                 <Button 
                     variant="outline"
                     className="w-auto bg-transparent border-white text-white rounded-full px-8 py-6 font-semibold hover:bg-white hover:text-blue-600"
                     onClick={handleLogin}
                 >
-                    Sign in
+                    Masuk
                 </Button>
             </div>
              <div className="text-center">
                 <Link to="/forgot-password" className="text-sm text-blue-200 hover:underline">
-                  Forgot Password?
+                  Lupa Password?
                 </Link>
               </div>
           </div>
