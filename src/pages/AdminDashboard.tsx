@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('name');
+  const [selectedEducation, setSelectedEducation] = useState('Semua');
   
   // States
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -180,6 +181,8 @@ export default function AdminDashboard() {
         return <DashboardSection 
           stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length }} 
           generusData={generus}
+          selectedEducation={selectedEducation}
+          setSelectedEducation={setSelectedEducation}
         />;
       case 'generus':
         return <GenerusSection 
