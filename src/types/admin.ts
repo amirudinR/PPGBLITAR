@@ -68,9 +68,21 @@ export const GENERUS_FILTER_FIELDS = [
     { value: 'namaIbu', label: 'Nama Ibu' },
 ] as const;
 
+export const JUDUL_MATERI_LIST = [
+  'Hafalan Al-Quran',
+  "Hafalan Do'a",
+  'Hafalan Dalil',
+  'Praktik Ibadah',
+  'Keilmuan dan Kefahaman',
+  'Akhlaq',
+  'Tata Krama',
+  'Kemandirian'
+] as const;
+export type JudulMateri = typeof JUDUL_MATERI_LIST[number];
+
 export interface Material {
   id: string;
-  judulMateri: string;
+  judulMateri: JudulMateri;
   rincianMateri: string;
   kelas: KelasMateri;
   semester: 'Ganjil' | 'Genap';

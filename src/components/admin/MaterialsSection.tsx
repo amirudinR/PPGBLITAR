@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Material, KELAS_MATERI_LIST } from '@/types/admin';
+import { Material, KELAS_MATERI_LIST, JUDUL_MATERI_LIST } from '@/types/admin';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +50,14 @@ export default function MaterialsSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="judulMateri">Judul Materi</Label>
-              <Input id="judulMateri" value={newMaterial.judulMateri} onChange={(e) => handleInputChange('judulMateri', e.target.value)} className="mt-1" placeholder="Contoh: Fiqih Wudhu" />
+              <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
+                <SelectTrigger id="judulMateri" className="mt-1">
+                  <SelectValue placeholder="Pilih Judul Materi" />
+                </SelectTrigger>
+                <SelectContent>
+                  {JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="kelas">Kelas</Label>
