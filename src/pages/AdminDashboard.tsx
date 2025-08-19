@@ -111,6 +111,7 @@ export default function AdminDashboard() {
     statusMondok: STATUS_MONDOK_LIST[3], namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
     desa: '', kelompok: ''
   });
+  const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -263,6 +264,8 @@ export default function AdminDashboard() {
           setDashboardFilterCategory={setDashboardFilterCategory}
           dashboardFilterValue={dashboardFilterValue}
           setDashboardFilterValue={setDashboardFilterValue}
+          jenjangUsiaFilter={jenjangUsiaFilter}
+          setJenjangUsiaFilter={setJenjangUsiaFilter}
           onPopulate={handlePopulateGenerus}
           isPopulating={isPopulating}
         />;
