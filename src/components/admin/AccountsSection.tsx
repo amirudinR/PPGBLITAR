@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Desa, Kelompok, ROLES, Role } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,14 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
     name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: ''
   });
+
+  useEffect(() => {
+    if (currentUser?.role === 'desa') {
+      setNewUser(prev => ({ ...prev, desa: currentUser.desa }));
+    } else if (currentUser?.role === 'kelompok') {
+      setNewUser(prev => ({ ...prev, desa: currentUser.desa, kelompok: currentUser.kelompok }));
+    }
+  }, [currentUser]);
 
   const handleSave = async () => {
     const success = await onAddUser(newUser);
@@ -203,7 +211,28 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
           </DialogHeader>
           {editingUser && (
             <div className="py-4 space-y-4">
-              {/* Form fields for editing, similar to add dialog but for editingUser state */}
+              <div>
+                <Label>Peran</Label>
+                <Select 
+                  value={editingUser.role} 
+                  onValueChange={(value) => setEditingUser({...editingUser, role: value as Role})}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{creatableRoles().map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Nama</Label>
+                <Input value={editingUser.name} onChange={e => setEditingUser({...editingUser, name: e.target.value})} />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} />
+              </div>
+              <div>
+                <Label>Password (Kosongkan jika tidak ingin mengubah)</Label>
+                <Input type="password" onChange={e => setEditingUser({...editingUser, password: e.target.value})} />
+              </div>
             </div>
           )}
           <DialogFooter>
