@@ -87,7 +87,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
       return ROLES.filter(r => ['kelompok', 'guru', 'orangtua'].includes(r));
     }
     if (currentUser?.role === 'kelompok') {
-      return ROLES.filter(r => ['guru'].includes(r));
+      return ROLES.filter(r => ['guru', 'orangtua'].includes(r));
     }
     if (currentUser?.role === 'admin') {
       return ROLES.filter(r => r !== 'adminsuper');
