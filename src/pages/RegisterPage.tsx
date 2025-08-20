@@ -7,8 +7,17 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { showError, showSuccess } from '@/utils/toast';
 import { User, ROLES, Role } from '@/types/admin';
-import { Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Briefcase } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const ROLE_LABELS: Record<Role, string> = {
+  adminsuper: 'Admin Super',
+  admin: 'Admin',
+  desa: 'PJP Desa',
+  kelompok: 'PJP Kelompok',
+  guru: 'Guru',
+  orangtua: 'Orang Tua'
+};
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -89,6 +98,20 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="relative">
+                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Select value={role} onValueChange={(value) => setRole(value as Role)}>
+                  <SelectTrigger className="bg-white text-gray-900 rounded-full pl-12 py-6">
+                    <SelectValue placeholder="Pilih Peran Anda" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="guru">{ROLE_LABELS['guru']}</SelectItem>
+                    <SelectItem value="orangtua">{ROLE_LABELS['orangtua']}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Button 
