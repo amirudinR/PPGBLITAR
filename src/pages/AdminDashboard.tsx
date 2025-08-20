@@ -219,11 +219,27 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     const toastId = showLoading("Menambahkan 50 data generus ke database...");
     
     try {
-      const dynamicGenerusSeedData = generusSeedData.map(g => ({
-        ...g,
-        desa: desas[Math.floor(Math.random() * desas.length)].name,
-        kelompok: kelompok[Math.floor(Math.random() * kelompok.length)].name,
-      }));
+      const dynamicGenerusSeedData = generusSeedData.map(g => {
+        const randomDesa = desas[Math.floor(Math.random() * desas.length)];
+        const kelompokInDesa = kelompok.filter(k => k.desaId === randomDesa.id);
+        
+        if (kelompokInDesa.length === 0) {
+            const randomKelompok = kelompok[Math.floor(Math.random() * kelompok.length)];
+            return {
+                ...g,
+                desa: randomDesa.name,
+                kelompok: randomKelompok.name,
+            };
+        }
+        
+        const randomKelompok = kelompokInDesa[Math.floor(Math.random() * kelompokInDesa.length)];
+
+        return {
+          ...g,
+          desa: randomDesa.name,
+          kelompok: randomKelompok.name,
+        };
+      });
 
       const batch = writeBatch(db);
       const generusCollection = collection(db, "generus");
