@@ -53,23 +53,6 @@ export default function GenerusSection({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
 
-  const chartData = useMemo(() => {
-    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
-    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
-    
-    jenjangOptions.forEach(j => {
-      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
-    });
-
-    allGenerus.forEach(g => {
-      const jenjang = getJenjangUsia(g.pendidikan);
-      if (summary[jenjang]) {
-        summary[jenjang][g.jenisKelamin]++;
-      }
-    });
-    return Object.values(summary);
-  }, [allGenerus]);
-
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
     const uniqueValues = [...new Set(allGenerus.map(item => item[filterCategory as keyof Generus]))];
@@ -86,6 +69,23 @@ export default function GenerusSection({
       return String(value).toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [allGenerus, searchTerm, filterCategory]);
+
+  const chartData = useMemo(() => {
+    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
+    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
+    
+    jenjangOptions.forEach(j => {
+      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
+    });
+
+    filteredGenerus.forEach(g => {
+      const jenjang = getJenjangUsia(g.pendidikan);
+      if (summary[jenjang]) {
+        summary[jenjang][g.jenisKelamin]++;
+      }
+    });
+    return Object.values(summary);
+  }, [filteredGenerus]);
 
   const handleSave = async () => {
     const success = await onAddGenerus();
