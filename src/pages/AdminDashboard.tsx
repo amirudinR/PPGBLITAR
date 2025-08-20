@@ -169,24 +169,44 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   }, [fetchData]);
 
   const filteredData = useMemo(() => {
-    if (!currentUser || ['adminsuper', 'admin'].includes(currentUser.role)) {
-      return {
-        generus, users, desas, kelompok, attendance, materials
-      };
+    if (!currentUser) return { generus: [], users: [], desas: [], kelompok: [], attendance: [], materials: [] };
+
+    const userRole = currentUser.role;
+    const userDesa = currentUser.desa;
+    const userKelompok = currentUser.kelompok;
+
+    if (userRole === 'adminsuper' || userRole === 'admin') {
+      return { generus, users, desas, kelompok, attendance, materials };
     }
-    if (currentUser.role === 'desa') {
-      const userDesa = currentUser.desa;
-      return {
-        generus: generus.filter(g => g.desa === userDesa),
-        users: users.filter(u => u.desa === userDesa),
-        desas: desas.filter(d => d.name === userDesa),
-        kelompok: kelompok.filter(k => k.desaName === userDesa),
-        attendance: attendance.filter(a => a.desa === userDesa),
-        materials, // Materials are not filtered by desa for now
-      };
+
+    let filteredGenerus = generus;
+    let filteredUsers = users;
+    let filteredDesas = desas;
+    let filteredKelompok = kelompok;
+    let filteredAttendance = attendance;
+
+    if (userRole === 'desa') {
+      filteredGenerus = generus.filter(g => g.desa === userDesa);
+      filteredUsers = users.filter(u => u.desa === userDesa);
+      filteredDesas = desas.filter(d => d.name === userDesa);
+      filteredKelompok = kelompok.filter(k => k.desaName === userDesa);
+      filteredAttendance = attendance.filter(a => a.desa === userDesa);
+    } else if (userRole === 'kelompok') {
+      filteredGenerus = generus.filter(g => g.desa === userDesa && g.kelompok === userKelompok);
+      filteredUsers = users.filter(u => u.desa === userDesa && u.kelompok === userKelompok);
+      filteredDesas = desas.filter(d => d.name === userDesa);
+      filteredKelompok = kelompok.filter(k => k.desaName === userDesa && k.name === userKelompok);
+      filteredAttendance = attendance.filter(a => a.desa === userDesa && a.kelompok === userKelompok);
     }
-    // Add more role filtering here if needed
-    return { generus, users, desas, kelompok, attendance, materials };
+
+    return { 
+      generus: filteredGenerus, 
+      users: filteredUsers, 
+      desas: filteredDesas, 
+      kelompok: filteredKelompok, 
+      attendance: filteredAttendance, 
+      materials 
+    };
   }, [currentUser, generus, users, desas, kelompok, attendance, materials]);
 
   const handlePopulateGenerus = async () => {
@@ -338,6 +358,10 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     const userToAdd = { ...user };
     if (currentUser?.role === 'desa' && !userToAdd.desa) {
       userToAdd.desa = currentUser.desa;
+    }
+    if (currentUser?.role === 'kelompok') {
+        userToAdd.desa = currentUser.desa;
+        userToAdd.kelompok = currentUser.kelompok;
     }
     try {
       await addDoc(collection(db, "users"), userToAdd);

@@ -11,14 +11,14 @@ const menuItems = [
     icon: Database, 
     roles: ['adminsuper', 'admin', 'desa'],
     children: [
-      { id: 'akun', label: 'Akun', icon: Users, roles: ['adminsuper', 'admin', 'desa'] },
+      { id: 'akun', label: 'Akun', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
       { id: 'desa', label: 'Desa', icon: Home, roles: ['adminsuper', 'admin'] },
       { id: 'kelompok', label: 'Kelompok', icon: Users2, roles: ['adminsuper', 'admin', 'desa'] },
     ]
   },
-  { id: 'generus', label: 'Data Generus', icon: GraduationCap, roles: ['adminsuper', 'admin', 'desa'] },
-  { id: 'kehadiran', label: 'Kehadiran', icon: Calendar, roles: ['adminsuper', 'admin', 'desa'] },
-  { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin'] },
+  { id: 'generus', label: 'Data Generus', icon: GraduationCap, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+  { id: 'kehadiran', label: 'Kehadiran', icon: Calendar, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+  { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
 ];
 
 interface SidebarProps {
@@ -42,13 +42,13 @@ export default function Sidebar({
 
   const visibleMenuItems = menuItems.filter(item => item.roles.includes(userRole)).map(item => {
     if (item.children) {
-      return {
-        ...item,
-        children: item.children.filter(child => child.roles.includes(userRole))
-      };
+      const visibleChildren = item.children.filter(child => child.roles.includes(userRole));
+      if (visibleChildren.length > 0) {
+        return { ...item, children: visibleChildren };
+      }
     }
     return item;
-  });
+  }).filter(item => item.children ? item.children.length > 0 : true);
 
   const parentOfActive = visibleMenuItems.find(item => item.children?.some(child => child.id === activeSection))?.id;
 
