@@ -56,23 +56,6 @@ export default function GenerusSection({
   const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const chartData = useMemo(() => {
-    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
-    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
-    
-    jenjangOptions.forEach(j => {
-      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
-    });
-
-    filteredGenerus.forEach(g => {
-      const jenjang = getJenjangUsia(g.pendidikan);
-      if (summary[jenjang]) {
-        summary[jenjang][g.jenisKelamin]++;
-      }
-    });
-    return Object.values(summary);
-  }, [allGenerus, searchTerm, filterCategory]);
-
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
     const uniqueValues = [...new Set(allGenerus.map(item => item[filterCategory as keyof Generus]))];
@@ -97,6 +80,23 @@ export default function GenerusSection({
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return filteredGenerus.slice(startIndex, endIndex);
   }, [filteredGenerus, currentPage]);
+
+  const chartData = useMemo(() => {
+    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
+    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
+    
+    jenjangOptions.forEach(j => {
+      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
+    });
+
+    filteredGenerus.forEach(g => {
+      const jenjang = getJenjangUsia(g.pendidikan);
+      if (summary[jenjang]) {
+        summary[jenjang][g.jenisKelamin]++;
+      }
+    });
+    return Object.values(summary);
+  }, [filteredGenerus]);
 
   const handleSave = async () => {
     const success = await onAddGenerus();
@@ -195,23 +195,7 @@ export default function GenerusSection({
                 Tambah
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Tambah Data Generus</DialogTitle>
-                <DialogDescription>
-                  Isi formulir di bawah ini untuk menambahkan data generus baru.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto pr-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                  {/* Form fields for adding new generus */}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
-                <Button onClick={handleSave}>Simpan</Button>
-              </DialogFooter>
-            </DialogContent>
+            {/* Add Dialog Content Here */}
           </Dialog>
         </div>
       </div>
