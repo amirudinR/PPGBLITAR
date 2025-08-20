@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import GenerusChart from './GenerusChart';
 
 interface GenerusSectionProps {
   allGenerus: Generus[];
@@ -51,6 +52,23 @@ export default function GenerusSection({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
+
+  const chartData = useMemo(() => {
+    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
+    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
+    
+    jenjangOptions.forEach(j => {
+      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
+    });
+
+    allGenerus.forEach(g => {
+      const jenjang = getJenjangUsia(g.pendidikan);
+      if (summary[jenjang]) {
+        summary[jenjang][g.jenisKelamin]++;
+      }
+    });
+    return Object.values(summary);
+  }, [allGenerus]);
 
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
@@ -91,12 +109,20 @@ export default function GenerusSection({
     setIsEditDialogOpen(true);
   };
 
-  const handleInputChange = (field: keyof Omit<Generus, 'id'>, value: string | number) => {
+  const handleEditInputChange = (field: keyof Omit<Generus, 'id'>, value: string | number) => {
     setEditingGenerus(prev => prev ? { ...prev, [field]: value } : null);
   };
 
-  const handleSelectChange = (field: keyof Omit<Generus, 'id'>, value: string) => {
+  const handleEditSelectChange = (field: keyof Omit<Generus, 'id'>, value: string) => {
     setEditingGenerus(prev => prev ? { ...prev, [field]: value as any } : null);
+  };
+  
+  const handleNewInputChange = (field: keyof typeof newGenerus, value: string | number) => {
+    setNewGenerus(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNewSelectChange = (field: keyof typeof newGenerus, value: string) => {
+    setNewGenerus(prev => ({ ...prev, [field]: value as any }));
   };
 
   const renderSearchInput = () => {
@@ -133,6 +159,7 @@ export default function GenerusSection({
 
   return (
     <div>
+      <GenerusChart data={chartData} />
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold">Data Generus</h2>
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -157,13 +184,28 @@ export default function GenerusSection({
                 Tambah
               </Button>
             </DialogTrigger>
-            {/* Add Dialog Content Here */}
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Tambah Data Generus</DialogTitle>
+                <DialogDescription>
+                  Isi formulir di bawah ini untuk menambahkan data generus baru.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-[60vh] overflow-y-auto pr-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                  {/* Form fields for adding new generus */}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleSave}>Simpan</Button>
+              </DialogFooter>
+            </DialogContent>
           </Dialog>
         </div>
       </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
         <table className="min-w-full table-auto">
-          {/* Table Header */}
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Generus</th>
@@ -224,7 +266,6 @@ export default function GenerusSection({
         </table>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -235,11 +276,11 @@ export default function GenerusSection({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-name">Nama Generus</Label>
-                  <Input id="edit-name" value={editingGenerus.name} onChange={(e) => handleInputChange('name', e.target.value)} />
+                  <Input id="edit-name" value={editingGenerus.name} onChange={(e) => handleEditInputChange('name', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-jenisKelamin">Jenis Kelamin</Label>
-                  <Select value={editingGenerus.jenisKelamin} onValueChange={(value) => handleSelectChange('jenisKelamin', value)}>
+                  <Select value={editingGenerus.jenisKelamin} onValueChange={(value) => handleEditSelectChange('jenisKelamin', value)}>
                     <SelectTrigger id="edit-jenisKelamin"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Laki-laki">Laki-laki</SelectItem>
@@ -249,48 +290,48 @@ export default function GenerusSection({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-tahunLahir">Tahun Lahir</Label>
-                  <Input id="edit-tahunLahir" type="number" value={editingGenerus.tahunLahir} onChange={(e) => handleInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
+                  <Input id="edit-tahunLahir" type="number" value={editingGenerus.tahunLahir} onChange={(e) => handleEditInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-pendidikan">Pendidikan</Label>
-                  <Select value={editingGenerus.pendidikan} onValueChange={(value) => handleSelectChange('pendidikan', value)}>
+                  <Select value={editingGenerus.pendidikan} onValueChange={(value) => handleEditSelectChange('pendidikan', value)}>
                     <SelectTrigger id="edit-pendidikan"><SelectValue /></SelectTrigger>
                     <SelectContent>{PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-statusMondok">Status Mondok</Label>
-                  <Select value={editingGenerus.statusMondok} onValueChange={(value) => handleSelectChange('statusMondok', value)}>
+                  <Select value={editingGenerus.statusMondok} onValueChange={(value) => handleEditSelectChange('statusMondok', value)}>
                     <SelectTrigger id="edit-statusMondok"><SelectValue /></SelectTrigger>
                     <SelectContent>{STATUS_MONDOK_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-desa">Desa</Label>
-                  <Input id="edit-desa" value={editingGenerus.desa} onChange={(e) => handleInputChange('desa', e.target.value)} />
+                  <Input id="edit-desa" value={editingGenerus.desa} onChange={(e) => handleEditInputChange('desa', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-kelompok">Kelompok</Label>
-                  <Input id="edit-kelompok" value={editingGenerus.kelompok} onChange={(e) => handleInputChange('kelompok', e.target.value)} />
+                  <Input id="edit-kelompok" value={editingGenerus.kelompok} onChange={(e) => handleEditInputChange('kelompok', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-namaAyah">Nama Ayah</Label>
-                  <Input id="edit-namaAyah" value={editingGenerus.namaAyah} onChange={(e) => handleInputChange('namaAyah', e.target.value)} />
+                  <Input id="edit-namaAyah" value={editingGenerus.namaAyah} onChange={(e) => handleEditInputChange('namaAyah', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-statusAyah">Status Ayah</Label>
-                  <Select value={editingGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
+                  <Select value={editingGenerus.statusAyah} onValueChange={(value) => handleEditSelectChange('statusAyah', value)}>
                     <SelectTrigger id="edit-statusAyah"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-namaIbu">Nama Ibu</Label>
-                  <Input id="edit-namaIbu" value={editingGenerus.namaIbu} onChange={(e) => handleInputChange('namaIbu', e.target.value)} />
+                  <Input id="edit-namaIbu" value={editingGenerus.namaIbu} onChange={(e) => handleEditInputChange('namaIbu', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-statusIbu">Status Ibu</Label>
-                  <Select value={editingGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
+                  <Select value={editingGenerus.statusIbu} onValueChange={(value) => handleEditSelectChange('statusIbu', value)}>
                     <SelectTrigger id="edit-statusIbu"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
                   </Select>
