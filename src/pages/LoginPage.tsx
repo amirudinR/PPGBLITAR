@@ -2,18 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { showError, showSuccess } from '@/utils/toast';
-import { User } from '@/types/admin';
 import { Mail, Lock } from 'lucide-react';
 
-interface LoginPageProps {
-  setCurrentUser: (user: User) => void;
-}
-
-export default function LoginPage({ setCurrentUser }: LoginPageProps) {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -25,23 +19,16 @@ export default function LoginPage({ setCurrentUser }: LoginPageProps) {
     }
 
     try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", email), where("password", "==", password));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
+      await signInWithEmailAndPassword(auth, email, password);
+      showSuccess("Login berhasil!");
+      navigate('/admin');
+    } catch (error: any) {
+      console.error("Error logging in: ", error);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         showError("Email atau password salah.");
       } else {
-        const userDoc = querySnapshot.docs[0];
-        const userData = { id: userDoc.id, ...userDoc.data() } as User;
-        
-        setCurrentUser(userData);
-        showSuccess(`Selamat datang, ${userData.name}!`);
-        navigate('/admin');
+        showError("Terjadi kesalahan saat mencoba login.");
       }
-    } catch (error) {
-      console.error("Error logging in: ", error);
-      showError("Terjadi kesalahan saat mencoba login.");
     }
   };
 

@@ -8,26 +8,53 @@ import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import RegisterPage from "./pages/RegisterPage";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User } from "./types/admin";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { auth, db } from "./lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setCurrentUser({ id: user.uid, ...userDoc.data() } as User);
+        } else {
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const AppRoutes = () => {
     const navigate = useNavigate();
-    const handleLogout = () => {
-      setCurrentUser(null);
+    const handleLogout = async () => {
+      await signOut(auth);
       navigate('/login');
     };
 
+    if (loading) {
+      return <div>Loading...</div>; // Or a proper spinner component
+    }
+
     return (
       <Routes>
-        <Route path="/" element={<LoginPage setCurrentUser={setCurrentUser} />} />
-        <Route path="/login" element={<LoginPage setCurrentUser={setCurrentUser} />} />
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route 

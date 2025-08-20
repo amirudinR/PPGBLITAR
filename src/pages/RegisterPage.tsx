@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { db } from '@/lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { showError, showSuccess } from '@/utils/toast';
 import { User, Role } from '@/types/admin';
 import { Mail, Lock, User as UserIcon } from 'lucide-react';
@@ -22,21 +22,32 @@ export default function RegisterPage() {
     }
 
     try {
-      const newUser: Omit<User, 'id'> = {
+      // 1. Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. Create user profile in Firestore
+      const newUser: Omit<User, 'id' | 'password'> = {
         name,
         email,
-        password,
         role: 'adminsuper', // Role is now hardcoded
         status: 'Active',
         desa: '',
         kelompok: '',
       };
-      await addDoc(collection(db, "users"), newUser);
+      
+      // Use user.uid from Auth as the document ID in Firestore
+      await setDoc(doc(db, "users", user.uid), newUser);
+
       showSuccess("Akun Admin Super berhasil dibuat! Silakan login.");
       navigate('/login');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error registering: ", error);
-      showError("Terjadi kesalahan saat mencoba registrasi.");
+      if (error.code === 'auth/email-already-in-use') {
+        showError("Email ini sudah terdaftar.");
+      } else {
+        showError("Terjadi kesalahan saat mencoba registrasi.");
+      }
     }
   };
 
