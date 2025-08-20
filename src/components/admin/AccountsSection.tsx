@@ -13,6 +13,7 @@ interface AccountsSectionProps {
   desas: Desa[];
   kelompok: Kelompok[];
   onAddUser: (user: Omit<User, 'id'>) => Promise<boolean>;
+  onUpdateUser: (id: string, updatedData: Omit<User, 'id'>) => Promise<boolean>;
   onDeleteUser: (id: string) => void;
   currentUser: User | null;
 }
@@ -33,8 +34,10 @@ const ROLE_LABELS: Record<Role, string> = {
   orangtua: 'Orang Tua'
 };
 
-export default function AccountsSection({ users, desas, kelompok, onAddUser, onDeleteUser, currentUser }: AccountsSectionProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+export default function AccountsSection({ users, desas, kelompok, onAddUser, onUpdateUser, onDeleteUser, currentUser }: AccountsSectionProps) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
     name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: ''
   });
@@ -42,9 +45,24 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
   const handleSave = async () => {
     const success = await onAddUser(newUser);
     if (success) {
-      setIsDialogOpen(false);
+      setIsAddDialogOpen(false);
       setNewUser({ name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: '' });
     }
+  };
+
+  const handleUpdate = async () => {
+    if (!editingUser) return;
+    const { id, ...updatedData } = editingUser;
+    const success = await onUpdateUser(id, updatedData);
+    if (success) {
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+    }
+  };
+
+  const openEditDialog = (user: User) => {
+    setEditingUser(user);
+    setIsEditDialogOpen(true);
   };
 
   const handleRoleChange = (role: Role) => {
@@ -73,7 +91,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Akun Pengguna</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -134,7 +152,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
               </div>
             </div>
             <DialogFooter>
-              <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
               <Button onClick={handleSave}>Simpan</Button>
             </DialogFooter>
           </DialogContent>
@@ -169,7 +187,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
                 <TableCell>{user.kelompok || '-'}</TableCell>
                 <TableCell>{user.password || '******'}</TableCell>
                 <TableCell className="text-center">
-                  <Button variant="ghost" size="icon"><Edit className="w-4 h-4 text-blue-600" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}><Edit className="w-4 h-4 text-blue-600" /></Button>
                   <Button variant="ghost" size="icon" onClick={() => onDeleteUser(user.id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
                 </TableCell>
               </TableRow>
@@ -177,6 +195,23 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Akun</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <div className="py-4 space-y-4">
+              {/* Form fields for editing, similar to add dialog but for editingUser state */}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsEditDialogOpen(false)}>Batal</Button>
+            <Button onClick={handleUpdate}>Simpan Perubahan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

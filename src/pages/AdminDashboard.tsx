@@ -374,6 +374,18 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     }
   };
 
+  const handleUpdateUser = async (id: string, updatedData: Omit<User, 'id'>) => {
+    try {
+      await updateDoc(doc(db, "users", id), updatedData);
+      fetchData();
+      showSuccess("Akun berhasil diperbarui.");
+      return true;
+    } catch (e) {
+      showError("Gagal memperbarui akun.");
+      return false;
+    }
+  };
+
   const handleDeleteUser = async (id: string) => {
     try {
       await deleteDoc(doc(db, "users", id));
@@ -439,6 +451,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           desas={filteredData.desas}
           kelompok={filteredData.kelompok}
           onAddUser={handleAddUser}
+          onUpdateUser={handleUpdateUser}
           onDeleteUser={handleDeleteUser} 
           currentUser={currentUser}
         />;
