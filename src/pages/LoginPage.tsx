@@ -91,10 +91,16 @@ export default function LoginPage({ setCurrentUser }: LoginPageProps) {
                     Masuk
                 </Button>
             </div>
-             <div className="text-center">
+             <div className="text-center space-y-2">
                 <Link to="/forgot-password" className="text-sm text-blue-200 hover:underline">
                   Lupa Password?
                 </Link>
+                <p className="text-sm text-blue-200">
+                  Belum punya akun?{' '}
+                  <Link to="/register" className="font-semibold underline hover:text-white">
+                    Daftar di sini
+                  </Link>
+                </p>
               </div>
           </div>
         </div>

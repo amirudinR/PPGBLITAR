@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import RegisterPage from "./pages/RegisterPage";
 import { useState } from "react";
 import { User } from "./types/admin";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -27,6 +28,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LoginPage setCurrentUser={setCurrentUser} />} />
         <Route path="/login" element={<LoginPage setCurrentUser={setCurrentUser} />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route 
           path="/admin" 
