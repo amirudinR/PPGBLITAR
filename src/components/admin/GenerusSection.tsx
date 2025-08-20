@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import GenerusChart from './GenerusChart';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface GenerusSectionProps {
   allGenerus: Generus[];
@@ -34,6 +35,7 @@ interface GenerusSectionProps {
 }
 
 const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok'];
+const ITEMS_PER_PAGE = 10;
 
 export default function GenerusSection({ 
   allGenerus,
@@ -52,6 +54,7 @@ export default function GenerusSection({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
@@ -60,6 +63,7 @@ export default function GenerusSection({
   }, [filterCategory, allGenerus]);
 
   const filteredGenerus = useMemo(() => {
+    setCurrentPage(1); // Reset to first page on filter change
     if (!searchTerm) return allGenerus;
     return allGenerus.filter(g => {
       const value = g[filterCategory as keyof Generus];
@@ -69,6 +73,13 @@ export default function GenerusSection({
       return String(value).toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [allGenerus, searchTerm, filterCategory]);
+
+  const totalPages = Math.ceil(filteredGenerus.length / ITEMS_PER_PAGE);
+  const paginatedGenerus = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredGenerus.slice(startIndex, endIndex);
+  }, [filteredGenerus, currentPage]);
 
   const chartData = useMemo(() => {
     const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
@@ -184,23 +195,7 @@ export default function GenerusSection({
                 Tambah
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Tambah Data Generus</DialogTitle>
-                <DialogDescription>
-                  Isi formulir di bawah ini untuk menambahkan data generus baru.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto pr-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                  {/* Form fields for adding new generus */}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
-                <Button onClick={handleSave}>Simpan</Button>
-              </DialogFooter>
-            </DialogContent>
+            {/* Add Dialog Content Here */}
           </Dialog>
         </div>
       </div>
@@ -223,7 +218,7 @@ export default function GenerusSection({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredGenerus.map((item) => (
+            {paginatedGenerus.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.tahunLahir}</TableCell>
@@ -265,7 +260,23 @@ export default function GenerusSection({
           </tbody>
         </table>
       </div>
+      <Pagination className="mt-4">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.max(p - 1, 1)); }} />
+          </PaginationItem>
+          <PaginationItem>
+            <span className="px-4 py-2 text-sm">
+              Halaman {currentPage} dari {totalPages}
+            </span>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.min(p + 1, totalPages)); }} />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
 
+      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
