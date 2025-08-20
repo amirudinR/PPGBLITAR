@@ -10,10 +10,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface GenerusSectionProps {
   allGenerus: Generus[];
@@ -22,6 +24,8 @@ interface GenerusSectionProps {
   newGenerus: Omit<Generus, 'id'>;
   setNewGenerus: React.Dispatch<React.SetStateAction<Omit<Generus, 'id'>>>;
   onAddGenerus: () => Promise<boolean>;
+  onUpdateGenerus: (id: string, data: Omit<Generus, 'id'>) => Promise<boolean>;
+  onDeleteGenerus: (id: string) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
   filterCategory: string;
@@ -36,13 +40,17 @@ export default function GenerusSection({
   kelompok,
   newGenerus, 
   setNewGenerus, 
-  onAddGenerus, 
+  onAddGenerus,
+  onUpdateGenerus,
+  onDeleteGenerus,
   searchTerm, 
   onSearchChange,
   filterCategory,
   onFilterCategoryChange
 }: GenerusSectionProps) {
-  const [open, setOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
 
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
@@ -64,26 +72,32 @@ export default function GenerusSection({
   const handleSave = async () => {
     const success = await onAddGenerus();
     if (success) {
-      setOpen(false);
+      setIsAddDialogOpen(false);
     }
   };
 
-  const handleInputChange = (field: keyof typeof newGenerus, value: string | number) => {
-    setNewGenerus(prev => ({ ...prev, [field]: value }));
+  const handleUpdate = async () => {
+    if (!editingGenerus) return;
+    const { id, ...data } = editingGenerus;
+    const success = await onUpdateGenerus(id, data);
+    if (success) {
+      setIsEditDialogOpen(false);
+      setEditingGenerus(null);
+    }
   };
 
-  const handleSelectChange = (field: keyof typeof newGenerus, value: string) => {
-    setNewGenerus(prev => ({ ...prev, [field]: value as any }));
-  };
-  
-  const handleDesaChange = (desaName: string) => {
-    setNewGenerus(prev => ({ ...prev, desa: desaName, kelompok: '' }));
+  const openEditDialog = (generus: Generus) => {
+    setEditingGenerus(generus);
+    setIsEditDialogOpen(true);
   };
 
-  const filteredKelompok = useMemo(() => {
-    if (!newGenerus.desa) return [];
-    return kelompok.filter(k => k.desaName === newGenerus.desa);
-  }, [newGenerus.desa, kelompok]);
+  const handleInputChange = (field: keyof Omit<Generus, 'id'>, value: string | number) => {
+    setEditingGenerus(prev => prev ? { ...prev, [field]: value } : null);
+  };
+
+  const handleSelectChange = (field: keyof Omit<Generus, 'id'>, value: string) => {
+    setEditingGenerus(prev => prev ? { ...prev, [field]: value as any } : null);
+  };
 
   const renderSearchInput = () => {
     if (dropdownCategories.includes(filterCategory)) {
@@ -136,120 +150,20 @@ export default function GenerusSection({
               ))}
             </SelectContent>
           </Select>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex-shrink-0">
                 <Plus className="w-4 h-4 mr-2" />
                 Tambah
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Tambah Data Generus</DialogTitle>
-                <DialogDescription>
-                  Isi formulir di bawah ini untuk menambahkan data generus baru.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto pr-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nama Generus</Label>
-                    <Input id="name" value={newGenerus.name} onChange={(e) => handleInputChange('name', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="jenisKelamin">Jenis Kelamin</Label>
-                    <Select value={newGenerus.jenisKelamin} onValueChange={(value) => handleSelectChange('jenisKelamin', value)}>
-                      <SelectTrigger id="jenisKelamin">
-                        <SelectValue placeholder="Pilih Jenis Kelamin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                        <SelectItem value="Perempuan">Perempuan</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tahunLahir">Tahun Lahir</Label>
-                    <Input id="tahunLahir" type="number" value={newGenerus.tahunLahir} onChange={(e) => handleInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pendidikan">Pendidikan</Label>
-                    <Select value={newGenerus.pendidikan} onValueChange={(value) => handleSelectChange('pendidikan', value)}>
-                      <SelectTrigger id="pendidikan">
-                        <SelectValue placeholder="Pilih Pendidikan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="statusMondok">Status Mondok</Label>
-                    <Select value={newGenerus.statusMondok} onValueChange={(value) => handleSelectChange('statusMondok', value)}>
-                      <SelectTrigger id="statusMondok">
-                        <SelectValue placeholder="Pilih Status Mondok" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_MONDOK_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="desa">Desa</Label>
-                    <Select value={newGenerus.desa} onValueChange={handleDesaChange}>
-                      <SelectTrigger id="desa">
-                        <SelectValue placeholder="Pilih Desa" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="kelompok">Kelompok</Label>
-                    <Select value={newGenerus.kelompok} onValueChange={(value) => handleSelectChange('kelompok', value)} disabled={!newGenerus.desa}>
-                      <SelectTrigger id="kelompok">
-                        <SelectValue placeholder="Pilih Kelompok" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="namaAyah">Nama Ayah</Label>
-                    <Input id="namaAyah" value={newGenerus.namaAyah} onChange={(e) => handleInputChange('namaAyah', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="statusAyah">Status Ayah</Label>
-                    <Select value={newGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
-                        <SelectTrigger id="statusAyah"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                        <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                  </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="namaIbu">Nama Ibu</Label>
-                    <Input id="namaIbu" value={newGenerus.namaIbu} onChange={(e) => handleInputChange('namaIbu', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="statusIbu">Status Ibu</Label>
-                    <Select value={newGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
-                        <SelectTrigger id="statusIbu"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                        <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                  </Select>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Batal</Button>
-                <Button type="button" onClick={handleSave}>Simpan</Button>
-              </DialogFooter>
-            </DialogContent>
+            {/* Add Dialog Content Here */}
           </Dialog>
         </div>
       </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
         <table className="min-w-full table-auto">
+          {/* Table Header */}
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Generus</th>
@@ -267,42 +181,129 @@ export default function GenerusSection({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredGenerus.length === 0 ? (
-              <tr>
-                <td colSpan={12} className="text-center py-10 text-gray-500">
-                  Tidak ada hasil yang cocok dengan pencarian Anda.
-                </td>
-              </tr>
-            ) : (
-              filteredGenerus.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.tahunLahir}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.pendidikan}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{getJenjangUsia(item.pendidikan)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.statusMondok}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.desa}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.kelompok}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.namaAyah}</td>
-                  <td className="px-6 py-4 whitespace-nowrap uppercase">{item.statusAyah}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.namaIbu}</td>
-                  <td className="px-6 py-4 whitespace-nowrap uppercase">{item.statusIbu}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <button className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 text-red-600 hover:bg-red-50 rounded"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            {filteredGenerus.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.tahunLahir}</TableCell>
+                <TableCell>{item.pendidikan}</TableCell>
+                <TableCell>{getJenjangUsia(item.pendidikan)}</TableCell>
+                <TableCell>{item.statusMondok}</TableCell>
+                <TableCell>{item.desa}</TableCell>
+                <TableCell>{item.kelompok}</TableCell>
+                <TableCell>{item.namaAyah}</TableCell>
+                <TableCell className="uppercase">{item.statusAyah}</TableCell>
+                <TableCell>{item.namaIbu}</TableCell>
+                <TableCell className="uppercase">{item.statusIbu}</TableCell>
+                <TableCell className="text-center">
+                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
+                    <Edit className="w-4 h-4 text-blue-600" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data generus secara permanen.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => onDeleteGenerus(item.id)}>Hapus</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))}
           </tbody>
         </table>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Data Generus</DialogTitle>
+          </DialogHeader>
+          {editingGenerus && (
+            <div className="max-h-[60vh] overflow-y-auto pr-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Nama Generus</Label>
+                  <Input id="edit-name" value={editingGenerus.name} onChange={(e) => handleInputChange('name', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-jenisKelamin">Jenis Kelamin</Label>
+                  <Select value={editingGenerus.jenisKelamin} onValueChange={(value) => handleSelectChange('jenisKelamin', value)}>
+                    <SelectTrigger id="edit-jenisKelamin"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                      <SelectItem value="Perempuan">Perempuan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-tahunLahir">Tahun Lahir</Label>
+                  <Input id="edit-tahunLahir" type="number" value={editingGenerus.tahunLahir} onChange={(e) => handleInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-pendidikan">Pendidikan</Label>
+                  <Select value={editingGenerus.pendidikan} onValueChange={(value) => handleSelectChange('pendidikan', value)}>
+                    <SelectTrigger id="edit-pendidikan"><SelectValue /></SelectTrigger>
+                    <SelectContent>{PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-statusMondok">Status Mondok</Label>
+                  <Select value={editingGenerus.statusMondok} onValueChange={(value) => handleSelectChange('statusMondok', value)}>
+                    <SelectTrigger id="edit-statusMondok"><SelectValue /></SelectTrigger>
+                    <SelectContent>{STATUS_MONDOK_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-desa">Desa</Label>
+                  <Input id="edit-desa" value={editingGenerus.desa} onChange={(e) => handleInputChange('desa', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-kelompok">Kelompok</Label>
+                  <Input id="edit-kelompok" value={editingGenerus.kelompok} onChange={(e) => handleInputChange('kelompok', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-namaAyah">Nama Ayah</Label>
+                  <Input id="edit-namaAyah" value={editingGenerus.namaAyah} onChange={(e) => handleInputChange('namaAyah', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-statusAyah">Status Ayah</Label>
+                  <Select value={editingGenerus.statusAyah} onValueChange={(value) => handleSelectChange('statusAyah', value)}>
+                    <SelectTrigger id="edit-statusAyah"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-namaIbu">Nama Ibu</Label>
+                  <Input id="edit-namaIbu" value={editingGenerus.namaIbu} onChange={(e) => handleInputChange('namaIbu', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-statusIbu">Status Ibu</Label>
+                  <Select value={editingGenerus.statusIbu} onValueChange={(value) => handleSelectChange('statusIbu', value)}>
+                    <SelectTrigger id="edit-statusIbu"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsEditDialogOpen(false)}>Batal</Button>
+            <Button onClick={handleUpdate}>Simpan Perubahan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

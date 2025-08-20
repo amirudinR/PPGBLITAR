@@ -328,6 +328,28 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     } catch (e) { showError("Gagal menambahkan generus."); return false; }
   };
 
+  const handleUpdateGenerus = async (id: string, data: Omit<Generus, 'id'>) => {
+    try {
+      await updateDoc(doc(db, "generus", id), data);
+      fetchData();
+      showSuccess("Data generus berhasil diperbarui.");
+      return true;
+    } catch (e) {
+      showError("Gagal memperbarui data generus.");
+      return false;
+    }
+  };
+
+  const handleDeleteGenerus = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "generus", id));
+      fetchData();
+      showSuccess("Data generus berhasil dihapus.");
+    } catch (e) {
+      showError("Gagal menghapus data generus.");
+    }
+  };
+
   const handleAddMaterial = async () => {
     if (!newMaterial.judulMateri) { showError("Judul materi harus diisi."); return false; }
     try {
@@ -445,7 +467,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelompok={filteredData.kelompok}
           newGenerus={newGenerus} 
           setNewGenerus={setNewGenerus}
-          onAddGenerus={handleAddGenerus} 
+          onAddGenerus={handleAddGenerus}
+          onUpdateGenerus={handleUpdateGenerus}
+          onDeleteGenerus={handleDeleteGenerus}
           searchTerm={searchTerm} 
           onSearchChange={setSearchTerm}
           filterCategory={filterCategory} 
