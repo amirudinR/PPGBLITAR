@@ -214,14 +214,14 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       showError("Harap tambahkan data Desa dan Kelompok terlebih dahulu.");
       return;
     }
-
+  
     setIsPopulating(true);
     const toastId = showLoading("Menambahkan 50 data generus ke database...");
     
     try {
       const batch = writeBatch(db);
       const generusCollection = collection(db, "generus");
-
+  
       generusSeedData.forEach(g => {
         const randomDesa = desas[Math.floor(Math.random() * desas.length)];
         const kelompokInDesa = kelompok.filter(k => k.desaId === randomDesa.id);
@@ -230,9 +230,10 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         if (kelompokInDesa.length > 0) {
             selectedKelompokName = kelompokInDesa[Math.floor(Math.random() * kelompokInDesa.length)].name;
         } else if (kelompok.length > 0) {
+            // Fallback if a desa has no kelompok, pick any kelompok
             selectedKelompokName = kelompok[Math.floor(Math.random() * kelompok.length)].name;
         }
-
+  
         const docRef = doc(generusCollection);
         const data = {
           ...g,
@@ -241,7 +242,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         };
         batch.set(docRef, data);
       });
-
+  
       await batch.commit();
       
       dismissToast(toastId);
