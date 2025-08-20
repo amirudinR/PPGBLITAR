@@ -122,6 +122,16 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [endMonth, setEndMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
   const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
 
+  useEffect(() => {
+    if (currentUser?.role === 'kelompok') {
+      setNewGenerus(prev => ({
+        ...prev,
+        desa: currentUser.desa || '',
+        kelompok: currentUser.kelompok || ''
+      }));
+    }
+  }, [currentUser]);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -239,7 +249,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           desa: randomDesa.name,
           kelompok: randomKelompok.name,
         };
-      });
+      }));
 
       const batch = writeBatch(db);
       const generusCollection = collection(db, "generus");
@@ -474,6 +484,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           onSearchChange={setSearchTerm}
           filterCategory={filterCategory} 
           onFilterCategoryChange={setFilterCategory}
+          currentUser={currentUser}
         />;
       case 'desa':
         return <DesaSection 

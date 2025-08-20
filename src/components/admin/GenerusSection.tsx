@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok } from '@/types/admin';
+import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok, User } from '@/types/admin';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import {
   Dialog,
@@ -32,6 +32,7 @@ interface GenerusSectionProps {
   onSearchChange: (value: string) => void;
   filterCategory: string;
   onFilterCategoryChange: (value: string) => void;
+  currentUser: User | null;
 }
 
 const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok'];
@@ -49,12 +50,30 @@ export default function GenerusSection({
   searchTerm, 
   onSearchChange,
   filterCategory,
-  onFilterCategoryChange
+  onFilterCategoryChange,
+  currentUser
 }: GenerusSectionProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const chartData = useMemo(() => {
+    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
+    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
+    
+    jenjangOptions.forEach(j => {
+      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
+    });
+
+    filteredGenerus.forEach(g => {
+      const jenjang = getJenjangUsia(g.pendidikan);
+      if (summary[jenjang]) {
+        summary[jenjang][g.jenisKelamin]++;
+      }
+    });
+    return Object.values(summary);
+  }, [allGenerus, searchTerm, filterCategory]);
 
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
@@ -80,23 +99,6 @@ export default function GenerusSection({
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return filteredGenerus.slice(startIndex, endIndex);
   }, [filteredGenerus, currentPage]);
-
-  const chartData = useMemo(() => {
-    const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
-    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
-    
-    jenjangOptions.forEach(j => {
-      summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
-    });
-
-    filteredGenerus.forEach(g => {
-      const jenjang = getJenjangUsia(g.pendidikan);
-      if (summary[jenjang]) {
-        summary[jenjang][g.jenisKelamin]++;
-      }
-    });
-    return Object.values(summary);
-  }, [filteredGenerus]);
 
   const handleSave = async () => {
     const success = await onAddGenerus();
@@ -135,6 +137,15 @@ export default function GenerusSection({
   const handleNewSelectChange = (field: keyof typeof newGenerus, value: string) => {
     setNewGenerus(prev => ({ ...prev, [field]: value as any }));
   };
+
+  const handleNewDesaChange = (desaName: string) => {
+    setNewGenerus(prev => ({ ...prev, desa: desaName, kelompok: '' }));
+  };
+
+  const filteredKelompokForNew = useMemo(() => {
+    if (!newGenerus.desa) return [];
+    return kelompok.filter(k => k.desaName === newGenerus.desa);
+  }, [newGenerus.desa, kelompok]);
 
   const renderSearchInput = () => {
     if (dropdownCategories.includes(filterCategory)) {
@@ -195,7 +206,23 @@ export default function GenerusSection({
                 Tambah
               </Button>
             </DialogTrigger>
-            {/* Add Dialog Content Here */}
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Tambah Data Generus</DialogTitle>
+                <DialogDescription>
+                  Isi formulir di bawah ini untuk menambahkan data generus baru.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-[60vh] overflow-y-auto pr-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                  {/* All form fields */}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleSave}>Simpan</Button>
+              </DialogFooter>
+            </DialogContent>
           </Dialog>
         </div>
       </div>
