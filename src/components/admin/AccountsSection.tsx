@@ -61,7 +61,7 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
       return ROLES.filter(r => ['kelompok', 'guru', 'orangtua'].includes(r));
     }
     if (currentUser?.role === 'kelompok') {
-      return ROLES.filter(r => ['guru', 'orangtua'].includes(r));
+      return ROLES.filter(r => ['guru'].includes(r));
     }
     if (currentUser?.role === 'admin') {
       return ROLES.filter(r => r !== 'adminsuper');
@@ -93,13 +93,13 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
                 </Select>
               </div>
 
-              {['desa', 'kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+              {currentUser?.role !== 'kelompok' && ['desa', 'kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
                 <div>
                   <Label>Desa</Label>
                   <Select 
                     value={newUser.desa} 
                     onValueChange={desa => setNewUser({...newUser, desa, kelompok: ''})}
-                    disabled={currentUser?.role === 'desa' || currentUser?.role === 'kelompok'}
+                    disabled={currentUser?.role === 'desa'}
                   >
                     <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
                     <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
@@ -107,13 +107,12 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onD
                 </div>
               )}
 
-              {['kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+              {currentUser?.role !== 'kelompok' && ['kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
                 <div>
                   <Label>Kelompok</Label>
                   <Select 
                     value={newUser.kelompok} 
                     onValueChange={kelompok => setNewUser({...newUser, kelompok})}
-                    disabled={currentUser?.role === 'kelompok'}
                   >
                     <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
                     <SelectContent>{kelompok.filter(k => k.desaName === newUser.desa).map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
