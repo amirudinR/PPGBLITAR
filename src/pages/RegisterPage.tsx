@@ -6,24 +6,13 @@ import { Label } from '@/components/ui/label';
 import { db } from '@/lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { showError, showSuccess } from '@/utils/toast';
-import { User, ROLES, Role } from '@/types/admin';
-import { Mail, Lock, User as UserIcon, Briefcase } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const ROLE_LABELS: Record<Role, string> = {
-  adminsuper: 'Admin Super',
-  admin: 'Admin',
-  desa: 'PJP Desa',
-  kelompok: 'PJP Kelompok',
-  guru: 'Guru',
-  orangtua: 'Orang Tua'
-};
+import { User, Role } from '@/types/admin';
+import { Mail, Lock, User as UserIcon } from 'lucide-react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<Role>('adminsuper');
   const navigate = useNavigate();
 
   const handleRegister = async () => {
@@ -37,11 +26,13 @@ export default function RegisterPage() {
         name,
         email,
         password,
-        role,
+        role: 'adminsuper', // Role is now hardcoded
         status: 'Active',
+        desa: '',
+        kelompok: '',
       };
       await addDoc(collection(db, "users"), newUser);
-      showSuccess("Registrasi berhasil! Silakan login.");
+      showSuccess("Akun Admin Super berhasil dibuat! Silakan login.");
       navigate('/login');
     } catch (error) {
       console.error("Error registering: ", error);
@@ -57,8 +48,8 @@ export default function RegisterPage() {
       <div className="flex flex-col items-center justify-center bg-blue-600 p-8 text-white">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold">Buat Akun Baru</h1>
-            <p className="mt-2 text-blue-200">Bergabunglah dengan kami hari ini!</p>
+            <h1 className="text-4xl font-bold">Buat Akun Admin Super</h1>
+            <p className="mt-2 text-blue-200">Daftarkan administrator utama untuk sistem.</p>
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
@@ -100,24 +91,11 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Select value={role} onValueChange={(value) => setRole(value as Role)}>
-                  <SelectTrigger className="bg-white text-gray-900 rounded-full pl-12 py-6">
-                    <SelectValue placeholder="Pilih Peran Anda" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <Button 
               className="w-full bg-yellow-400 text-blue-900 rounded-full py-6 font-semibold hover:bg-yellow-500"
               onClick={handleRegister}
             >
-              Daftar
+              Daftar Akun Admin Super
             </Button>
             <div className="text-center">
               <Link to="/login" className="text-sm text-blue-200 hover:underline">
