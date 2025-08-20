@@ -122,16 +122,6 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [endMonth, setEndMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
   const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
 
-  useEffect(() => {
-    if (currentUser?.role === 'kelompok') {
-      setNewGenerus(prev => ({
-        ...prev,
-        desa: currentUser.desa || '',
-        kelompok: currentUser.kelompok || ''
-      }));
-    }
-  }, [currentUser]);
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -229,34 +219,29 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     const toastId = showLoading("Menambahkan 50 data generus ke database...");
     
     try {
-      const dynamicGenerusSeedData = generusSeedData.map(g => {
+      const batch = writeBatch(db);
+      const generusCollection = collection(db, "generus");
+
+      generusSeedData.forEach(g => {
         const randomDesa = desas[Math.floor(Math.random() * desas.length)];
         const kelompokInDesa = kelompok.filter(k => k.desaId === randomDesa.id);
         
-        if (kelompokInDesa.length === 0) {
-            const randomKelompok = kelompok[Math.floor(Math.random() * kelompok.length)];
-            return {
-                ...g,
-                desa: randomDesa.name,
-                kelompok: randomKelompok.name,
-            };
+        let selectedKelompokName = '';
+        if (kelompokInDesa.length > 0) {
+            selectedKelompokName = kelompokInDesa[Math.floor(Math.random() * kelompokInDesa.length)].name;
+        } else if (kelompok.length > 0) {
+            selectedKelompokName = kelompok[Math.floor(Math.random() * kelompok.length)].name;
         }
-        
-        const randomKelompok = kelompokInDesa[Math.floor(Math.random() * kelompokInDesa.length)];
 
-        return {
+        const docRef = doc(generusCollection);
+        const data = {
           ...g,
           desa: randomDesa.name,
-          kelompok: randomKelompok.name,
+          kelompok: selectedKelompokName,
         };
-      }));
-
-      const batch = writeBatch(db);
-      const generusCollection = collection(db, "generus");
-      dynamicGenerusSeedData.forEach(data => {
-        const docRef = doc(generusCollection);
         batch.set(docRef, data);
       });
+
       await batch.commit();
       
       dismissToast(toastId);
