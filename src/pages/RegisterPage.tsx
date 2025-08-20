@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<Role>('orangtua');
+  const [role, setRole] = useState<Role>('adminsuper');
   const navigate = useNavigate();
 
   const handleRegister = async () => {
@@ -108,8 +108,7 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Pilih Peran Anda" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="guru">{ROLE_LABELS['guru']}</SelectItem>
-                    <SelectItem value="orangtua">{ROLE_LABELS['orangtua']}</SelectItem>
+                    {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
