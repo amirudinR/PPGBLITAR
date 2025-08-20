@@ -9,7 +9,7 @@ const menuItems = [
     id: 'master', 
     label: 'Data Master', 
     icon: Database, 
-    roles: ['adminsuper', 'admin', 'desa'],
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok'],
     children: [
       { id: 'akun', label: 'Akun', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
       { id: 'desa', label: 'Desa', icon: Home, roles: ['adminsuper', 'admin'] },
