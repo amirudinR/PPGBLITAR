@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import DashboardStatCard from './DashboardStatCard';
 import GenderChart from './GenderChart';
 import FilteredGenerusTable from './FilteredGenerusTable';
-import { GraduationCap, Home, Users2, Users, Database } from 'lucide-react';
+import { GraduationCap, Home, Users2, Users } from 'lucide-react';
 import { Generus, Pendidikan } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,8 +24,6 @@ interface DashboardSectionProps {
   setDashboardFilterValue: (value: string) => void;
   jenjangUsiaFilter: string[];
   setJenjangUsiaFilter: (value: string[]) => void;
-  onPopulate: () => void;
-  isPopulating: boolean;
 }
 
 const filterCategories = [
@@ -61,8 +59,6 @@ export default function DashboardSection({
     setDashboardFilterValue,
     jenjangUsiaFilter,
     setJenjangUsiaFilter,
-    onPopulate,
-    isPopulating
 }: DashboardSectionProps) {
 
   const valueOptions = useMemo(() => {
@@ -112,10 +108,6 @@ export default function DashboardSection({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <Button onClick={onPopulate} disabled={isPopulating}>
-          <Database className="w-4 h-4 mr-2" />
-          {isPopulating ? 'Mengisi Data...' : 'Isi Data Generus (50)'}
-        </Button>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
