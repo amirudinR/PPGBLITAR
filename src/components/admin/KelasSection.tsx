@@ -191,7 +191,7 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
               <Label className="text-lg font-semibold">Tambah Siswa</Label>
               <div className="flex items-center gap-2 mt-2">
                 <Select value={studentToAdd} onValueChange={setStudentToAdd}><SelectTrigger><SelectValue placeholder="Pilih Generus..." /></SelectTrigger>
-                  <SelectContent><ScrollArea className="h-48">{availableStudents.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</ScrollArea></SelectContent>
+                  <SelectContent><ScrollArea className="h-48">{availableStudents.map(g => <SelectItem key={g.id} value={g.id}>{g.name} ({g.pendidikan})</SelectItem>)}</ScrollArea></SelectContent>
                 </Select>
                 <Button onClick={handleAddStudent} disabled={!studentToAdd}>Tambah</Button>
               </div>
@@ -202,7 +202,10 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
                 {enrolledStudents.length > 0 ? (
                   enrolledStudents.map(student => (
                     <div key={student.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                      <span>{student.name}</span>
+                      <div>
+                        <span className="font-medium">{student.name}</span>
+                        <Badge variant="outline" className="ml-2 font-normal">{student.pendidikan}</Badge>
+                      </div>
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveStudent(student.id)}><X className="h-4 w-4 text-red-500" /></Button>
                     </div>
                   ))
