@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { showError } from '@/utils/toast';
 
 const initialData: M5U[] = [
   { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Tercapai' },
@@ -22,6 +23,8 @@ const months = [
 ];
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
+const monthNameToNumber = (name: string) => months.indexOf(name);
 
 export default function M5USection() {
   const [m5uItems, setM5uItems] = useState<M5U[]>(initialData);
@@ -47,6 +50,26 @@ export default function M5USection() {
     setIsDialogOpen(true);
   };
 
+  const handleAddClick = () => {
+    if (m5uItems.length === 0) {
+      openDialog();
+      return;
+    }
+
+    const sortedItems = [...m5uItems].sort((a, b) => {
+      if (a.tahun !== b.tahun) return a.tahun - b.tahun;
+      return monthNameToNumber(a.bulan) - monthNameToNumber(b.bulan);
+    });
+
+    const latestAgenda = sortedItems[sortedItems.length - 1];
+
+    if (latestAgenda.statusHasil !== 'Tercapai') {
+      showError("Tidak dapat menambah agenda baru. Agenda sebelumnya harus berstatus 'Tercapai'.");
+    } else {
+      openDialog();
+    }
+  };
+
   const handleSave = () => {
     if (isEditMode && editingId) {
       setM5uItems(m5uItems.map(item => item.id === editingId ? { ...currentItem, id: editingId } : item));
@@ -64,7 +87,7 @@ export default function M5USection() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Musyawarah 5 Unsur (M5U)</h2>
-        <Button onClick={() => openDialog()}>
+        <Button onClick={handleAddClick}>
           <Plus className="w-4 h-4 mr-2" />
           Tambah Agenda
         </Button>
