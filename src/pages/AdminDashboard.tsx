@@ -9,6 +9,7 @@ import GenerusSection from '@/components/admin/GenerusSection';
 import DesaSection from '@/components/admin/DesaSection';
 import KelompokSection from '@/components/admin/KelompokSection';
 import DashboardSection from '@/components/admin/DashboardSection';
+import M5USection from '@/components/admin/M5USection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -37,6 +38,7 @@ const menuItems = [
   { id: 'generus', label: 'Data Generus' },
   { id: 'kehadiran', label: 'Kehadiran' },
   { id: 'materi', label: 'Materi' },
+  { id: 'm5u', label: 'M5U' },
 ];
 
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
@@ -185,6 +187,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           endYear={endYear}
           setEndYear={setEndYear}
         />;
+      case 'm5u':
+        return <M5USection />;
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }
