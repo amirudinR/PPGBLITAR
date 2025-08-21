@@ -34,8 +34,6 @@ service cloud.firestore {
                        
       allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
       
-      // Hapus: Admin Super bisa hapus siapa saja. Admin bisa hapus selain Admin Super.
-      // PJP Desa/Kelompok bisa hapus guru dalam lingkup mereka.
       allow delete: if hasRole('adminsuper') ||
                      (hasRole('admin') && resource.data.role != 'adminsuper') ||
                      (hasRole('desa') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa) ||
@@ -53,27 +51,21 @@ service cloud.firestore {
       allow write: if isAdmin() || hasRole('desa');
     }
 
-    // === Aturan untuk Data Operasional ('generus', 'attendance', 'materials', 'gurus') ===
+    // === Aturan untuk Data Operasional ('generus', 'attendance', 'materials', 'gurus', 'kelas') ===
     match /generus/{generusId} {
-      allow read: if isAdmin() || 
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
-                   
-      allow write: if isAdmin() || 
+      allow read, write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /gurus/{guruId} {
-      allow read: if isAdmin() || 
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
-                   
-      allow create, update: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
-      
-      allow delete: if isAdmin() || 
+      allow read, write: if isAdmin() || 
+                     (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                     (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+    }
+
+    match /kelas/{kelasId} {
+      allow read, write: if isAdmin() || 
                      (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
                      (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
     }

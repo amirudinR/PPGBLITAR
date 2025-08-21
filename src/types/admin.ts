@@ -33,7 +33,10 @@ export const KELAS_MATERI_LIST = [
 ] as const;
 export type KelasMateri = typeof KELAS_MATERI_LIST[number];
 
-export const getJenjangUsia = (pendidikan: Pendidikan): string => {
+export const JENJANG_USIA_LIST = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'] as const;
+export type JenjangUsia = typeof JENJANG_USIA_LIST[number];
+
+export const getJenjangUsia = (pendidikan: Pendidikan): JenjangUsia | '-' => {
   switch (pendidikan) {
     case 'Belum sekolah': case 'Paud/TK': case 'SD 1': case 'SD 2': case 'SD 3': case 'SD 4': case 'SD 5': case 'SD 6':
       return 'Caberawit';
@@ -151,4 +154,14 @@ export interface Guru {
   desa: string;
   kelompok: string;
   password?: string;
+}
+
+export interface Kelas {
+  id: string;
+  namaKelas: string;
+  guruId: string;
+  guruName: string;
+  jenjangUsia: JenjangUsia;
+  desa: string;
+  kelompok: string;
 }

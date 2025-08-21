@@ -21,6 +21,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { useMaterials } from '@/hooks/useMaterials';
 import { useAttendance } from '@/hooks/useAttendance';
 import { useGurus } from '@/hooks/useGurus';
+import { useKelas } from '@/hooks/useKelas';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -78,6 +79,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials } = useMaterials();
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
+  const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
 
   useEffect(() => {
     if (currentUser) {
@@ -87,8 +89,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchMaterials();
       fetchAttendance();
       fetchGurus();
+      fetchKelas();
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -96,7 +99,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     }
   }, [desas, fetchKelompok]);
 
-  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus;
+  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus || loadingKelas;
 
   const getPageTitle = () => {
     for (const item of menuItems) {
@@ -171,7 +174,14 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelompok={kelompok}
         />;
       case 'datakelas':
-        return <KelasSection />;
+        return <KelasSection 
+          kelas={kelas}
+          gurus={gurus}
+          onAddKelas={addKelas}
+          onUpdateKelas={updateKelas}
+          onDeleteKelas={deleteKelas}
+          currentUser={currentUser}
+        />;
       case 'materi':
         return (
           <MaterialsSection
