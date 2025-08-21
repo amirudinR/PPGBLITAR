@@ -101,72 +101,74 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Akun Pengguna</h2>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              <span>Tambah Akun</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tambah Akun Baru</DialogTitle>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              <div>
-                <Label>Peran</Label>
-                <Select value={newUser.role} onValueChange={(value) => handleRoleChange(value as Role)}>
-                  <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
-                  <SelectContent>{creatableRoles().map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-
-              {currentUser?.role !== 'kelompok' && ['desa', 'kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+        {currentUser?.role !== 'kelompok' && (
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                <span>Tambah Akun</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Tambah Akun Baru</DialogTitle>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
                 <div>
-                  <Label>Desa</Label>
-                  <Select 
-                    value={newUser.desa} 
-                    onValueChange={desa => setNewUser({...newUser, desa, kelompok: ''})}
-                    disabled={currentUser?.role === 'desa'}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
-                    <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+                  <Label>Peran</Label>
+                  <Select value={newUser.role} onValueChange={(value) => handleRoleChange(value as Role)}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
+                    <SelectContent>{creatableRoles().map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-              )}
 
-              {currentUser?.role !== 'kelompok' && ['kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+                {['desa', 'kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+                  <div>
+                    <Label>Desa</Label>
+                    <Select 
+                      value={newUser.desa} 
+                      onValueChange={desa => setNewUser({...newUser, desa, kelompok: ''})}
+                      disabled={currentUser?.role === 'desa'}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
+                      <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {['kelompok', 'guru', 'orangtua'].includes(newUser.role) && (
+                  <div>
+                    <Label>Kelompok</Label>
+                    <Select 
+                      value={newUser.kelompok} 
+                      onValueChange={kelompok => setNewUser({...newUser, kelompok})}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
+                      <SelectContent>{kelompok.filter(k => k.desaName === newUser.desa).map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
                 <div>
-                  <Label>Kelompok</Label>
-                  <Select 
-                    value={newUser.kelompok} 
-                    onValueChange={kelompok => setNewUser({...newUser, kelompok})}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
-                    <SelectContent>{kelompok.filter(k => k.desaName === newUser.desa).map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <Label>Nama</Label>
+                  <Input placeholder="Nama Lengkap" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
                 </div>
-              )}
-              
-              <div>
-                <Label>Nama</Label>
-                <Input placeholder="Nama Lengkap" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
+                <div>
+                  <Label>Email</Label>
+                  <Input type="email" placeholder="Email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+                </div>
+                <div>
+                  <Label>Password</Label>
+                  <Input type="password" placeholder="Password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
+                </div>
               </div>
-              <div>
-                <Label>Email</Label>
-                <Input type="email" placeholder="Email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
-              </div>
-              <div>
-                <Label>Password</Label>
-                <Input type="password" placeholder="Password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
-              <Button onClick={handleSave}>Simpan</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleSave}>Simpan</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
         <Table>
