@@ -121,7 +121,15 @@ export default function MaterialsSection({
   };
 
   const openEditDialog = (material: Material) => {
-    setEditingMaterial(material);
+    const materialToEdit = { ...material };
+    // Ensure targetBulan is always an array for the edit form, handling legacy string data
+    const targetBulan = materialToEdit.targetBulan as any;
+    if (typeof targetBulan === 'string') {
+      materialToEdit.targetBulan = targetBulan.split(',').map((s: string) => s.trim()).filter(Boolean);
+    } else if (!Array.isArray(targetBulan)) {
+      materialToEdit.targetBulan = [];
+    }
+    setEditingMaterial(materialToEdit);
     setIsEditDialogOpen(true);
   };
 
@@ -212,7 +220,7 @@ export default function MaterialsSection({
               <TableCell className="whitespace-pre-wrap max-w-sm">{material.rincianMateri}</TableCell>
               <TableCell>{material.kelas}</TableCell>
               <TableCell>{material.semester}</TableCell>
-              <TableCell>{material.targetBulan.join(', ')}</TableCell>
+              <TableCell>{Array.isArray(material.targetBulan) ? material.targetBulan.join(', ') : material.targetBulan}</TableCell>
               <TableCell className="text-center">
                 <button onClick={() => openEditDialog(material)} className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2"><Edit className="w-4 h-4" /></button>
                 <AlertDialog><AlertDialogTrigger asChild><button className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></AlertDialogTrigger>
