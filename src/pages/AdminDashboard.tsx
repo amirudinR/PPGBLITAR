@@ -10,7 +10,7 @@ import DesaSection from '@/components/admin/DesaSection';
 import KelompokSection from '@/components/admin/KelompokSection';
 import DashboardSection from '@/components/admin/DashboardSection';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, setDoc, query, where } from 'firebase/firestore';
 import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -135,14 +135,37 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
 
   const fetchData = useCallback(async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
+      const userRole = currentUser.role;
+      const userDesa = currentUser.desa;
+      const userKelompok = currentUser.kelompok;
+
+      // Queries for restricted collections
+      let generusQuery = query(collection(db, "generus"));
+      let usersQuery = query(collection(db, "users"));
+      let attendanceQuery = query(collection(db, "attendance"));
+
+      if (userRole === 'desa') {
+        generusQuery = query(generusQuery, where("desa", "==", userDesa));
+        usersQuery = query(usersQuery, where("desa", "==", userDesa));
+        attendanceQuery = query(attendanceQuery, where("desa", "==", userDesa));
+      } else if (userRole === 'kelompok') {
+        generusQuery = query(generusQuery, where("desa", "==", userDesa), where("kelompok", "==", userKelompok));
+        usersQuery = query(usersQuery, where("desa", "==", userDesa), where("kelompok", "==", userKelompok));
+        attendanceQuery = query(attendanceQuery, where("desa", "==", userDesa), where("kelompok", "==", userKelompok));
+      }
+
       const [desasSnap, kelompokSnap, generusSnap, usersSnap, attendanceSnap, materialsSnap] = await Promise.all([
         getDocs(collection(db, "desa")),
         getDocs(collection(db, "kelompok")),
-        getDocs(collection(db, "generus")),
-        getDocs(collection(db, "users")),
-        getDocs(collection(db, "attendance")),
+        getDocs(generusQuery),
+        getDocs(usersQuery),
+        getDocs(attendanceQuery),
         getDocs(collection(db, "materials")),
       ]);
 
@@ -174,11 +197,13 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (currentUser) {
+      fetchData();
+    }
+  }, [currentUser, fetchData]);
 
   const filteredData = useMemo(() => {
     if (!currentUser) return { generus: [], users: [], desas: [], kelompok: [], attendance: [], materials: [] };
