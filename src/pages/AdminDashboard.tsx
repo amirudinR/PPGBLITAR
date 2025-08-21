@@ -43,20 +43,25 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Search and filter states for Generus section
+  // Generus section states
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('name');
   
-  // Filter states for Dashboard section
+  // Dashboard section states
   const [dashboardFilterCategory, setDashboardFilterCategory] = useState('pendidikan');
   const [dashboardFilterValue, setDashboardFilterValue] = useState('Semua');
   const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
 
-  // Filter states for Attendance section
+  // Attendance section states
   const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
   const [startYear, setStartYear] = useState(new Date().getFullYear().toString());
   const [endMonth, setEndMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
   const [endYear, setEndYear] = useState(new Date().getFullYear().toString());
+
+  // Materials section states
+  const [materialSearchTerm, setMaterialSearchTerm] = useState('');
+  const [materialFilterCategory, setMaterialFilterCategory] = useState('judulMateri');
+  const [materialMonthFilter, setMaterialMonthFilter] = useState<string[]>([]);
 
   // Using custom hooks for data management
   const { desas, loading: loadingDesa, fetchDesas, addDesa, updateDesa, deleteDesa } = useDesa();
@@ -158,6 +163,12 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
             onDeleteMultipleMaterials={deleteMultipleMaterials}
             onAddMultipleMaterials={addMultipleMaterials}
             currentUser={currentUser}
+            searchTerm={materialSearchTerm}
+            setSearchTerm={setMaterialSearchTerm}
+            filterCategory={materialFilterCategory}
+            setFilterCategory={setMaterialFilterCategory}
+            monthFilter={materialMonthFilter}
+            setMonthFilter={setMaterialMonthFilter}
           />
         );
       case 'kehadiran':
