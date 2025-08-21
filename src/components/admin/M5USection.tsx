@@ -127,35 +127,14 @@ export default function M5USection() {
             <DialogTitle>{isEditMode ? 'Edit Agenda M5U' : 'Tambah Agenda M5U Baru'}</DialogTitle>
           </DialogHeader>
           <div className="py-4 grid grid-cols-2 gap-4">
-            {isEditMode ? (
-              <>
-                <div>
-                  <Label htmlFor="bulan">Bulan</Label>
-                  <Select value={currentItem.bulan} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, bulan: value }))}>
-                    <SelectTrigger id="bulan" className="mt-1"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
-                    <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="tahun">Tahun</Label>
-                  <Select value={String(currentItem.tahun)} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, tahun: Number(value) }))}>
-                    <SelectTrigger id="tahun" className="mt-1"><SelectValue placeholder="Pilih Tahun" /></SelectTrigger>
-                    <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <Label htmlFor="bulan">Bulan</Label>
-                  <Input id="bulan" value={currentItem.bulan} disabled className="mt-1" />
-                </div>
-                <div>
-                  <Label htmlFor="tahun">Tahun</Label>
-                  <Input id="tahun" value={String(currentItem.tahun)} disabled className="mt-1" />
-                </div>
-              </>
-            )}
+            <div>
+              <Label htmlFor="bulan">Bulan</Label>
+              <Input id="bulan" value={currentItem.bulan} disabled className="mt-1" />
+            </div>
+            <div>
+              <Label htmlFor="tahun">Tahun</Label>
+              <Input id="tahun" value={String(currentItem.tahun)} disabled className="mt-1" />
+            </div>
             <div className="col-span-2">
               <Label htmlFor="agenda">Agenda</Label>
               <Textarea id="agenda" value={currentItem.agenda} onChange={(e) => setCurrentItem(prev => ({ ...prev, agenda: e.target.value }))} className="mt-1" />
