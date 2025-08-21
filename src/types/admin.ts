@@ -164,4 +164,5 @@ export interface Kelas {
   jenjangUsia: JenjangUsia;
   desa: string;
   kelompok: string;
+  studentIds: string[];
 }

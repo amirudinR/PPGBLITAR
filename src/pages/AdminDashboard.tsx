@@ -177,6 +177,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         return <KelasSection 
           kelas={kelas}
           gurus={gurus}
+          generus={generus}
           onAddKelas={addKelas}
           onUpdateKelas={updateKelas}
           onDeleteKelas={deleteKelas}

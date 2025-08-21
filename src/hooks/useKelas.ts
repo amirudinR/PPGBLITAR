@@ -35,7 +35,8 @@ export function useKelas(currentUser: User | null) {
       return false;
     }
     try {
-      await addDoc(collection(db, "kelas"), kelasData);
+      const dataToSave = { ...kelasData, studentIds: kelasData.studentIds || [] };
+      await addDoc(collection(db, "kelas"), dataToSave);
       fetchKelas();
       showSuccess("Kelas berhasil ditambahkan.");
       return true;
