@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Material, KELAS_MATERI_LIST, JUDUL_MATERI_LIST, JudulMateri, KelasMateri } from '@/types/admin';
-import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Download } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -46,6 +46,29 @@ export default function MaterialsSection({
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
+
+  const handleDownloadTemplate = () => {
+    const headers = ["Judul Materi", "Rincian Materi", "Kelas", "Semester", "Target Bulan"];
+    const exampleData = [
+      ["Hafalan Al-Quran", "Surat An-Nas ayat 1-3", "SD 1", "Ganjil", "Juli"],
+      ["Praktik Ibadah", "Tata cara wudhu yang benar", "SD 2", "Genap", "Februari"],
+      ["Keilmuan dan Kefahaman", "Rukun Iman", "SMP 1", "Ganjil", "Agustus"],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...exampleData]);
+    
+    ws['!cols'] = [
+        { wch: 25 }, // Judul Materi
+        { wch: 40 }, // Rincian Materi
+        { wch: 15 }, // Kelas
+        { wch: 15 }, // Semester
+        { wch: 15 }, // Target Bulan
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template Materi");
+    XLSX.writeFile(wb, "template_upload_materi.xlsx");
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -192,6 +215,10 @@ export default function MaterialsSection({
               </AlertDialogContent>
             </AlertDialog>
           )}
+          <Button variant="outline" onClick={handleDownloadTemplate}>
+            <Download className="w-4 h-4 mr-2" />
+            Template
+          </Button>
           <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
