@@ -137,3 +137,15 @@ export interface M5U {
   waktuPelaksanaan: string;
   statusHasil: 'Terlaksana' | 'Dalam Proses' | 'Belum Terlaksana' | 'Mansuh' | '';
 }
+
+export const GURU_STATUS_LIST = ['MT', 'MS', 'Asisten Pengajar'] as const;
+export type GuruStatus = typeof GURU_STATUS_LIST[number];
+
+export interface Guru {
+  id: string;
+  name: string;
+  status: GuruStatus;
+  phone: string;
+  desa: string;
+  kelompok: string;
+}
