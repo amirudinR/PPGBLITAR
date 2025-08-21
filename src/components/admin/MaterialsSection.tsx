@@ -59,11 +59,24 @@ export default function MaterialsSection({
 
   const canEdit = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin';
 
+  const dropdownCategories = ['judulMateri', 'kelas', 'semester'];
+
+  const searchOptions = useMemo(() => {
+    if (!dropdownCategories.includes(filterCategory)) return [];
+    if (filterCategory === 'semester') return ['Ganjil', 'Genap'];
+    
+    const uniqueValues = [...new Set(materials.map(item => item[filterCategory as keyof Omit<Material, 'id' | 'targetBulan'>]))];
+    return uniqueValues.map(String).sort();
+  }, [filterCategory, materials]);
+
   const filteredMaterials = useMemo(() => {
     let results = materials;
     if (searchTerm) {
       results = results.filter(material => {
         const value = material[filterCategory as keyof Omit<Material, 'id' | 'targetBulan'>];
+        if (dropdownCategories.includes(filterCategory)) {
+            return String(value) === searchTerm;
+        }
         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
       });
     }
@@ -154,16 +167,48 @@ export default function MaterialsSection({
   const currentMonths = newMaterial.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
   const editMonths = editingMaterial?.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
 
+  const renderSearchInput = () => {
+    if (dropdownCategories.includes(filterCategory)) {
+      return (
+        <Select 
+          value={searchTerm} 
+          onValueChange={(value) => setSearchTerm(value === '--all--' ? '' : value || '')}
+        >
+          <SelectTrigger className="w-full flex-grow md:w-[200px]">
+            <SelectValue placeholder={`Pilih ${filterOptions.find(f => f.value === filterCategory)?.label}...`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="--all--">Semua</SelectItem>
+            {searchOptions.map(option => (
+              <SelectItem key={option} value={option}>{option}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+    return (
+      <div className="relative w-full md:w-auto flex-grow">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Input 
+          placeholder="Cari..." 
+          className="pl-10"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold self-start">Kelola Materi</h2>
         <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-auto flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <Input placeholder="Cari..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          </div>
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
+          {renderSearchInput()}
+          <Select value={filterCategory} onValueChange={(value) => {
+            setFilterCategory(value);
+            setSearchTerm('');
+          }}>
             <SelectTrigger className="w-full md:w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>{filterOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
           </Select>
