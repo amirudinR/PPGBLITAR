@@ -53,21 +53,33 @@ service cloud.firestore {
 
     // === Aturan untuk Data Operasional ('generus', 'attendance', 'materials', 'gurus', 'kelas') ===
     match /generus/{generusId} {
-      allow read, write: if isAdmin() || 
+      allow read: if isAdmin() || 
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+                   
+      allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /gurus/{guruId} {
-      allow read, write: if isAdmin() || 
-                     (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                     (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAdmin() || 
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+                   
+      allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /kelas/{kelasId} {
-      allow read, write: if isAdmin() || 
-                     (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                     (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAdmin() || 
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+                   
+      allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /attendance/{attendanceId} {
