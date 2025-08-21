@@ -25,6 +25,12 @@ interface MaterialsSectionProps {
   onAddMultipleMaterials: (materials: Omit<Material, 'id'>[]) => Promise<boolean>;
 }
 
+// Helper function to find the correct cased value from a list, ignoring case and whitespace
+const findCorrectCase = (list: readonly string[], value: string): string | undefined => {
+  const lowercasedValue = value.trim().toLowerCase();
+  return list.find(item => item.toLowerCase() === lowercasedValue);
+};
+
 export default function MaterialsSection({
   materials,
   newMaterial,
@@ -55,20 +61,32 @@ export default function MaterialsSection({
         const json = XLSX.utils.sheet_to_json(worksheet) as any[];
 
         const materialsToUpload: Omit<Material, 'id'>[] = json.map((row, index) => {
-          const judulMateri = (row['Judul Materi'] as string)?.trim() as JudulMateri;
-          const kelas = (row['Kelas'] as string)?.trim() as KelasMateri;
-          const semester = (row['Semester'] as string)?.trim() as 'Ganjil' | 'Genap';
+          const rowNum = index + 2;
 
-          if (!JUDUL_MATERI_LIST.includes(judulMateri)) throw new Error(`Baris ${index + 2}: Judul Materi tidak valid.`);
-          if (!KELAS_MATERI_LIST.includes(kelas)) throw new Error(`Baris ${index + 2}: Kelas tidak valid.`);
-          if (semester !== 'Ganjil' && semester !== 'Genap') throw new Error(`Baris ${index + 2}: Semester harus 'Ganjil' atau 'Genap'.`);
+          // Validate Judul Materi
+          const judulMateriRaw = row['Judul Materi'];
+          if (!judulMateriRaw) throw new Error(`Baris ${rowNum}: Judul Materi tidak boleh kosong.`);
+          const correctJudulMateri = findCorrectCase(JUDUL_MATERI_LIST, String(judulMateriRaw));
+          if (!correctJudulMateri) throw new Error(`Baris ${rowNum}: Judul Materi "${judulMateriRaw}" tidak valid.`);
+
+          // Validate Kelas
+          const kelasRaw = row['Kelas'];
+          if (!kelasRaw) throw new Error(`Baris ${rowNum}: Kelas tidak boleh kosong.`);
+          const correctKelas = findCorrectCase(KELAS_MATERI_LIST, String(kelasRaw));
+          if (!correctKelas) throw new Error(`Baris ${rowNum}: Kelas "${kelasRaw}" tidak valid.`);
+
+          // Validate Semester
+          const semesterRaw = row['Semester'];
+          if (!semesterRaw) throw new Error(`Baris ${rowNum}: Semester tidak boleh kosong.`);
+          const correctSemester = findCorrectCase(['Ganjil', 'Genap'], String(semesterRaw));
+          if (!correctSemester) throw new Error(`Baris ${rowNum}: Semester "${semesterRaw}" harus 'Ganjil' atau 'Genap'.`);
 
           return {
-            judulMateri,
-            rincianMateri: (row['Rincian Materi'] as string)?.trim() || '',
-            kelas,
-            semester,
-            targetBulan: (row['Target Bulan'] as string)?.trim() || '',
+            judulMateri: correctJudulMateri as JudulMateri,
+            rincianMateri: String(row['Rincian Materi'] || '').trim(),
+            kelas: correctKelas as KelasMateri,
+            semester: correctSemester as 'Ganjil' | 'Genap',
+            targetBulan: String(row['Target Bulan'] || '').trim(),
           };
         });
 
