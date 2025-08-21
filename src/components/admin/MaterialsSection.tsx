@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Material, KELAS_MATERI_LIST, JUDUL_MATERI_LIST } from '@/types/admin';
-import { Plus, Edit, Trash2, Database } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -17,8 +17,6 @@ interface MaterialsSectionProps {
   onAddMaterial: () => Promise<boolean>;
   onUpdateMaterial: (id: string, updatedData: Omit<Material, 'id'>) => Promise<boolean>;
   onDeleteMaterial: (id: string) => void;
-  onPopulateMaterials: () => void;
-  isPopulating: boolean;
 }
 
 export default function MaterialsSection({
@@ -28,8 +26,6 @@ export default function MaterialsSection({
   onAddMaterial,
   onUpdateMaterial,
   onDeleteMaterial,
-  onPopulateMaterials,
-  isPopulating,
 }: MaterialsSectionProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -82,73 +78,67 @@ export default function MaterialsSection({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Kelola Materi</h2>
-        <div className="flex items-center gap-2">
-          <Button onClick={onPopulateMaterials} disabled={isPopulating}>
-            <Database className="w-4 h-4 mr-2" />
-            {isPopulating ? 'Mengisi Data...' : 'Isi Data Materi Awal'}
-          </Button>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Tambah Materi
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Tambah Materi Baru</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="judulMateri">Judul Materi</Label>
-                    <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
-                      <SelectTrigger id="judulMateri" className="mt-1">
-                        <SelectValue placeholder="Pilih Judul Materi" />
-                      </SelectTrigger>
-                      <SelectContent>{JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="kelas">Kelas</Label>
-                    <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
-                      <SelectTrigger id="kelas" className="mt-1">
-                        <SelectValue placeholder="Pilih Kelas" />
-                      </SelectTrigger>
-                      <SelectContent>{KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="semester">Semester</Label>
-                    <Select value={newMaterial.semester} onValueChange={(value) => handleSelectChange('semester', value)}>
-                      <SelectTrigger id="semester" className="mt-1">
-                        <SelectValue placeholder="Pilih Semester" />
-                      </SelectTrigger>
-                      <SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="targetBulan">Target Bulan</Label>
-                    <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
-                      <SelectTrigger id="targetBulan" className="mt-1">
-                        <SelectValue placeholder="Pilih Bulan" />
-                      </SelectTrigger>
-                      <SelectContent>{currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Materi
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tambah Materi Baru</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="judulMateri">Judul Materi</Label>
+                  <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
+                    <SelectTrigger id="judulMateri" className="mt-1">
+                      <SelectValue placeholder="Pilih Judul Materi" />
+                    </SelectTrigger>
+                    <SelectContent>{JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
                 <div>
-                  <Label htmlFor="rincianMateri">Rincian Materi</Label>
-                  <Textarea id="rincianMateri" value={newMaterial.rincianMateri} onChange={(e) => handleInputChange('rincianMateri', e.target.value)} className="mt-1" />
+                  <Label htmlFor="kelas">Kelas</Label>
+                  <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
+                    <SelectTrigger id="kelas" className="mt-1">
+                      <SelectValue placeholder="Pilih Kelas" />
+                    </SelectTrigger>
+                    <SelectContent>{KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="semester">Semester</Label>
+                  <Select value={newMaterial.semester} onValueChange={(value) => handleSelectChange('semester', value)}>
+                    <SelectTrigger id="semester" className="mt-1">
+                      <SelectValue placeholder="Pilih Semester" />
+                    </SelectTrigger>
+                    <SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="targetBulan">Target Bulan</Label>
+                  <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
+                    <SelectTrigger id="targetBulan" className="mt-1">
+                      <SelectValue placeholder="Pilih Bulan" />
+                    </SelectTrigger>
+                    <SelectContent>{currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
-                <Button onClick={handleAdd}>Simpan</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+              <div>
+                <Label htmlFor="rincianMateri">Rincian Materi</Label>
+                <Textarea id="rincianMateri" value={newMaterial.rincianMateri} onChange={(e) => handleInputChange('rincianMateri', e.target.value)} className="mt-1" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
+              <Button onClick={handleAdd}>Simpan</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-auto">
