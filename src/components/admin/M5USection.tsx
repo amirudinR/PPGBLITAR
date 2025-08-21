@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { showError } from '@/utils/toast';
 
 const initialData: M5U[] = [
   { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Tercapai' },
@@ -61,33 +60,11 @@ export default function M5USection() {
     setM5uItems(m5uItems.filter(item => item.id !== id));
   };
 
-  const handleAddClick = () => {
-    const now = new Date();
-    const currentMonthIndex = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    let prevMonthIndex = currentMonthIndex - 1;
-    let prevYear = currentYear;
-    if (prevMonthIndex < 0) {
-      prevMonthIndex = 11;
-      prevYear -= 1;
-    }
-    const prevMonthName = months[prevMonthIndex];
-
-    const prevMonthAgenda = m5uItems.find(item => item.tahun === prevYear && item.bulan === prevMonthName);
-
-    if (prevMonthAgenda && (!prevMonthAgenda.hasil || prevMonthAgenda.hasil.trim() === '-')) {
-      showError(`Harap isi kolom "Hasil" untuk agenda bulan ${prevMonthName} ${prevYear} terlebih dahulu.`);
-    } else {
-      openDialog();
-    }
-  };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Musyawarah 5 Unsur (M5U)</h2>
-        <Button onClick={handleAddClick}>
+        <Button onClick={() => openDialog()}>
           <Plus className="w-4 h-4 mr-2" />
           Tambah Agenda
         </Button>
