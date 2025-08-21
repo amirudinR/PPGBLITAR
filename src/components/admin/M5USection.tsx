@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { M5U } from '@/types/admin';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -23,6 +23,15 @@ const months = [
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
+const filterOptions = [
+    { value: 'bulan', label: 'Bulan' },
+    { value: 'tahun', label: 'Tahun' },
+    { value: 'agenda', label: 'Agenda' },
+    { value: 'hasil', label: 'Hasil' },
+    { value: 'pj', label: 'PJ' },
+    { value: 'statusHasil', label: 'Status Hasil' },
+];
+
 export default function M5USection() {
   const [m5uItems, setM5uItems] = useState<M5U[]>(initialData);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -31,6 +40,18 @@ export default function M5USection() {
     bulan: '', tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('agenda');
+
+  const filteredM5uItems = useMemo(() => {
+    if (!searchTerm) {
+      return m5uItems;
+    }
+    return m5uItems.filter(item => {
+      const value = item[filterCategory as keyof M5U];
+      return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [m5uItems, searchTerm, filterCategory]);
 
   const openDialog = (item?: M5U) => {
     if (item) {
@@ -64,10 +85,31 @@ export default function M5USection() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Musyawarah 5 Unsur (M5U)</h2>
-        <Button onClick={() => openDialog()}>
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Agenda
-        </Button>
+        <div className="flex items-center gap-2">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input 
+                    placeholder="Cari..." 
+                    className="pl-10" 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                />
+            </div>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {filterOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Button onClick={() => openDialog()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Tambah Agenda
+            </Button>
+        </div>
       </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
         <Table>
@@ -84,7 +126,7 @@ export default function M5USection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {m5uItems.map((item) => (
+            {filteredM5uItems.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.bulan}</TableCell>
                 <TableCell>{item.tahun}</TableCell>
