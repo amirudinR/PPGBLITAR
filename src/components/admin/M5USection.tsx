@@ -157,17 +157,19 @@ export default function M5USection() {
               <Label htmlFor="waktuPelaksanaan">Waktu Pelaksanaan</Label>
               <Input id="waktuPelaksanaan" type="date" value={currentItem.waktuPelaksanaan} onChange={(e) => setCurrentItem(prev => ({ ...prev, waktuPelaksanaan: e.target.value }))} className="mt-1" />
             </div>
-            <div className="col-span-2">
-              <Label htmlFor="statusHasil">Status Hasil</Label>
-              <Select value={currentItem.statusHasil} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, statusHasil: value as M5U['statusHasil'] }))}>
-                <SelectTrigger id="statusHasil" className="mt-1"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Tercapai">Tercapai</SelectItem>
-                  <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
-                  <SelectItem value="Belum Tercapai">Belum Tercapai</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {isEditMode && (
+              <div className="col-span-2">
+                <Label htmlFor="statusHasil">Status Hasil</Label>
+                <Select value={currentItem.statusHasil} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, statusHasil: value as M5U['statusHasil'] }))}>
+                  <SelectTrigger id="statusHasil" className="mt-1"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tercapai">Tercapai</SelectItem>
+                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                    <SelectItem value="Belum Tercapai">Belum Tercapai</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
