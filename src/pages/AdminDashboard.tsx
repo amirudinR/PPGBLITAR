@@ -223,7 +223,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar
         activeSection={activeSection} setActiveSection={setActiveSection}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout}

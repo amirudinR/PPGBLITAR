@@ -56,11 +56,11 @@ export default function RegisterPage() {
       <div className="hidden lg:flex items-center justify-center bg-gray-100 p-12">
         <img src="/logo.png" alt="Register Illustration" className="w-full max-w-md" />
       </div>
-      <div className="flex flex-col items-center justify-center bg-blue-600 p-8 text-white">
+      <div className="flex flex-col items-center justify-center bg-indigo-600 p-8 text-white">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold">Buat Akun Admin Super</h1>
-            <p className="mt-2 text-blue-200">Daftarkan administrator utama untuk sistem.</p>
+            <p className="mt-2 text-indigo-200">Daftarkan administrator utama untuk sistem.</p>
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
@@ -103,13 +103,13 @@ export default function RegisterPage() {
               </div>
             </div>
             <Button 
-              className="w-full bg-yellow-400 text-blue-900 rounded-full py-6 font-semibold hover:bg-yellow-500"
+              className="w-full bg-white text-indigo-600 rounded-full py-6 font-semibold hover:bg-indigo-50"
               onClick={handleRegister}
             >
               Daftar Akun Admin Super
             </Button>
             <div className="text-center">
-              <Link to="/login" className="text-sm text-blue-200 hover:underline">
+              <Link to="/login" className="text-sm text-indigo-200 hover:underline">
                 Sudah punya akun? Masuk di sini
               </Link>
             </div>

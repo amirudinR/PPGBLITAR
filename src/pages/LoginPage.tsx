@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex items-center justify-center bg-gray-100 p-12">
         <img src="/logo.png" alt="Login Illustration" className="w-full max-w-md" />
       </div>
-      <div className="flex flex-col items-center justify-center bg-blue-600 p-8 text-white">
+      <div className="flex flex-col items-center justify-center bg-indigo-600 p-8 text-white">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-left">
             <h1 className="text-4xl font-bold">Selamat Datang!</h1>
@@ -70,18 +70,17 @@ export default function LoginPage() {
             </div>
             <div className="flex items-center justify-end pt-2">
                 <Button 
-                    variant="outline"
-                    className="w-auto bg-transparent border-white text-white rounded-full px-8 py-6 font-semibold hover:bg-white hover:text-blue-600"
+                    className="w-auto bg-white text-indigo-600 rounded-full px-8 py-6 font-semibold hover:bg-indigo-50"
                     onClick={handleLogin}
                 >
                     Masuk
                 </Button>
             </div>
              <div className="text-center space-y-2">
-                <Link to="/forgot-password" className="text-sm text-blue-200 hover:underline">
+                <Link to="/forgot-password" className="text-sm text-indigo-200 hover:underline">
                   Lupa Password?
                 </Link>
-                <p className="text-sm text-blue-200">
+                <p className="text-sm text-indigo-200">
                   Belum punya akun?{' '}
                   <Link to="/register" className="font-semibold underline hover:text-white">
                     Daftar di sini

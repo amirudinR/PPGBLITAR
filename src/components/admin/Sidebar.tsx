@@ -56,10 +56,10 @@ export default function Sidebar({
   const parentOfActive = visibleMenuItems.find(item => item.children?.some(child => child.id === activeSection))?.id;
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="flex items-center justify-between p-6 border-b">
-        <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
-        <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
+    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground shadow-lg transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
+        <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
+        <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
           <X className="w-6 h-6" />
         </button>
       </div>
@@ -70,7 +70,7 @@ export default function Sidebar({
             if (item.children) {
               return (
                 <AccordionItem value={item.id} key={item.id} className="border-none">
-                  <AccordionTrigger className="px-4 py-3 rounded-lg hover:no-underline hover:bg-gray-100">
+                  <AccordionTrigger className="px-4 py-3 rounded-lg hover:no-underline hover:bg-sidebar-accent">
                     <div className="flex items-center space-x-3">
                       <Icon className="w-5 h-5" />
                       <span>{item.label}</span>
@@ -88,8 +88,8 @@ export default function Sidebar({
                           }}
                           className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors mb-1 text-sm ${
                             activeSection === child.id
-                              ? 'bg-blue-500 text-white'
-                              : 'text-gray-700 hover:bg-gray-100'
+                              ? 'bg-white text-indigo-600 font-semibold'
+                              : 'hover:bg-sidebar-accent'
                           }`}
                         >
                           <ChildIcon className="w-4 h-4" />
@@ -110,8 +110,8 @@ export default function Sidebar({
                 }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors mb-2 ${
                   activeSection === item.id
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-white text-indigo-600 font-semibold'
+                    : 'hover:bg-sidebar-accent'
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -122,7 +122,7 @@ export default function Sidebar({
         </Accordion>
         <button
           onClick={onLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-8"
+          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-300 hover:bg-red-500 hover:text-white transition-colors mt-8"
         >
           <LogOut className="w-5 h-5" />
           <span>Log Out</span>
