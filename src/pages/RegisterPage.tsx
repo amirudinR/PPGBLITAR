@@ -54,7 +54,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2">
       <div className="hidden lg:flex items-center justify-center bg-gray-100 p-12">
-        <img src="/placeholder.svg" alt="Register Illustration" className="w-full max-w-md" />
+        <img src="/logo.png" alt="Register Illustration" className="w-full max-w-md" />
       </div>
       <div className="flex flex-col items-center justify-center bg-blue-600 p-8 text-white">
         <div className="w-full max-w-sm space-y-8">
