@@ -126,3 +126,14 @@ export interface Kelompok {
     desaId: string;
     desaName: string;
 }
+
+export interface M5U {
+  id: string;
+  bulan: string;
+  tahun: number;
+  agenda: string;
+  hasil: string;
+  pj: string;
+  waktuPelaksanaan: string;
+  statusHasil: 'Tercapai' | 'Belum Tercapai' | 'Dalam Proses';
+}
