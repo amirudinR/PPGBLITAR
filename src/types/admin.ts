@@ -69,7 +69,7 @@ export const GENERUS_FILTER_FIELDS = [
 ] as const;
 
 export const JUDUL_MATERI_LIST = [
-  "Hafalan Al-Qur'an",
+  'Hafalan Al-Quran',
   "Hafalan Do'a",
   'Hafalan Dalil',
   'Praktik Ibadah',
