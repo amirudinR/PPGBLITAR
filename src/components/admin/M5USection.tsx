@@ -43,12 +43,25 @@ export default function M5USection() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('agenda');
 
+  const dropdownCategories = ['bulan', 'tahun', 'statusHasil'];
+
+  const searchOptions = useMemo(() => {
+    if (!dropdownCategories.includes(filterCategory)) return [];
+    if (filterCategory === 'bulan') return months;
+    if (filterCategory === 'tahun') return years.map(String);
+    if (filterCategory === 'statusHasil') return ['Terlaksana', 'Dalam Proses', 'Belum Terlaksana', 'Mansuh'];
+    return [];
+  }, [filterCategory]);
+
   const filteredM5uItems = useMemo(() => {
     if (!searchTerm) {
       return m5uItems;
     }
     return m5uItems.filter(item => {
       const value = item[filterCategory as keyof M5U];
+      if (dropdownCategories.includes(filterCategory)) {
+        return String(value) === searchTerm;
+      }
       return String(value).toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [m5uItems, searchTerm, filterCategory]);
@@ -81,21 +94,48 @@ export default function M5USection() {
     setM5uItems(m5uItems.filter(item => item.id !== id));
   };
 
+  const renderSearchInput = () => {
+    if (dropdownCategories.includes(filterCategory)) {
+      return (
+        <Select 
+          value={searchTerm} 
+          onValueChange={(value) => setSearchTerm(value === '--all--' ? '' : value || '')}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder={`Pilih ${filterOptions.find(f => f.value === filterCategory)?.label}...`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="--all--">Semua</SelectItem>
+            {searchOptions.map(option => (
+              <SelectItem key={option} value={option}>{option}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+    return (
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Input 
+          placeholder="Cari..." 
+          className="pl-10" 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+        />
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Musyawarah 5 Unsur (M5U)</h2>
         <div className="flex items-center gap-2">
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <Input 
-                    placeholder="Cari..." 
-                    className="pl-10" 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
-                />
-            </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
+            {renderSearchInput()}
+            <Select value={filterCategory} onValueChange={(value) => {
+                setFilterCategory(value);
+                setSearchTerm('');
+            }}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue />
                 </SelectTrigger>
