@@ -11,9 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const initialData: M5U[] = [
-  { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Tercapai' },
-  { id: '2', bulan: 'Februari', tahun: 2024, agenda: 'Perencanaan Program Semester Genap', hasil: 'Program telah disusun', pj: 'Admin', waktuPelaksanaan: '2024-02-10', statusHasil: 'Tercapai' },
-  { id: '3', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: '-', pj: 'PJP Desa', waktuPelaksanaan: '2024-03-20', statusHasil: 'Dalam Proses' },
+  { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
+  { id: '2', bulan: 'Februari', tahun: 2024, agenda: 'Perencanaan Program Semester Genap', hasil: 'Program telah disusun', pj: 'Admin', waktuPelaksanaan: '2024-02-10', statusHasil: 'Terlaksana' },
+  { id: '3', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: '-', pj: 'PJP Desa', waktuPelaksanaan: '2024-03-20', statusHasil: 'dalam proses' },
 ];
 
 const months = [
@@ -157,9 +157,10 @@ export default function M5USection() {
                 <Select value={currentItem.statusHasil} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, statusHasil: value as M5U['statusHasil'] }))}>
                   <SelectTrigger id="statusHasil" className="mt-1"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Tercapai">Tercapai</SelectItem>
-                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
-                    <SelectItem value="Belum Tercapai">Belum Tercapai</SelectItem>
+                    <SelectItem value="Terlaksana">Terlaksana</SelectItem>
+                    <SelectItem value="dalam proses">dalam proses</SelectItem>
+                    <SelectItem value="belum terlaksana">belum terlaksana</SelectItem>
+                    <SelectItem value="mansuh">mansuh</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
