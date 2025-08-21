@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { auth } from '@/lib/firebase';
@@ -10,7 +10,6 @@ import { Mail, Lock } from 'lucide-react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -21,7 +20,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       showSuccess("Login berhasil!");
-      navigate('/admin');
+      // Navigasi sekarang ditangani secara otomatis oleh App.tsx
     } catch (error: any) {
       console.error("Error logging in: ", error);
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
