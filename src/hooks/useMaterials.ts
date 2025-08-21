@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Material, JUDUL_MATERI_LIST, KELAS_MATERI_LIST } from '@/types/admin';
 import { showError, showSuccess } from '@/utils/toast';
@@ -55,5 +55,21 @@ export function useMaterials() {
     } catch (e) { showError("Gagal menghapus materi."); }
   };
 
-  return { materials, loading, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial };
+  const deleteMultipleMaterials = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    try {
+      const batch = writeBatch(db);
+      ids.forEach(id => {
+        const docRef = doc(db, "materials", id);
+        batch.delete(docRef);
+      });
+      await batch.commit();
+      fetchMaterials();
+      showSuccess(`${ids.length} materi berhasil dihapus.`);
+    } catch (e) {
+      showError("Gagal menghapus materi yang dipilih.");
+    }
+  };
+
+  return { materials, loading, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials };
 }

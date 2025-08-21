@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface MaterialsSectionProps {
   materials: Material[];
@@ -17,6 +19,7 @@ interface MaterialsSectionProps {
   onAddMaterial: () => Promise<boolean>;
   onUpdateMaterial: (id: string, updatedData: Omit<Material, 'id'>) => Promise<boolean>;
   onDeleteMaterial: (id: string) => void;
+  onDeleteMultipleMaterials: (ids: string[]) => void;
 }
 
 export default function MaterialsSection({
@@ -26,10 +29,12 @@ export default function MaterialsSection({
   onAddMaterial,
   onUpdateMaterial,
   onDeleteMaterial,
+  onDeleteMultipleMaterials,
 }: MaterialsSectionProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
 
   const handleInputChange = (field: keyof typeof newMaterial, value: string) => {
     setNewMaterial(prev => ({ ...prev, [field]: value }));
@@ -71,6 +76,27 @@ export default function MaterialsSection({
     }
   };
 
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked) {
+      setSelectedMaterials(materials.map(m => m.id));
+    } else {
+      setSelectedMaterials([]);
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean | 'indeterminate') => {
+    if (checked) {
+      setSelectedMaterials(prev => [...prev, id]);
+    } else {
+      setSelectedMaterials(prev => prev.filter(materialId => materialId !== id));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    onDeleteMultipleMaterials(selectedMaterials);
+    setSelectedMaterials([]);
+  };
+
   const currentMonths = newMaterial.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
   const editMonths = editingMaterial?.semester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
 
@@ -78,73 +104,104 @@ export default function MaterialsSection({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Kelola Materi</h2>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Tambah Materi
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tambah Materi Baru</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="judulMateri">Judul Materi</Label>
-                  <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
-                    <SelectTrigger id="judulMateri" className="mt-1">
-                      <SelectValue placeholder="Pilih Judul Materi" />
-                    </SelectTrigger>
-                    <SelectContent>{JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                  </Select>
+        <div className="flex items-center gap-2">
+          {selectedMaterials.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Hapus ({selectedMaterials.length})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tindakan ini akan menghapus {selectedMaterials.length} materi yang dipilih secara permanen.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteSelected}>Hapus</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Tambah Materi
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Tambah Materi Baru</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="judulMateri">Judul Materi</Label>
+                    <Select value={newMaterial.judulMateri} onValueChange={(value) => handleSelectChange('judulMateri', value)}>
+                      <SelectTrigger id="judulMateri" className="mt-1">
+                        <SelectValue placeholder="Pilih Judul Materi" />
+                      </SelectTrigger>
+                      <SelectContent>{JUDUL_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="kelas">Kelas</Label>
+                    <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
+                      <SelectTrigger id="kelas" className="mt-1">
+                        <SelectValue placeholder="Pilih Kelas" />
+                      </SelectTrigger>
+                      <SelectContent>{KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="semester">Semester</Label>
+                    <Select value={newMaterial.semester} onValueChange={(value) => handleSelectChange('semester', value)}>
+                      <SelectTrigger id="semester" className="mt-1">
+                        <SelectValue placeholder="Pilih Semester" />
+                      </SelectTrigger>
+                      <SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="targetBulan">Target Bulan</Label>
+                    <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
+                      <SelectTrigger id="targetBulan" className="mt-1">
+                        <SelectValue placeholder="Pilih Bulan" />
+                      </SelectTrigger>
+                      <SelectContent>{currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div>
-                  <Label htmlFor="kelas">Kelas</Label>
-                  <Select value={newMaterial.kelas} onValueChange={(value) => handleSelectChange('kelas', value)}>
-                    <SelectTrigger id="kelas" className="mt-1">
-                      <SelectValue placeholder="Pilih Kelas" />
-                    </SelectTrigger>
-                    <SelectContent>{KELAS_MATERI_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="semester">Semester</Label>
-                  <Select value={newMaterial.semester} onValueChange={(value) => handleSelectChange('semester', value)}>
-                    <SelectTrigger id="semester" className="mt-1">
-                      <SelectValue placeholder="Pilih Semester" />
-                    </SelectTrigger>
-                    <SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="targetBulan">Target Bulan</Label>
-                  <Select value={newMaterial.targetBulan} onValueChange={(value) => handleSelectChange('targetBulan', value)} disabled={!newMaterial.semester}>
-                    <SelectTrigger id="targetBulan" className="mt-1">
-                      <SelectValue placeholder="Pilih Bulan" />
-                    </SelectTrigger>
-                    <SelectContent>{currentMonths.map(bulan => <SelectItem key={bulan} value={bulan}>{bulan}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <Label htmlFor="rincianMateri">Rincian Materi</Label>
+                  <Textarea id="rincianMateri" value={newMaterial.rincianMateri} onChange={(e) => handleInputChange('rincianMateri', e.target.value)} className="mt-1" />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="rincianMateri">Rincian Materi</Label>
-                <Textarea id="rincianMateri" value={newMaterial.rincianMateri} onChange={(e) => handleInputChange('rincianMateri', e.target.value)} className="mt-1" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
-              <Button onClick={handleAdd}>Simpan</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleAdd}>Simpan</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedMaterials.length === materials.length && materials.length > 0}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Pilih semua"
+                />
+              </TableHead>
               <TableHead>Judul Materi</TableHead>
               <TableHead>Rincian Materi</TableHead>
               <TableHead>Kelas</TableHead>
@@ -156,6 +213,13 @@ export default function MaterialsSection({
           <TableBody>
             {materials.map((material) => (
               <TableRow key={material.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedMaterials.includes(material.id)}
+                    onCheckedChange={(checked) => handleSelectOne(material.id, checked)}
+                    aria-label={`Pilih materi ${material.judulMateri}`}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">{material.judulMateri}</TableCell>
                 <TableCell className="whitespace-pre-wrap max-w-sm">{material.rincianMateri}</TableCell>
                 <TableCell>{material.kelas}</TableCell>
@@ -165,12 +229,25 @@ export default function MaterialsSection({
                   <button onClick={() => openEditDialog(material)} className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2">
                     <Edit className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => onDeleteMaterial(material.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button className="p-2 text-red-600 hover:bg-red-50 rounded">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tindakan ini tidak dapat dibatalkan. Ini akan menghapus materi ini secara permanen.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => onDeleteMaterial(material.id)}>Hapus</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </TableCell>
               </TableRow>
             ))}
