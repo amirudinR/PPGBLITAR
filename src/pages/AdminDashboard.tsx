@@ -10,6 +10,7 @@ import DesaSection from '@/components/admin/DesaSection';
 import KelompokSection from '@/components/admin/KelompokSection';
 import DashboardSection from '@/components/admin/DashboardSection';
 import M5USection from '@/components/admin/M5USection';
+import GuruSection from '@/components/admin/GuruSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -33,6 +34,7 @@ const menuItems = [
       { id: 'akun', label: 'Akun' },
       { id: 'desa', label: 'Desa' },
       { id: 'kelompok', label: 'Kelompok' },
+      { id: 'dataguru', label: 'Data Guru' },
     ]
   },
   { id: 'generus', label: 'Data Generus' },
@@ -153,6 +155,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           onDeleteUser={deleteUser} 
           currentUser={currentUser}
         />;
+      case 'dataguru':
+        return <GuruSection />;
       case 'materi':
         return (
           <MaterialsSection
