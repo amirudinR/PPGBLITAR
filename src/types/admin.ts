@@ -146,4 +146,6 @@ export interface Guru {
   name: string;
   status: GuruStatus;
   phone: string;
+  desa: string;
+  kelompok: string;
 }

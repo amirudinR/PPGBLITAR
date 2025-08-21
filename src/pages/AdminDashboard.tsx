@@ -156,7 +156,11 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           currentUser={currentUser}
         />;
       case 'dataguru':
-        return <GuruSection />;
+        return <GuruSection 
+          currentUser={currentUser}
+          desas={desas}
+          kelompok={kelompok}
+        />;
       case 'materi':
         return (
           <MaterialsSection
