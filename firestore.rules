@@ -25,8 +25,6 @@ service cloud.firestore {
 
     // === Aturan untuk Koleksi 'users' ===
     match /users/{userId} {
-      // Baca: Admin bisa baca semua. Pengguna bisa baca data sendiri.
-      // PJP Desa/Kelompok bisa baca pengguna dalam lingkup mereka.
       allow read: if isAdmin() || 
                    (isAuthenticated() && request.auth.uid == userId) ||
                    (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
@@ -36,7 +34,12 @@ service cloud.firestore {
                        
       allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
       
-      allow delete: if hasRole('adminsuper');
+      // Hapus: Admin Super bisa hapus siapa saja. Admin bisa hapus selain Admin Super.
+      // PJP Desa/Kelompok bisa hapus guru dalam lingkup mereka.
+      allow delete: if hasRole('adminsuper') ||
+                     (hasRole('admin') && resource.data.role != 'adminsuper') ||
+                     (hasRole('desa') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa) ||
+                     (hasRole('kelompok') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
     }
 
     // === Aturan untuk Data Master ('desa', 'kelompok') ===
@@ -52,27 +55,27 @@ service cloud.firestore {
 
     // === Aturan untuk Data Operasional ('generus', 'attendance', 'materials', 'gurus') ===
     match /generus/{generusId} {
-      // Baca: Admin bisa baca semua. PJP Desa/Kelompok bisa baca generus dalam lingkup mereka.
       allow read: if isAdmin() || 
                    (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
                    (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
                    
-      // Tulis: Admin bisa tulis semua. PJP Desa/Kelompok bisa tulis generus dalam lingkup mereka.
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /gurus/{guruId} {
-      // Baca: Admin bisa baca semua. PJP Desa/Kelompok bisa baca guru dalam lingkup mereka.
       allow read: if isAdmin() || 
                    (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
                    (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
                    
-      // Tulis: Admin bisa tulis semua. PJP Desa/Kelompok bisa tulis guru dalam lingkup mereka.
-      allow write: if isAdmin() || 
+      allow create, update: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+      
+      allow delete: if isAdmin() || 
+                     (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                     (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /attendance/{attendanceId} {
