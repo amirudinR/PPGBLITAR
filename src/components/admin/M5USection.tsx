@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { M5U } from '@/types/admin';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, CheckCircle, Clock, XCircle, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import M5UStatusChart from './M5UStatusChart';
+import DashboardStatCard from './DashboardStatCard';
 
 const initialData: M5U[] = [
   { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
@@ -65,6 +67,29 @@ export default function M5USection() {
       return String(value).toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [m5uItems, searchTerm, filterCategory]);
+
+  const chartData = useMemo(() => {
+    const statusCounts = {
+      'Terlaksana': 0,
+      'Dalam Proses': 0,
+      'Belum Terlaksana': 0,
+      'Mansuh': 0,
+    };
+
+    filteredM5uItems.forEach(item => {
+      if (item.statusHasil && statusCounts.hasOwnProperty(item.statusHasil)) {
+        statusCounts[item.statusHasil as keyof typeof statusCounts]++;
+      }
+    });
+
+    return Object.entries(statusCounts)
+      .map(([name, value]) => ({ name, value }));
+  }, [filteredM5uItems]);
+
+  const totalTerlaksana = useMemo(() => chartData.find(d => d.name === 'Terlaksana')?.value || 0, [chartData]);
+  const totalDalamProses = useMemo(() => chartData.find(d => d.name === 'Dalam Proses')?.value || 0, [chartData]);
+  const totalBelumTerlaksana = useMemo(() => chartData.find(d => d.name === 'Belum Terlaksana')?.value || 0, [chartData]);
+  const totalMansuh = useMemo(() => chartData.find(d => d.name === 'Mansuh')?.value || 0, [chartData]);
 
   const openDialog = (item?: M5U) => {
     if (item) {
@@ -128,8 +153,17 @@ export default function M5USection() {
 
   return (
     <div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <DashboardStatCard title="Terlaksana" value={totalTerlaksana} icon={CheckCircle} />
+        <DashboardStatCard title="Dalam Proses" value={totalDalamProses} icon={Clock} />
+        <DashboardStatCard title="Belum Terlaksana" value={totalBelumTerlaksana} icon={XCircle} />
+        <DashboardStatCard title="Mansuh" value={totalMansuh} icon={Archive} />
+      </div>
+      <div className="mb-6">
+        <M5UStatusChart data={chartData.filter(d => d.value > 0)} />
+      </div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Musyawarah 5 Unsur (M5U)</h2>
+        <h2 className="text-2xl font-bold">Detail Agenda M5U</h2>
         <div className="flex items-center gap-2">
             {renderSearchInput()}
             <Select value={filterCategory} onValueChange={(value) => {
