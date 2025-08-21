@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AccountsSectionProps {
   users: User[];
@@ -195,8 +197,48 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
                 <TableCell>{user.kelompok || '-'}</TableCell>
                 <TableCell>{user.password || '******'}</TableCell>
                 <TableCell className="text-center">
-                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}><Edit className="w-4 h-4 text-blue-600" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDeleteUser(user.id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                  {user.role === 'guru' ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex">
+                          <Button variant="ghost" size="icon" disabled>
+                            <Edit className="w-4 h-4 text-gray-400" />
+                          </Button>
+                          <Button variant="ghost" size="icon" disabled>
+                            <Trash2 className="w-4 h-4 text-gray-400" />
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit atau hapus di halaman data guru</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <>
+                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}>
+                        <Edit className="w-4 h-4 text-blue-600" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tindakan ini akan menghapus data akun secara permanen.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDeleteUser(user.id)}>Hapus</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
