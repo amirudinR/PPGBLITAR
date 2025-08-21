@@ -25,10 +25,8 @@ service cloud.firestore {
 
     // === Aturan untuk Koleksi 'users' ===
     match /users/{userId} {
-      allow read: if isAdmin() || 
-                   (isAuthenticated() && request.auth.uid == userId) ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      // Baca: Semua pengguna terautentikasi bisa membaca data pengguna lain untuk keperluan dashboard, dll.
+      allow read: if isAuthenticated();
       
       allow create: if true;
                        
@@ -53,39 +51,43 @@ service cloud.firestore {
 
     // === Aturan untuk Data Operasional ('generus', 'attendance', 'materials', 'gurus', 'kelas') ===
     match /generus/{generusId} {
-      allow read: if isAdmin() || 
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      // Baca: Semua pengguna terautentikasi bisa membaca data generus untuk keperluan dashboard.
+      allow read: if isAuthenticated();
                    
+      // Tulis: Dibatasi berdasarkan peran dan lingkup.
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /gurus/{guruId} {
-      allow read: if isAdmin() || 
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      // Baca: Semua pengguna terautentikasi bisa membaca data guru.
+      allow read: if isAuthenticated();
                    
+      // Tulis: Dibatasi berdasarkan peran dan lingkup.
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /kelas/{kelasId} {
-      allow read: if isAdmin() || 
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      // Baca: Semua pengguna terautentikasi bisa membaca data kelas.
+      allow read: if isAuthenticated();
                    
+      // Tulis: Dibatasi berdasarkan peran dan lingkup.
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /attendance/{attendanceId} {
-      allow read, write: if isAdmin() || 
-                         (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                         (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      // Baca: Semua pengguna terautentikasi bisa membaca data kehadiran.
+      allow read: if isAuthenticated();
+
+      // Tulis: Dibatasi berdasarkan peran dan lingkup.
+      allow write: if isAdmin() || 
+                         (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                         (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
     
     match /materials/{materialId} {
