@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Material, JUDUL_MATERI_LIST, KELAS_MATERI_LIST } from '@/types/admin';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
 
 export function useMaterials() {
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -38,6 +38,32 @@ export function useMaterials() {
     } catch (e) { showError("Gagal menambahkan materi."); return false; }
   };
 
+  const addMultipleMaterials = async (materialsToAdd: Omit<Material, 'id'>[]) => {
+    if (materialsToAdd.length === 0) {
+      showError("Tidak ada data untuk ditambahkan.");
+      return false;
+    }
+    const toastId = showLoading(`Menambahkan ${materialsToAdd.length} materi...`);
+    try {
+      const batch = writeBatch(db);
+      const materialsCollection = collection(db, "materials");
+      materialsToAdd.forEach(material => {
+        const docRef = doc(materialsCollection);
+        batch.set(docRef, material);
+      });
+      await batch.commit();
+      dismissToast(toastId);
+      showSuccess(`${materialsToAdd.length} materi berhasil diunggah.`);
+      fetchMaterials();
+      return true;
+    } catch (e) {
+      dismissToast(toastId);
+      showError("Gagal mengunggah materi dari Excel.");
+      console.error(e);
+      return false;
+    }
+  };
+
   const updateMaterial = async (id: string, updatedData: Omit<Material, 'id'>) => {
     try {
       await updateDoc(doc(db, "materials", id), updatedData);
@@ -71,5 +97,5 @@ export function useMaterials() {
     }
   };
 
-  return { materials, loading, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials };
+  return { materials, loading, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials };
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Material, KELAS_MATERI_LIST, JUDUL_MATERI_LIST } from '@/types/admin';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Material, KELAS_MATERI_LIST, JUDUL_MATERI_LIST, JudulMateri, KelasMateri } from '@/types/admin';
+import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import * as XLSX from 'xlsx';
+import { showError } from '@/utils/toast';
 
 interface MaterialsSectionProps {
   materials: Material[];
@@ -20,6 +22,7 @@ interface MaterialsSectionProps {
   onUpdateMaterial: (id: string, updatedData: Omit<Material, 'id'>) => Promise<boolean>;
   onDeleteMaterial: (id: string) => void;
   onDeleteMultipleMaterials: (ids: string[]) => void;
+  onAddMultipleMaterials: (materials: Omit<Material, 'id'>[]) => Promise<boolean>;
 }
 
 export default function MaterialsSection({
@@ -30,11 +33,55 @@ export default function MaterialsSection({
   onUpdateMaterial,
   onDeleteMaterial,
   onDeleteMultipleMaterials,
+  onAddMultipleMaterials,
 }: MaterialsSectionProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        const materialsToUpload: Omit<Material, 'id'>[] = json.map((row, index) => {
+          const judulMateri = row['Judul Materi'] as JudulMateri;
+          const kelas = row['Kelas'] as KelasMateri;
+          const semester = row['Semester'] as 'Ganjil' | 'Genap';
+
+          if (!JUDUL_MATERI_LIST.includes(judulMateri)) throw new Error(`Baris ${index + 2}: Judul Materi tidak valid.`);
+          if (!KELAS_MATERI_LIST.includes(kelas)) throw new Error(`Baris ${index + 2}: Kelas tidak valid.`);
+          if (semester !== 'Ganjil' && semester !== 'Genap') throw new Error(`Baris ${index + 2}: Semester harus 'Ganjil' atau 'Genap'.`);
+
+          return {
+            judulMateri,
+            rincianMateri: row['Rincian Materi'] || '',
+            kelas,
+            semester,
+            targetBulan: row['Target Bulan'] || '',
+          };
+        });
+
+        onAddMultipleMaterials(materialsToUpload).then(success => {
+          if (success) setIsUploadDialogOpen(false);
+        });
+
+      } catch (error: any) {
+        showError(error.message || "Gagal memproses file Excel. Pastikan formatnya benar.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
   const handleInputChange = (field: keyof typeof newMaterial, value: string) => {
     setNewMaterial(prev => ({ ...prev, [field]: value }));
@@ -127,6 +174,28 @@ export default function MaterialsSection({
               </AlertDialogContent>
             </AlertDialog>
           )}
+          <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Excel
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Upload Materi dari Excel</DialogTitle>
+                <DialogDescription>
+                  Unggah file Excel untuk menambahkan beberapa materi sekaligus. Pastikan format file sesuai dengan template.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
+                <a href="/MATERI.xlsx" download className="text-blue-600 hover:underline text-sm font-medium">
+                  Unduh Template Excel
+                </a>
+                <Input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button>
