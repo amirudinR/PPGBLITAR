@@ -38,19 +38,9 @@ export default function M5USection() {
       setCurrentItem(item);
       setEditingId(item.id);
     } else {
-      const currentDate = new Date();
-      const currentMonthName = months[currentDate.getMonth()];
-      const currentYear = currentDate.getFullYear();
-
       setIsEditMode(false);
       setCurrentItem({
-        bulan: currentMonthName, 
-        tahun: currentYear, 
-        agenda: '', 
-        hasil: '', 
-        pj: '', 
-        waktuPelaksanaan: '', 
-        statusHasil: ''
+        bulan: months[new Date().getMonth()], tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
       });
       setEditingId(null);
     }
