@@ -157,6 +157,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
             onDeleteMaterial={deleteMaterial}
             onDeleteMultipleMaterials={deleteMultipleMaterials}
             onAddMultipleMaterials={addMultipleMaterials}
+            currentUser={currentUser}
           />
         );
       case 'kehadiran':
