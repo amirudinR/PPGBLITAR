@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok, User } from '@/types/admin';
+import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok, User, JENJANG_USIA_LIST } from '@/types/admin';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import {
   Dialog,
@@ -35,7 +35,7 @@ interface GenerusSectionProps {
   currentUser: User | null;
 }
 
-const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok'];
+const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok', 'jenjangUsia'];
 const ITEMS_PER_PAGE = 10;
 
 export default function GenerusSection({ 
@@ -60,6 +60,7 @@ export default function GenerusSection({
 
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
+    if (filterCategory === 'jenjangUsia') return [...JENJANG_USIA_LIST];
     const uniqueValues = [...new Set(allGenerus.map(item => item[filterCategory as keyof Generus]))];
     return uniqueValues.map(String).sort();
   }, [filterCategory, allGenerus]);
@@ -68,6 +69,9 @@ export default function GenerusSection({
     setCurrentPage(1); // Reset to first page on filter change
     if (!searchTerm) return allGenerus;
     return allGenerus.filter(g => {
+      if (filterCategory === 'jenjangUsia') {
+        return getJenjangUsia(g.pendidikan) === searchTerm;
+      }
       const value = g[filterCategory as keyof Generus];
       if (dropdownCategories.includes(filterCategory)) {
         return String(value) === searchTerm;

@@ -64,6 +64,7 @@ export const GENERUS_FILTER_FIELDS = [
     { value: 'name', label: 'Nama Generus' },
     { value: 'tahunLahir', label: 'Tahun Lahir' },
     { value: 'pendidikan', label: 'Pendidikan' },
+    { value: 'jenjangUsia', label: 'Jenjang Usia' },
     { value: 'statusMondok', label: 'Status Mondok' },
     { value: 'desa', label: 'Desa' },
     { value: 'kelompok', label: 'Kelompok' },
