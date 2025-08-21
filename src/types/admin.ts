@@ -135,5 +135,5 @@ export interface M5U {
   hasil: string;
   pj: string;
   waktuPelaksanaan: string;
-  statusHasil: 'Tercapai' | 'Belum Tercapai' | 'Dalam Proses';
+  statusHasil: 'Tercapai' | 'Belum Tercapai' | 'Dalam Proses' | '';
 }

@@ -28,7 +28,7 @@ export default function M5USection() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItem, setCurrentItem] = useState<Omit<M5U, 'id'>>({
-    bulan: '', tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: 'Dalam Proses'
+    bulan: '', tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -40,7 +40,7 @@ export default function M5USection() {
     } else {
       setIsEditMode(false);
       setCurrentItem({
-        bulan: months[new Date().getMonth()], tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: 'Dalam Proses'
+        bulan: months[new Date().getMonth()], tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
       });
       setEditingId(null);
     }
