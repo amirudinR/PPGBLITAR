@@ -203,13 +203,11 @@ export default function MaterialsSection({
               <DialogHeader>
                 <DialogTitle>Upload Materi dari Excel</DialogTitle>
                 <DialogDescription>
-                  Unggah file Excel untuk menambahkan beberapa materi sekaligus. Pastikan format file sesuai dengan template.
+                  Unggah file Excel untuk menambahkan beberapa materi sekaligus.
+                  Pastikan file memiliki kolom: "Judul Materi", "Rincian Materi", "Kelas", "Semester", dan "Target Bulan".
                 </DialogDescription>
               </DialogHeader>
-              <div className="py-4 space-y-4">
-                <a href="/MATERI.xlsx" download className="text-blue-600 hover:underline text-sm font-medium">
-                  Unduh Template Excel
-                </a>
+              <div className="py-4">
                 <Input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
               </div>
             </DialogContent>
