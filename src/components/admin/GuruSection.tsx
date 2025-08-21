@@ -9,20 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const initialData: Guru[] = [
-  { id: '1', name: 'Budi Hartono', status: 'MT', phone: '081234567890', desa: 'Desa Makmur', kelompok: 'Remaja 1' },
-  { id: '2', name: 'Siti Aminah', status: 'MS', phone: '081234567891', desa: 'Desa Makmur', kelompok: 'Remaja 2' },
-  { id: '3', name: 'Ahmad Fauzi', status: 'Asisten Pengajar', phone: '081234567892', desa: 'Desa Sejahtera', kelompok: 'Caberawit A' },
-];
-
 interface GuruSectionProps {
+  gurus: Guru[];
+  onAddGuru: (guruData: Omit<Guru, 'id'>) => Promise<boolean>;
+  onUpdateGuru: (id: string, guruData: Omit<Guru, 'id'>) => Promise<boolean>;
+  onDeleteGuru: (id: string) => void;
   currentUser: User | null;
   desas: Desa[];
   kelompok: Kelompok[];
 }
 
-export default function GuruSection({ currentUser, desas, kelompok }: GuruSectionProps) {
-  const [guruItems, setGuruItems] = useState<Guru[]>(initialData);
+export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGuru, currentUser, desas, kelompok }: GuruSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItem, setCurrentItem] = useState<Omit<Guru, 'id'>>({
@@ -51,17 +48,20 @@ export default function GuruSection({ currentUser, desas, kelompok }: GuruSectio
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    let success = false;
     if (isEditMode && editingId) {
-      setGuruItems(guruItems.map(item => item.id === editingId ? { ...currentItem, id: editingId } : item));
+      success = await onUpdateGuru(editingId, currentItem);
     } else {
-      setGuruItems([...guruItems, { ...currentItem, id: new Date().toISOString() }]);
+      success = await onAddGuru(currentItem);
     }
-    setIsDialogOpen(false);
+    if (success) {
+      setIsDialogOpen(false);
+    }
   };
 
   const handleDelete = (id: string) => {
-    setGuruItems(guruItems.filter(item => item.id !== id));
+    onDeleteGuru(id);
   };
 
   const filteredKelompok = useMemo(() => {
@@ -91,7 +91,7 @@ export default function GuruSection({ currentUser, desas, kelompok }: GuruSectio
             </TableRow>
           </TableHeader>
           <TableBody>
-            {guruItems.map((item) => (
+            {gurus.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.status}</TableCell>

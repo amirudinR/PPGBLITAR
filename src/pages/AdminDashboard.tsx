@@ -19,6 +19,7 @@ import { useGenerus } from '@/hooks/useGenerus';
 import { useUsers } from '@/hooks/useUsers';
 import { useMaterials } from '@/hooks/useMaterials';
 import { useAttendance } from '@/hooks/useAttendance';
+import { useGurus } from '@/hooks/useGurus';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -74,6 +75,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, deleteUser } = useUsers(currentUser);
   const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials } = useMaterials();
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
+  const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser);
 
   useEffect(() => {
     if (currentUser) {
@@ -82,8 +84,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchUsers();
       fetchMaterials();
       fetchAttendance();
+      fetchGurus();
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -91,7 +94,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     }
   }, [desas, fetchKelompok]);
 
-  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance;
+  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus;
 
   const getPageTitle = () => {
     for (const item of menuItems) {
@@ -157,6 +160,10 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'dataguru':
         return <GuruSection 
+          gurus={gurus}
+          onAddGuru={addGuru}
+          onUpdateGuru={updateGuru}
+          onDeleteGuru={deleteGuru}
           currentUser={currentUser}
           desas={desas}
           kelompok={kelompok}
