@@ -122,7 +122,7 @@ export default function Sidebar({
         </Accordion>
         <button
           onClick={onLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-red-500 hover:text-white transition-colors mt-8"
+          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-300 hover:bg-red-500 hover:text-white transition-colors mt-8"
         >
           <LogOut className="w-5 h-5" />
           <span>Log Out</span>
