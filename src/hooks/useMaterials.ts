@@ -1,12 +1,14 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Material, JUDUL_MATERI_LIST, KELAS_MATERI_LIST } from '@/types/admin';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
+import { materialsSeedData } from '@/data/materialsSeed';
 
 export function useMaterials() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPopulating, setIsPopulating] = useState(false);
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
     judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: ''
   });
@@ -55,5 +57,28 @@ export function useMaterials() {
     } catch (e) { showError("Gagal menghapus materi."); }
   };
 
-  return { materials, loading, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial };
+  const populateMaterials = async () => {
+    setIsPopulating(true);
+    const toastId = showLoading("Menambahkan data materi awal ke database...");
+    try {
+      const batch = writeBatch(db);
+      const materialsCollection = collection(db, "materials");
+      materialsSeedData.forEach(material => {
+        const docRef = doc(materialsCollection);
+        batch.set(docRef, material);
+      });
+      await batch.commit();
+      dismissToast(toastId);
+      showSuccess("Data materi awal berhasil ditambahkan!");
+      fetchMaterials();
+    } catch (error) {
+      console.error("Error populating materials: ", error);
+      dismissToast(toastId);
+      showError("Gagal menambahkan data materi awal.");
+    } finally {
+      setIsPopulating(false);
+    }
+  };
+
+  return { materials, loading, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, isPopulating, populateMaterials };
 }
