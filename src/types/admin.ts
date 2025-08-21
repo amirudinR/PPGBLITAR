@@ -86,7 +86,7 @@ export interface Material {
   rincianMateri: string;
   kelas: KelasMateri;
   semester: 'Ganjil' | 'Genap';
-  targetBulan: string;
+  targetBulan: string[];
 }
 
 export const SEMESTER_GANJIL_MONTHS = ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as const;

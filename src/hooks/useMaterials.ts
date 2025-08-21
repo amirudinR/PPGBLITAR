@@ -8,7 +8,7 @@ export function useMaterials() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
-    judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: ''
+    judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: []
   });
 
   const fetchMaterials = useCallback(async () => {
@@ -31,7 +31,7 @@ export function useMaterials() {
       await addDoc(collection(db, "materials"), newMaterial);
       fetchMaterials();
       setNewMaterial({
-        judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: ''
+        judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: []
       });
       showSuccess("Materi berhasil ditambahkan.");
       return true;
