@@ -10,13 +10,25 @@ import DesaSection from '@/components/admin/DesaSection';
 import KelompokSection from '@/components/admin/KelompokSection';
 import DashboardSection from '@/components/admin/DashboardSection';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
 interface AdminDashboardProps {
   currentUser: User | null;
   handleLogout: () => void;
 }
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD3E-CRhF973pIiJ3dIx7RFBeGHRHET67I",
+  authDomain: "ppg-samarinda.firebaseapp.com",
+  projectId: "ppg-samarinda",
+  storageBucket: "ppg-samarinda.appspot.com",
+  messagingSenderId: "935384769767",
+  appId: "1:935384769767:web:056c746c3dc19223742e42",
+  measurementId: "G-W1V594C6EN"
+};
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -388,21 +400,46 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       showError("Nama, email, dan password harus diisi.");
       return false;
     }
-    const userToAdd = { ...user };
-    if (currentUser?.role === 'desa' && !userToAdd.desa) {
-      userToAdd.desa = currentUser.desa;
-    }
-    if (currentUser?.role === 'kelompok') {
-        userToAdd.desa = currentUser.desa;
-        userToAdd.kelompok = currentUser.kelompok;
-    }
+    
+    const toastId = showLoading("Membuat akun baru...");
+
     try {
-      await addDoc(collection(db, "users"), userToAdd);
-      fetchData();
+      // Initialize a secondary Firebase app to create users without logging out the admin
+      const secondaryAppName = 'secondaryAuthApp';
+      const appExists = getApps().some(app => app.name === secondaryAppName);
+      const secondaryApp = appExists ? getApp(secondaryAppName) : initializeApp(firebaseConfig, secondaryAppName);
+      const secondaryAuth = getAuth(secondaryApp);
+
+      // 1. Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, user.email, user.password);
+      const createdUser = userCredential.user;
+
+      // 2. Prepare user data for Firestore (omitting the password)
+      const { password, ...userDataForFirestore } = user;
+
+      if (currentUser?.role === 'desa' && !userDataForFirestore.desa) {
+        userDataForFirestore.desa = currentUser.desa;
+      }
+      if (currentUser?.role === 'kelompok') {
+          userDataForFirestore.desa = currentUser.desa;
+          userDataForFirestore.kelompok = currentUser.kelompok;
+      }
+
+      // 3. Save user data to Firestore using the UID from Auth as the document ID
+      await setDoc(doc(db, "users", createdUser.uid), userDataForFirestore);
+
+      dismissToast(toastId);
       showSuccess("Akun berhasil ditambahkan.");
+      fetchData();
       return true;
-    } catch (e) {
-      showError("Gagal menambahkan akun.");
+    } catch (error: any) {
+      dismissToast(toastId);
+      console.error("Error creating user:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        showError("Email ini sudah terdaftar.");
+      } else {
+        showError("Gagal menambahkan akun. Periksa konsol untuk detail.");
+      }
       return false;
     }
   };
