@@ -75,7 +75,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, deleteUser } = useUsers(currentUser);
   const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials } = useMaterials();
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
-  const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser);
+  const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
 
   useEffect(() => {
     if (currentUser) {

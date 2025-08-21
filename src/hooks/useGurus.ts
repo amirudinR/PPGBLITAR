@@ -1,10 +1,22 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, setDoc } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { db } from '@/lib/firebase';
 import { Guru, User } from '@/types/admin';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
 
-export function useGurus(currentUser: User | null) {
+const firebaseConfig = {
+  apiKey: "AIzaSyD3E-CRhF973pIiJ3dIx7RFBeGHRHET67I",
+  authDomain: "ppg-samarinda.firebaseapp.com",
+  projectId: "ppg-samarinda",
+  storageBucket: "ppg-samarinda.appspot.com",
+  messagingSenderId: "935384769767",
+  appId: "1:935384769767:web:056c746c3dc19223742e42",
+  measurementId: "G-W1V594C6EN"
+};
+
+export function useGurus(currentUser: User | null, callbacks?: { onDataChange?: () => void }) {
   const [gurus, setGurus] = useState<Guru[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,26 +41,66 @@ export function useGurus(currentUser: User | null) {
     }
   }, [currentUser]);
 
-  const addGuru = async (guruData: Omit<Guru, 'id'>) => {
-    if (!guruData.name || !guruData.phone) {
-      showError("Nama dan No HP harus diisi.");
+  const addGuru = async (guruData: Omit<Guru, 'id' | 'userId'>) => {
+    if (!guruData.name || !guruData.email || !guruData.password) {
+      showError("Nama, Email, dan Password harus diisi.");
       return false;
     }
+    const toastId = showLoading("Membuat akun guru...");
     try {
-      await addDoc(collection(db, "gurus"), guruData);
+      // Create user in Auth
+      const secondaryAppName = 'secondaryAuthApp';
+      const appExists = getApps().some(app => app.name === secondaryAppName);
+      const secondaryApp = appExists ? getApp(secondaryAppName) : initializeApp(firebaseConfig, secondaryAppName);
+      const secondaryAuth = getAuth(secondaryApp);
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, guruData.email, guruData.password);
+      const userId = userCredential.user.uid;
+
+      // Create user document in 'users' collection
+      const userDoc: Omit<User, 'id' | 'password'> = {
+        name: guruData.name,
+        email: guruData.email,
+        role: 'guru',
+        status: 'Active',
+        desa: guruData.desa,
+        kelompok: guruData.kelompok,
+      };
+      await setDoc(doc(db, "users", userId), userDoc);
+
+      // Create guru document in 'gurus' collection
+      const { password, ...guruDocData } = guruData;
+      await addDoc(collection(db, "gurus"), { ...guruDocData, userId });
+
+      dismissToast(toastId);
+      showSuccess("Akun guru berhasil dibuat.");
       fetchGurus();
-      showSuccess("Data guru berhasil ditambahkan.");
+      callbacks?.onDataChange?.();
       return true;
-    } catch (e) {
-      showError("Gagal menambahkan data guru.");
+    } catch (error: any) {
+      dismissToast(toastId);
+      if (error.code === 'auth/email-already-in-use') showError("Email ini sudah terdaftar.");
+      else showError("Gagal menambahkan akun guru.");
+      console.error(error);
       return false;
     }
   };
 
-  const updateGuru = async (id: string, guruData: Omit<Guru, 'id'>) => {
+  const updateGuru = async (id: string, guruData: Omit<Guru, 'id' | 'password'>) => {
     try {
+      // Update guru document
       await updateDoc(doc(db, "gurus", id), guruData);
+
+      // Update corresponding user document
+      const userDocRef = doc(db, "users", guruData.userId);
+      await updateDoc(userDocRef, {
+        name: guruData.name,
+        email: guruData.email,
+        desa: guruData.desa,
+        kelompok: guruData.kelompok,
+      });
+
       fetchGurus();
+      callbacks?.onDataChange?.();
       showSuccess("Data guru berhasil diperbarui.");
       return true;
     } catch (e) {
@@ -57,10 +109,16 @@ export function useGurus(currentUser: User | null) {
     }
   };
 
-  const deleteGuru = async (id: string) => {
+  const deleteGuru = async (guru: Guru) => {
     try {
-      await deleteDoc(doc(db, "gurus", id));
+      // Note: Deleting the user from Firebase Auth is a privileged operation
+      // and should ideally be handled by a Cloud Function.
+      // Here, we only delete from Firestore collections.
+      await deleteDoc(doc(db, "gurus", guru.id));
+      await deleteDoc(doc(db, "users", guru.userId));
+      
       fetchGurus();
+      callbacks?.onDataChange?.();
       showSuccess("Data guru berhasil dihapus.");
     } catch (e) {
       showError("Gagal menghapus data guru.");

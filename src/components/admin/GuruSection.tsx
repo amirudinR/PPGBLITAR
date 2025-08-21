@@ -11,9 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 interface GuruSectionProps {
   gurus: Guru[];
-  onAddGuru: (guruData: Omit<Guru, 'id'>) => Promise<boolean>;
-  onUpdateGuru: (id: string, guruData: Omit<Guru, 'id'>) => Promise<boolean>;
-  onDeleteGuru: (id: string) => void;
+  onAddGuru: (guruData: Omit<Guru, 'id' | 'userId'>) => Promise<boolean>;
+  onUpdateGuru: (id: string, guruData: Omit<Guru, 'id' | 'password'>) => Promise<boolean>;
+  onDeleteGuru: (guru: Guru) => void;
   currentUser: User | null;
   desas: Desa[];
   kelompok: Kelompok[];
@@ -22,16 +22,14 @@ interface GuruSectionProps {
 export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGuru, currentUser, desas, kelompok }: GuruSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [currentItem, setCurrentItem] = useState<Omit<Guru, 'id'>>({
-    name: '', status: 'MT', phone: '', desa: '', kelompok: ''
+  const [currentItem, setCurrentItem] = useState<Partial<Guru>>({
+    name: '', status: 'MT', phone: '', desa: '', kelompok: '', email: '', password: ''
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
-
+  
   const openDialog = (item?: Guru) => {
     if (item) {
       setIsEditMode(true);
       setCurrentItem(item);
-      setEditingId(item.id);
     } else {
       setIsEditMode(false);
       let defaultDesa = '';
@@ -42,26 +40,27 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
         defaultDesa = currentUser.desa || '';
         defaultKelompok = currentUser.kelompok || '';
       }
-      setCurrentItem({ name: '', status: 'MT', phone: '', desa: defaultDesa, kelompok: defaultKelompok });
-      setEditingId(null);
+      setCurrentItem({ name: '', status: 'MT', phone: '', desa: defaultDesa, kelompok: defaultKelompok, email: '', password: '' });
     }
     setIsDialogOpen(true);
   };
 
   const handleSave = async () => {
     let success = false;
-    if (isEditMode && editingId) {
-      success = await onUpdateGuru(editingId, currentItem);
+    if (isEditMode && currentItem.id) {
+      const { id, password, ...updateData } = currentItem;
+      success = await onUpdateGuru(id, updateData as Omit<Guru, 'id' | 'password'>);
     } else {
-      success = await onAddGuru(currentItem);
+      const { id, userId, ...addData } = currentItem;
+      success = await onAddGuru(addData as Omit<Guru, 'id' | 'userId'>);
     }
     if (success) {
       setIsDialogOpen(false);
     }
   };
 
-  const handleDelete = (id: string) => {
-    onDeleteGuru(id);
+  const handleDelete = (guru: Guru) => {
+    onDeleteGuru(guru);
   };
 
   const filteredKelompok = useMemo(() => {
@@ -83,7 +82,7 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
           <TableHeader>
             <TableRow>
               <TableHead>Nama Guru</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Status Guru</TableHead>
               <TableHead>No HP</TableHead>
               <TableHead>Desa</TableHead>
               <TableHead>Kelompok</TableHead>
@@ -111,11 +110,11 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>Tindakan ini akan menghapus data guru secara permanen.</AlertDialogDescription>
+                        <AlertDialogDescription>Tindakan ini akan menghapus data guru dan akun terkait secara permanen.</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
+                        <AlertDialogAction onClick={() => handleDelete(item)}>Hapus</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -132,43 +131,13 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
             <DialogTitle>{isEditMode ? 'Edit Data Guru' : 'Tambah Data Guru Baru'}</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <div>
-              <Label htmlFor="name">Nama Guru</Label>
-              <Input id="name" value={currentItem.name} onChange={(e) => setCurrentItem(prev => ({ ...prev, name: e.target.value }))} className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={currentItem.status} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, status: value as Guru['status'] }))}>
-                <SelectTrigger id="status" className="mt-1"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                <SelectContent>{GURU_STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Desa</Label>
-              <Select 
-                value={currentItem.desa} 
-                onValueChange={desa => setCurrentItem(prev => ({ ...prev, desa, kelompok: '' }))}
-                disabled={currentUser?.role === 'desa' || currentUser?.role === 'kelompok'}
-              >
-                <SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger>
-                <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Kelompok</Label>
-              <Select 
-                value={currentItem.kelompok} 
-                onValueChange={kelompok => setCurrentItem(prev => ({ ...prev, kelompok }))}
-                disabled={currentUser?.role === 'kelompok'}
-              >
-                <SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger>
-                <SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="phone">No HP</Label>
-              <Input id="phone" value={currentItem.phone} onChange={(e) => setCurrentItem(prev => ({ ...prev, phone: e.target.value }))} className="mt-1" />
-            </div>
+            <div><Label>Nama Guru</Label><Input value={currentItem.name} onChange={(e) => setCurrentItem(prev => ({ ...prev, name: e.target.value }))} /></div>
+            <div><Label>Email</Label><Input type="email" value={currentItem.email} onChange={(e) => setCurrentItem(prev => ({ ...prev, email: e.target.value }))} disabled={isEditMode} /></div>
+            {!isEditMode && (<div><Label>Password</Label><Input type="password" value={currentItem.password} onChange={(e) => setCurrentItem(prev => ({ ...prev, password: e.target.value }))} /></div>)}
+            <div><Label>Status Guru</Label><Select value={currentItem.status} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, status: value as Guru['status'] }))}><SelectTrigger><SelectValue placeholder="Pilih Status" /></SelectTrigger><SelectContent>{GURU_STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Desa</Label><Select value={currentItem.desa} onValueChange={desa => setCurrentItem(prev => ({ ...prev, desa, kelompok: '' }))} disabled={currentUser?.role === 'desa' || currentUser?.role === 'kelompok'}><SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger><SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Kelompok</Label><Select value={currentItem.kelompok} onValueChange={kelompok => setCurrentItem(prev => ({ ...prev, kelompok }))} disabled={currentUser?.role === 'kelompok'}><SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger><SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>No HP</Label><Input value={currentItem.phone} onChange={(e) => setCurrentItem(prev => ({ ...prev, phone: e.target.value }))} /></div>
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
