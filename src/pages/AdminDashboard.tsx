@@ -61,9 +61,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   // Using custom hooks for data management
   const { desas, loading: loadingDesa, fetchDesas, addDesa, updateDesa, deleteDesa } = useDesa();
   const { kelompok, loading: loadingKelompok, fetchKelompok, addKelompok, updateKelompok, deleteKelompok } = useKelompok(desas);
-  const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus, isPopulating, populateGenerus } = useGenerus(currentUser);
+  const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus, isPopulating: isPopulatingGenerus, populateGenerus } = useGenerus(currentUser);
   const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, deleteUser } = useUsers(currentUser);
-  const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial } = useMaterials();
+  const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, isPopulating: isPopulatingMaterials, populateMaterials } = useMaterials();
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           jenjangUsiaFilter={jenjangUsiaFilter}
           setJenjangUsiaFilter={setJenjangUsiaFilter}
           onPopulate={() => populateGenerus(desas, kelompok)}
-          isPopulating={isPopulating}
+          isPopulating={isPopulatingGenerus}
         />;
       case 'generus':
         return <GenerusSection 
@@ -155,6 +155,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
             onAddMaterial={addMaterial}
             onUpdateMaterial={updateMaterial}
             onDeleteMaterial={deleteMaterial}
+            onPopulate={populateMaterials}
+            isPopulating={isPopulatingMaterials}
           />
         );
       case 'kehadiran':
