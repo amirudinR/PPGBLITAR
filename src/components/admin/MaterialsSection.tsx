@@ -55,9 +55,9 @@ export default function MaterialsSection({
         const json = XLSX.utils.sheet_to_json(worksheet) as any[];
 
         const materialsToUpload: Omit<Material, 'id'>[] = json.map((row, index) => {
-          const judulMateri = row['Judul Materi'] as JudulMateri;
-          const kelas = row['Kelas'] as KelasMateri;
-          const semester = row['Semester'] as 'Ganjil' | 'Genap';
+          const judulMateri = (row['Judul Materi'] as string)?.trim() as JudulMateri;
+          const kelas = (row['Kelas'] as string)?.trim() as KelasMateri;
+          const semester = (row['Semester'] as string)?.trim() as 'Ganjil' | 'Genap';
 
           if (!JUDUL_MATERI_LIST.includes(judulMateri)) throw new Error(`Baris ${index + 2}: Judul Materi tidak valid.`);
           if (!KELAS_MATERI_LIST.includes(kelas)) throw new Error(`Baris ${index + 2}: Kelas tidak valid.`);
@@ -65,10 +65,10 @@ export default function MaterialsSection({
 
           return {
             judulMateri,
-            rincianMateri: row['Rincian Materi'] || '',
+            rincianMateri: (row['Rincian Materi'] as string)?.trim() || '',
             kelas,
             semester,
-            targetBulan: row['Target Bulan'] || '',
+            targetBulan: (row['Target Bulan'] as string)?.trim() || '',
           };
         });
 
