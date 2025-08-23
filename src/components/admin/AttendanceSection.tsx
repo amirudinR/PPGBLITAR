@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
@@ -35,8 +35,24 @@ const months = [
 const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
-type SummaryData = {
-  [key: string]: { attended: number; held: number };
+type ClassSummary = {
+  classId: string;
+  className: string;
+  guruName: string;
+  attended: number;
+  held: number;
+  percentage: number;
+};
+
+type JenjangSummary = {
+  classes: ClassSummary[];
+  totalAttended: number;
+  totalHeld: number;
+  averagePercentage: number;
+};
+
+type DesaSummary = {
+  [jenjang: string]: JenjangSummary;
 };
 
 export default function AttendanceSection({
@@ -59,54 +75,53 @@ export default function AttendanceSection({
   }, [attendance, startMonth, startYear, endMonth, endYear]);
 
   const summaryData = useMemo(() => {
-    const generusMap = new Map(generusData.map(g => [g.id, g]));
-
-    if (isKelompokRole) {
-      const kelompokSummary: SummaryData = {};
-      filteredAttendance.forEach(record => {
-        if (!kelompokSummary[record.classId]) {
-          kelompokSummary[record.classId] = { attended: 0, held: 0 };
-        }
-        kelompokSummary[record.classId].attended += record.meetingsAttended;
-        kelompokSummary[record.classId].held += record.meetingsHeld;
-      });
-      return kelompokSummary;
-    }
-
-    // Admin/Desa view
-    const adminSummary: Record<string, SummaryData> = {};
+    const classStats: { [classId: string]: { attended: number; held: number } } = {};
     filteredAttendance.forEach(record => {
-      const { desa } = record;
-      const student = generusMap.get(record.studentId);
-      if (student) {
-        const jenjang = getJenjangUsia(student.pendidikan);
-        if (jenjang !== '-') {
-          if (!adminSummary[desa]) adminSummary[desa] = {};
-          if (!adminSummary[desa][jenjang]) adminSummary[desa][jenjang] = { attended: 0, held: 0 };
-          
-          adminSummary[desa][jenjang].attended += record.meetingsAttended;
-          adminSummary[desa][jenjang].held += record.meetingsHeld;
-        }
-      }
+      if (!classStats[record.classId]) classStats[record.classId] = { attended: 0, held: 0 };
+      classStats[record.classId].attended += record.meetingsAttended;
+      classStats[record.classId].held += record.meetingsHeld;
     });
-    return adminSummary;
 
-  }, [filteredAttendance, generusData, isKelompokRole]);
+    if (isKelompokRole) return classStats;
+
+    const adminSummary: Record<string, DesaSummary> = {};
+    kelas.forEach(k => {
+      const stats = classStats[k.id] || { attended: 0, held: 0 };
+      if (!adminSummary[k.desa]) adminSummary[k.desa] = {};
+      if (!adminSummary[k.desa][k.jenjangUsia]) {
+        adminSummary[k.desa][k.jenjangUsia] = { classes: [], totalAttended: 0, totalHeld: 0, averagePercentage: 0 };
+      }
+      
+      const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
+      adminSummary[k.desa][k.jenjangUsia].classes.push({
+        classId: k.id,
+        className: k.namaKelas,
+        guruName: k.guruName,
+        ...stats,
+        percentage,
+      });
+    });
+
+    Object.values(adminSummary).forEach(desa => {
+      Object.values(desa).forEach(jenjang => {
+        jenjang.totalAttended = jenjang.classes.reduce((sum, c) => sum + c.attended, 0);
+        jenjang.totalHeld = jenjang.classes.reduce((sum, c) => sum + c.held, 0);
+        jenjang.averagePercentage = jenjang.totalHeld > 0 ? Math.round((jenjang.totalAttended / jenjang.totalHeld) * 100) : 0;
+      });
+    });
+
+    return adminSummary;
+  }, [filteredAttendance, kelas, isKelompokRole]);
 
   const detailData = useMemo(() => {
     if (!selectedClass) return [];
     const studentSummary: { [studentId: string]: { name: string, attended: number, held: number } } = {};
-    
     const attendanceForClass = filteredAttendance.filter(a => a.classId === selectedClass.id);
-    
     attendanceForClass.forEach(record => {
-      if (!studentSummary[record.studentId]) {
-        studentSummary[record.studentId] = { name: record.studentName, attended: 0, held: 0 };
-      }
+      if (!studentSummary[record.studentId]) studentSummary[record.studentId] = { name: record.studentName, attended: 0, held: 0 };
       studentSummary[record.studentId].attended += record.meetingsAttended;
       studentSummary[record.studentId].held += record.meetingsHeld;
     });
-
     return Object.values(studentSummary);
   }, [selectedClass, filteredAttendance]);
 
@@ -118,29 +133,46 @@ export default function AttendanceSection({
   const renderAdminDesaView = () => (
     <Accordion type="multiple" className="w-full space-y-4">
       {desas.map(desa => {
-        const desaSummary = (summaryData as Record<string, SummaryData>)[desa.name] || {};
+        const desaSummary = (summaryData as Record<string, DesaSummary>)[desa.name] || {};
         return (
           <AccordionItem value={desa.id} key={desa.id} className="bg-white rounded-lg shadow">
-            <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
-              {desa.name}
-            </AccordionTrigger>
+            <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">{desa.name}</AccordionTrigger>
             <AccordionContent className="px-6 pb-4">
-              <Table>
-                <TableHeader><TableRow><TableHead>Jenjang Usia</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead></TableRow></TableHeader>
-                <TableBody>
-                  {JENJANG_USIA_LIST.map(jenjang => {
-                    const stats = desaSummary[jenjang] || { attended: 0, held: 0 };
-                    const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
-                    return (
-                      <TableRow key={jenjang}>
-                        <TableCell>{jenjang}</TableCell>
-                        <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
-                        <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
+              <Accordion type="multiple" className="w-full space-y-2">
+                {JENJANG_USIA_LIST.map(jenjang => {
+                  const jenjangData = desaSummary[jenjang];
+                  if (!jenjangData || jenjangData.classes.length === 0) return null;
+                  return (
+                    <AccordionItem value={jenjang} key={jenjang} className="border rounded-md">
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex justify-between w-full items-center pr-4">
+                          <span>{jenjang}</span>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span>Rata-rata:</span>
+                            <Progress value={jenjangData.averagePercentage} className="w-24" />
+                            <span>{jenjangData.averagePercentage}%</span>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-2">
+                        <Table>
+                          <TableHeader><TableRow><TableHead>Kelas</TableHead><TableHead>Guru</TableHead><TableHead className="text-center">Kehadiran</TableHead><TableHead className="w-40">Persentase</TableHead></TableRow></TableHeader>
+                          <TableBody>
+                            {jenjangData.classes.map(c => (
+                              <TableRow key={c.classId}>
+                                <TableCell>{c.className}</TableCell>
+                                <TableCell>{c.guruName}</TableCell>
+                                <TableCell className="text-center">{c.attended} / {c.held}</TableCell>
+                                <TableCell><div className="flex items-center gap-2"><Progress value={c.percentage} className="w-24" /><span>{c.percentage}%</span></div></TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })}
+              </Accordion>
             </AccordionContent>
           </AccordionItem>
         )
@@ -149,7 +181,7 @@ export default function AttendanceSection({
   );
 
   const renderKelompokView = () => {
-    const kelompokSummary = summaryData as SummaryData;
+    const kelompokSummary = summaryData as { [classId: string]: { attended: number; held: number } };
     const userKelompok = currentUser?.kelompok;
     const classesInKelompok = kelas.filter(k => k.kelompok === userKelompok);
 
@@ -187,7 +219,7 @@ export default function AttendanceSection({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran</h2>
+      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Kelas</h2>
       <Card className="mb-8">
         <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
