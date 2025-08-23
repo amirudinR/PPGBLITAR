@@ -109,20 +109,24 @@ export default function StudentAttendanceRecapSection({
       <Card className="mb-8">
         <CardHeader><CardTitle>Filter Data</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          <div className="space-y-2">
-            <Label>Desa</Label>
-            <Select value={selectedDesa} onValueChange={setSelectedDesa} disabled={currentUser?.role === 'desa' || currentUser?.role === 'kelompok'}>
-              <SelectTrigger><SelectValue placeholder="Semua Desa" /></SelectTrigger>
-              <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Kelompok</Label>
-            <Select value={selectedKelompok} onValueChange={setSelectedKelompok} disabled={currentUser?.role === 'kelompok'}>
-              <SelectTrigger><SelectValue placeholder="Semua Kelompok" /></SelectTrigger>
-              <SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
+          {currentUser?.role !== 'desa' && currentUser?.role !== 'kelompok' && (
+            <div className="space-y-2">
+              <Label>Desa</Label>
+              <Select value={selectedDesa} onValueChange={setSelectedDesa}>
+                <SelectTrigger><SelectValue placeholder="Semua Desa" /></SelectTrigger>
+                <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          )}
+          {currentUser?.role !== 'kelompok' && (
+            <div className="space-y-2">
+              <Label>Kelompok</Label>
+              <Select value={selectedKelompok} onValueChange={setSelectedKelompok}>
+                <SelectTrigger><SelectValue placeholder="Semua Kelompok" /></SelectTrigger>
+                <SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>Kelas</Label>
             <Select value={selectedKelas} onValueChange={setSelectedKelas}>
