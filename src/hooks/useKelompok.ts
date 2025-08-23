@@ -1,17 +1,30 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Kelompok, Desa } from '@/types/admin';
+import { Kelompok, Desa, User } from '@/types/admin';
 import { showError, showSuccess } from '@/utils/toast';
 
-export function useKelompok(desas: Desa[]) {
+export function useKelompok(desas: Desa[], currentUser: User | null) {
   const [kelompok, setKelompok] = useState<Kelompok[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchKelompok = useCallback(async () => {
+    if (!currentUser) return;
     setLoading(true);
     try {
-      const kelompokSnap = await getDocs(collection(db, "kelompok"));
+      let kelompokQuery = query(collection(db, "kelompok"));
+      if (currentUser.role === 'desa') {
+        const userDesa = desas.find(d => d.name === currentUser.desa);
+        if (userDesa) {
+          kelompokQuery = query(kelompokQuery, where("desaId", "==", userDesa.id));
+        } else {
+          setKelompok([]);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      const kelompokSnap = await getDocs(kelompokQuery);
       const kelompokData = kelompokSnap.docs.map(doc => {
         const data = doc.data();
         const desa = desas.find(d => d.id === data.desaId);
@@ -24,7 +37,7 @@ export function useKelompok(desas: Desa[]) {
     } finally {
       setLoading(false);
     }
-  }, [desas]);
+  }, [desas, currentUser]);
 
   const addKelompok = async (name: string, desaId: string) => {
     if (!name.trim() || !desaId) { showError("Nama kelompok dan desa harus diisi."); return false; }

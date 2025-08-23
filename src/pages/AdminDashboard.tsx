@@ -93,7 +93,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
 
   // Using custom hooks for data management
   const { desas, loading: loadingDesa, fetchDesas, addDesa, updateDesa, deleteDesa } = useDesa();
-  const { kelompok, loading: loadingKelompok, fetchKelompok, addKelompok, updateKelompok, deleteKelompok } = useKelompok(desas);
+  const { kelompok, loading: loadingKelompok, fetchKelompok, addKelompok, updateKelompok, deleteKelompok } = useKelompok(desas, currentUser);
   const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus } = useGenerus(currentUser);
   const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, deleteUser } = useUsers(currentUser);
   const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials } = useMaterials();
