@@ -54,6 +54,27 @@ export default function Sidebar({
 }: SidebarProps) {
   const userRole = currentUser?.role || 'orangtua';
 
+  const getPanelTitle = () => {
+    if (!currentUser) return "Admin Panel";
+    switch (currentUser.role) {
+      case 'adminsuper':
+      case 'admin':
+        return "Admin Panel";
+      case 'desa':
+        return `PJP Desa ${currentUser.desa || ''}`;
+      case 'kelompok':
+        return `PJP Kelompok ${currentUser.kelompok || ''}`;
+      case 'guru':
+        return "Panel Guru";
+      case 'orangtua':
+        return "Panel Orang Tua";
+      default:
+        return "Panel";
+    }
+  };
+
+  const panelTitle = getPanelTitle();
+
   const visibleMenuItems = menuItems.filter(item => item.roles.includes(userRole)).map(item => {
     if (item.children) {
       const visibleChildren = item.children.filter(child => child.roles.includes(userRole));
@@ -69,7 +90,7 @@ export default function Sidebar({
   return (
     <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground shadow-lg flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
-        <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
+        <h1 className="text-xl font-bold text-white truncate" title={panelTitle}>{panelTitle}</h1>
         <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
           <X className="w-6 h-6" />
         </button>
