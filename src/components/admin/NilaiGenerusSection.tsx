@@ -133,6 +133,27 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
     }));
   };
 
+  const handleSelectAllForMaterial = (materialId: string) => {
+    const studentIdsForMaterial = filteredStudents.map(s => s.id);
+    const checkedCount = studentIdsForMaterial.filter(id => gradesMatrix[id]?.[materialId] === 'Tercapai').length;
+    const areAllChecked = checkedCount === studentIdsForMaterial.length;
+    const newGrade = areAllChecked ? '' : 'Tercapai';
+
+    setGradesMatrix(prev => {
+        const newMatrix = { ...prev };
+        studentIdsForMaterial.forEach(studentId => {
+            if (!newMatrix[studentId]) {
+                newMatrix[studentId] = {};
+            }
+            newMatrix[studentId] = {
+                ...newMatrix[studentId],
+                [materialId]: newGrade
+            };
+        });
+        return newMatrix;
+    });
+  };
+
   const handleSave = async () => {
     if (!currentUser || !selectedClass) return;
     const gradesToSave: Omit<Grade, 'id'>[] = [];
@@ -174,41 +195,57 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
         <div>
           <h3 className="text-2xl font-bold mb-4">Input Nilai: {selectedJudulMateri} - {selectedMonth} {selectedYear}</h3>
           <Accordion type="multiple" className="w-full space-y-4">
-            {materialsForTable.map(material => (
-              <AccordionItem value={material.id} key={material.id} className="bg-white rounded-lg shadow border-none">
-                <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
-                  {material.rincianMateri}
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4 pt-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nama Siswa</TableHead>
-                        <TableHead className="w-48 text-center">Tercapai</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        <TableRow><TableCell colSpan={2} className="text-center">Memuat...</TableCell></TableRow>
-                      ) : (
-                        filteredStudents.map(student => (
-                          <TableRow key={student.id}>
-                            <TableCell>{student.name}</TableCell>
-                            <TableCell className="text-center">
+            {materialsForTable.map(material => {
+              const studentIdsForMaterial = filteredStudents.map(s => s.id);
+              const checkedCount = studentIdsForMaterial.filter(id => gradesMatrix[id]?.[material.id] === 'Tercapai').length;
+              const isAllChecked = studentIdsForMaterial.length > 0 && checkedCount === studentIdsForMaterial.length;
+              const isSomeChecked = studentIdsForMaterial.length > 0 && checkedCount > 0 && !isAllChecked;
+
+              return (
+                <AccordionItem value={material.id} key={material.id} className="bg-white rounded-lg shadow border-none">
+                  <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
+                    {material.rincianMateri}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4 pt-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nama Siswa</TableHead>
+                          <TableHead className="w-48 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <span>Tercapai</span>
                               <Checkbox
-                                checked={gradesMatrix[student.id]?.[material.id] === 'Tercapai'}
-                                onCheckedChange={(checked) => handleGradeChange(student.id, material.id, checked)}
+                                checked={isAllChecked ? true : (isSomeChecked ? 'indeterminate' : false)}
+                                onCheckedChange={() => handleSelectAllForMaterial(material.id)}
                                 className="h-5 w-5"
                               />
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+                            </div>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {loading ? (
+                          <TableRow><TableCell colSpan={2} className="text-center">Memuat...</TableCell></TableRow>
+                        ) : (
+                          filteredStudents.map(student => (
+                            <TableRow key={student.id}>
+                              <TableCell>{student.name}</TableCell>
+                              <TableCell className="text-center">
+                                <Checkbox
+                                  checked={gradesMatrix[student.id]?.[material.id] === 'Tercapai'}
+                                  onCheckedChange={(checked) => handleGradeChange(student.id, material.id, checked)}
+                                  className="h-5 w-5"
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </AccordionContent>
+                </AccordionItem>
+              )
+            })}
           </Accordion>
           {materialsForTable.length > 0 && (
             <div className="mt-6 flex justify-end">
