@@ -78,7 +78,7 @@ service cloud.firestore {
     }
     
     match /monthlyAttendance/{attendanceId} {
-      allow read: if hasRole('guru') && request.auth.uid == resource.data.guruId;
+      allow read: if isAuthenticated();
       allow write: if hasRole('guru') && request.auth.uid == request.resource.data.guruId;
     }
     
