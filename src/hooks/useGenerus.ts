@@ -22,7 +22,6 @@ export function useGenerus(currentUser: User | null) {
       let generusQuery;
 
       if (currentUser.role === 'guru') {
-        // 1. Find the guru document based on userId
         const guruQuery = query(collection(db, "gurus"), where("userId", "==", currentUser.id));
         const guruSnap = await getDocs(guruQuery);
         if (guruSnap.empty) {
@@ -30,16 +29,12 @@ export function useGenerus(currentUser: User | null) {
           return;
         }
         const guruDoc = guruSnap.docs[0];
-
-        // 2. Find classes taught by this guru
         const kelasQuery = query(collection(db, "kelas"), where("guruId", "==", guruDoc.id));
         const kelasSnap = await getDocs(kelasQuery);
         if (kelasSnap.empty) {
           setGenerus([]);
           return;
         }
-
-        // 3. Collect all student IDs from these classes
         let studentIds: string[] = [];
         kelasSnap.forEach(doc => {
           const kelasData = doc.data();
@@ -47,17 +42,12 @@ export function useGenerus(currentUser: User | null) {
             studentIds = studentIds.concat(kelasData.studentIds);
           }
         });
-        
         const uniqueStudentIds = [...new Set(studentIds)];
-
-        // 4. Fetch generus data for these students
         if (uniqueStudentIds.length > 0) {
-          // Firestore 'in' query is limited to 30 elements. Chunk if necessary.
           const chunks = [];
           for (let i = 0; i < uniqueStudentIds.length; i += 30) {
             chunks.push(uniqueStudentIds.slice(i, i + 30));
           }
-          
           const generusData: Generus[] = [];
           for (const chunk of chunks) {
             generusQuery = query(collection(db, "generus"), where(documentId(), "in", chunk));
@@ -70,10 +60,9 @@ export function useGenerus(currentUser: User | null) {
         } else {
           setGenerus([]);
         }
-        return; // Exit after handling guru case
+        return;
       }
       
-      // Existing logic for other roles
       generusQuery = query(collection(db, "generus"));
       if (currentUser.role === 'desa') {
         generusQuery = query(generusQuery, where("desa", "==", currentUser.desa));
@@ -81,7 +70,7 @@ export function useGenerus(currentUser: User | null) {
         generusQuery = query(generusQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
       }
       const generusSnap = await getDocs(generusQuery);
-      const generusData = generusSnap.docs.map(doc => Object.assign({ id: doc.id }, doc.data())) as Generus[];
+      const generusData = generusSnap.docs.map(doc => Object.assign({ id: doc.id }, doc.data()) as Generus);
       setGenerus(generusData);
 
     } catch (error) {
@@ -106,6 +95,32 @@ export function useGenerus(currentUser: User | null) {
     } catch (e) { showError("Gagal menambahkan generus."); return false; }
   };
 
+  const addMultipleGenerus = async (generusToAdd: Omit<Generus, 'id'>[]) => {
+    if (generusToAdd.length === 0) {
+      showError("Tidak ada data untuk ditambahkan.");
+      return false;
+    }
+    const toastId = showLoading(`Menambahkan ${generusToAdd.length} data generus...`);
+    try {
+      const batch = writeBatch(db);
+      const generusCollection = collection(db, "generus");
+      generusToAdd.forEach(generus => {
+        const docRef = doc(generusCollection);
+        batch.set(docRef, generus);
+      });
+      await batch.commit();
+      dismissToast(toastId);
+      showSuccess(`${generusToAdd.length} data generus berhasil diunggah.`);
+      fetchGenerus();
+      return true;
+    } catch (e) {
+      dismissToast(toastId);
+      showError("Gagal mengunggah data generus dari Excel.");
+      console.error(e);
+      return false;
+    }
+  };
+
   const updateGenerus = async (id: string, data: Omit<Generus, 'id'>) => {
     try {
       await updateDoc(doc(db, "generus", id), data);
@@ -123,35 +138,5 @@ export function useGenerus(currentUser: User | null) {
     } catch (e) { showError("Gagal menghapus data generus."); }
   };
 
-  const populateGenerus = async (desas: Desa[], kelompok: Kelompok[]) => {
-    if (desas.length === 0 || kelompok.length === 0) {
-      showError("Harap tambahkan data Desa dan Kelompok terlebih dahulu.");
-      return;
-    }
-    setIsPopulating(true);
-    const toastId = showLoading("Menambahkan 50 data generus ke database...");
-    try {
-      const batch = writeBatch(db);
-      const generusCollection = collection(db, "generus");
-      generusSeedData.forEach(g => {
-        const randomDesa = desas[Math.floor(Math.random() * desas.length)];
-        const kelompokInDesa = kelompok.filter(k => k.desaId === randomDesa.id);
-        let selectedKelompokName = kelompokInDesa.length > 0 ? kelompokInDesa[Math.floor(Math.random() * kelompokInDesa.length)].name : '';
-        const docRef = doc(generusCollection);
-        batch.set(docRef, { ...g, desa: randomDesa.name, kelompok: selectedKelompokName });
-      });
-      await batch.commit();
-      dismissToast(toastId);
-      showSuccess("50 data generus berhasil ditambahkan!");
-      fetchGenerus();
-    } catch (error) {
-      console.error("Error populating database: ", error);
-      dismissToast(toastId);
-      showError("Gagal menambahkan data.");
-    } finally {
-      setIsPopulating(false);
-    }
-  };
-
-  return { generus, loading, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus, isPopulating, populateGenerus };
+  return { generus, loading, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus, addMultipleGenerus };
 }
