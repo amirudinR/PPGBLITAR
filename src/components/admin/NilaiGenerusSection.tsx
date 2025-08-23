@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Kelas, Generus, Material, Grade, KELAS_MATERI_LIST, Pendidikan } from '@/types/admin';
+import { User, Kelas, Generus, Material, Grade, KELAS_MATERI_LIST } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
   const [selectedPendidikan, setSelectedPendidikan] = useState<string>('');
   const [selectedMonth, setSelectedMonth] = useState<string>(months[new Date().getMonth()]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedJudulMateri, setSelectedJudulMateri] = useState<string>('');
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('');
   
   const { grades, loading, fetchGrades, saveGradesBatch } = useGrades(currentUser);
@@ -49,25 +50,44 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
     return studentsInClass.filter(s => s.pendidikan === selectedPendidikan);
   }, [studentsInClass, selectedPendidikan]);
 
-  const availableMaterials = useMemo(() => {
+  const availableMaterialsForPendidikan = useMemo(() => {
     if (!selectedClass || !selectedPendidikan) return [];
     const isValidKelasMateri = (KELAS_MATERI_LIST as readonly string[]).includes(selectedPendidikan);
     if (!isValidKelasMateri) return [];
     return materials.filter(m => m.kelas === selectedPendidikan);
   }, [materials, selectedClass, selectedPendidikan]);
 
+  const availableJudulMateri = useMemo(() => {
+    if (!availableMaterialsForPendidikan.length) return [];
+    const judulSet = new Set(availableMaterialsForPendidikan.map(m => m.judulMateri));
+    return Array.from(judulSet);
+  }, [availableMaterialsForPendidikan]);
+
+  const availableRincianMateri = useMemo(() => {
+    if (!selectedJudulMateri) return [];
+    return availableMaterialsForPendidikan.filter(m => m.judulMateri === selectedJudulMateri);
+  }, [availableMaterialsForPendidikan, selectedJudulMateri]);
+
   useEffect(() => {
     setSelectedPendidikan('');
+    setSelectedJudulMateri('');
     setSelectedMaterialId('');
   }, [selectedClassId]);
 
   useEffect(() => {
+    setSelectedJudulMateri('');
     setSelectedMaterialId('');
   }, [selectedPendidikan]);
 
   useEffect(() => {
+    setSelectedMaterialId('');
+  }, [selectedJudulMateri]);
+
+  useEffect(() => {
     if (selectedClassId && selectedMaterialId) {
       fetchGrades(selectedClassId, selectedYear, selectedMonth, selectedMaterialId);
+    } else {
+      setStudentGrades({});
     }
   }, [selectedClassId, selectedYear, selectedMonth, selectedMaterialId, fetchGrades]);
 
@@ -103,7 +123,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
         <CardHeader>
           <CardTitle>Pilih Kelas, Materi, dan Periode</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Select value={selectedClassId} onValueChange={setSelectedClassId}>
             <SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger>
             <SelectContent>{kelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
@@ -112,9 +132,13 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
             <SelectTrigger><SelectValue placeholder="Pilih Pendidikan..." /></SelectTrigger>
             <SelectContent>{availablePendidikan.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
           </Select>
-          <Select value={selectedMaterialId} onValueChange={setSelectedMaterialId} disabled={!selectedPendidikan}>
-            <SelectTrigger><SelectValue placeholder="Pilih Materi..." /></SelectTrigger>
-            <SelectContent>{availableMaterials.map(m => <SelectItem key={m.id} value={m.id}>{m.judulMateri} - {m.rincianMateri.substring(0, 20)}...</SelectItem>)}</SelectContent>
+          <Select value={selectedJudulMateri} onValueChange={setSelectedJudulMateri} disabled={!selectedPendidikan}>
+            <SelectTrigger><SelectValue placeholder="Pilih Judul Materi..." /></SelectTrigger>
+            <SelectContent>{availableJudulMateri.map(judul => <SelectItem key={judul} value={judul}>{judul}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={selectedMaterialId} onValueChange={setSelectedMaterialId} disabled={!selectedJudulMateri}>
+            <SelectTrigger><SelectValue placeholder="Pilih Rincian..." /></SelectTrigger>
+            <SelectContent>{availableRincianMateri.map(m => <SelectItem key={m.id} value={m.id}>{m.rincianMateri}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
             <SelectTrigger><SelectValue placeholder="Pilih Bulan..." /></SelectTrigger>
