@@ -140,6 +140,11 @@ export default function DashboardSection({
             <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
             <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
           </>
+        ) : currentUser?.role === 'desa' ? (
+          <>
+            <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
+            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+          </>
         ) : (
           <>
             <DashboardStatCard title="Total Desa" value={stats.desa} icon={Home} />
