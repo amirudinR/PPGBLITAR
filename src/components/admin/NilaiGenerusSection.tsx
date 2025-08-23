@@ -208,13 +208,13 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
                     <div className="flex justify-between items-center w-full">
                       <span>{material.rincianMateri}</span>
                       <div className="flex items-center gap-2 mr-4" onClick={(e) => e.stopPropagation()}>
-                        <Label htmlFor={`select-all-${material.id}`} className="text-sm font-normal">Tandai Semua</Label>
                         <Checkbox
                           id={`select-all-${material.id}`}
                           checked={isAllChecked ? true : (isSomeChecked ? 'indeterminate' : false)}
                           onCheckedChange={() => handleSelectAllForMaterial(material.id)}
                           className="h-5 w-5"
                         />
+                        <Label htmlFor={`select-all-${material.id}`} className="text-sm font-normal">Tandai Semua</Label>
                       </div>
                     </div>
                   </AccordionTrigger>
