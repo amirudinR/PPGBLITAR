@@ -25,7 +25,6 @@ import { useAttendance } from '@/hooks/useAttendance';
 import { useGurus } from '@/hooks/useGurus';
 import { useKelas } from '@/hooks/useKelas';
 import { useAuthManagement } from '@/hooks/useAuthManagement';
-import { useMonthlyAttendanceSummary } from '@/hooks/useMonthlyAttendanceSummary';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -87,7 +86,6 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
-  const { allMonthlyAttendance, loading: loadingMonthlyAttendance, fetchAllMonthlyAttendance } = useMonthlyAttendanceSummary(currentUser);
 
   useEffect(() => {
     if (currentUser) {
@@ -98,9 +96,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchAttendance();
       fetchGurus();
       fetchKelas();
-      fetchAllMonthlyAttendance();
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas, fetchAllMonthlyAttendance]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -108,7 +105,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     }
   }, [desas, fetchKelompok]);
 
-  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus || loadingKelas || loadingMonthlyAttendance;
+  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus || loadingKelas;
 
   const getPageTitle = () => {
     for (const item of menuItems) {
@@ -213,7 +210,6 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       case 'kehadiran':
         return <AttendanceSection 
           attendance={attendance}
-          monthlyAttendanceData={allMonthlyAttendance}
           desas={desas}
           generusData={generus}
           startMonth={startMonth}

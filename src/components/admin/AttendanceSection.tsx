@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
-import { Attendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST, MonthlyAttendance } from '@/types/admin';
+import { Attendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST } from '@/types/admin';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AttendanceSectionProps {
-  attendance: Attendance[]; // Data lama, masih digunakan untuk admin/desa
-  monthlyAttendanceData: MonthlyAttendance[]; // Data baru dari guru
+  attendance: Attendance[];
   desas: Desa[];
   generusData: Generus[];
   startMonth: string;
@@ -50,7 +49,6 @@ type KelompokSummary = {
 
 export default function AttendanceSection({
   attendance,
-  monthlyAttendanceData,
   desas,
   generusData,
   startMonth, setStartMonth, startYear, setStartYear,
@@ -64,17 +62,16 @@ export default function AttendanceSection({
     const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, 1);
     const endDate = new Date(parseInt(endYear), parseInt(endMonth), 0);
 
-    if (isKelompokRole) {
-      const monthNames = months.map(m => m.label);
-      const filtered = monthlyAttendanceData.filter(a => {
-        const recordMonthIndex = monthNames.indexOf(a.month);
-        if (recordMonthIndex === -1) return false;
-        const recordDate = new Date(a.year, recordMonthIndex, 15); // Use mid-month to avoid timezone issues
-        return recordDate >= startDate && recordDate <= endDate && a.kelompok === currentUser?.kelompok;
-      });
+    const filtered = attendance.filter(a => {
+      const recordDate = new Date(a.date);
+      return recordDate >= startDate && recordDate <= endDate;
+    });
 
+    if (isKelompokRole) {
       return filtered.reduce<KelompokSummary>((acc, record) => {
-        const student = generusData.find(g => g.id === record.studentId);
+        if (record.kelompok !== currentUser?.kelompok) return acc;
+        
+        const student = generusData.find(g => g.name === record.studentName);
         if (!student) return acc;
 
         const jenjang = getJenjangUsia(student.pendidikan);
@@ -82,19 +79,13 @@ export default function AttendanceSection({
 
         if (!acc[jenjang]) acc[jenjang] = { hadir: 0, izin: 0, tidakHadir: 0 };
 
-        acc[jenjang].hadir += record.meetingsAttended;
-        acc[jenjang].tidakHadir += (record.meetingsHeld - record.meetingsAttended);
-        // 'izin' is not tracked in monthly attendance, so it remains 0
+        if (record.status === 'Hadir') acc[jenjang].hadir++;
+        else if (record.status === 'Izin') acc[jenjang].izin++;
+        else if (record.status === 'Tidak Hadir') acc[jenjang].tidakHadir++;
         
         return acc;
       }, {});
     }
-
-    // Fallback to old attendance data for admin/desa roles
-    const filtered = attendance.filter(a => {
-      const recordDate = new Date(a.date);
-      return recordDate >= startDate && recordDate <= endDate;
-    });
 
     return filtered.reduce<AdminSummary>((acc, record) => {
       const student = generusData.find(g => g.name === record.studentName);
@@ -114,7 +105,7 @@ export default function AttendanceSection({
       
       return acc;
     }, {});
-  }, [attendance, monthlyAttendanceData, generusData, startMonth, startYear, endMonth, endYear, isKelompokRole, currentUser]);
+  }, [attendance, generusData, startMonth, startYear, endMonth, endYear, isKelompokRole, currentUser]);
 
   const renderAdminDesaView = () => (
     <Accordion type="multiple" className="w-full space-y-4">
