@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok, User, JENJANG_USIA_LIST } from '@/types/admin';
-import { Edit, Trash2, Plus, Search } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, Download } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import GenerusChart from './GenerusChart';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import * as XLSX from 'xlsx';
 
 interface GenerusSectionProps {
   allGenerus: Generus[];
@@ -151,6 +152,28 @@ export default function GenerusSection({
     return kelompok.filter(k => k.desaName === newGenerus.desa);
   }, [newGenerus.desa, kelompok]);
 
+  const handleExport = () => {
+    const dataToExport = filteredGenerus.map(g => ({
+      'Nama Generus': g.name,
+      'Jenis Kelamin': g.jenisKelamin,
+      'Tahun Lahir': g.tahunLahir,
+      'Pendidikan': g.pendidikan,
+      'Jenjang Usia': getJenjangUsia(g.pendidikan),
+      'Status Mondok': g.statusMondok,
+      'Desa': g.desa,
+      'Kelompok': g.kelompok,
+      'Nama Ayah': g.namaAyah,
+      'Status Ayah': g.statusAyah.toUpperCase(),
+      'Nama Ibu': g.namaIbu,
+      'Status Ibu': g.statusIbu.toUpperCase(),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data Generus");
+    XLSX.writeFile(wb, `data_generus_${currentUser?.kelompok}.xlsx`);
+  };
+
   const renderSearchInput = () => {
     if (dropdownCategories.includes(filterCategory)) {
       return (
@@ -203,6 +226,12 @@ export default function GenerusSection({
               ))}
             </SelectContent>
           </Select>
+          {currentUser?.role === 'kelompok' && (
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Export Excel
+            </Button>
+          )}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex-shrink-0">
