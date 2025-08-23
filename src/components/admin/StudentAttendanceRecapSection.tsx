@@ -85,7 +85,7 @@ export default function StudentAttendanceRecapSection({
       <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Siswa</h2>
       <Card className="mb-8">
         <CardHeader><CardTitle>Filter Data</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <div className="space-y-2">
             <Label>Desa</Label>
             <Select value={selectedDesa} onValueChange={setSelectedDesa} disabled={currentUser?.role === 'desa' || currentUser?.role === 'kelompok'}>
@@ -106,6 +106,20 @@ export default function StudentAttendanceRecapSection({
               <SelectTrigger><SelectValue placeholder="Semua Kelas" /></SelectTrigger>
               <SelectContent>{filteredKelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Dari</Label>
+            <div className="flex gap-2">
+              <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={startYear} onValueChange={setStartYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Sampai</Label>
+            <div className="flex gap-2">
+              <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={endYear} onValueChange={setEndYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            </div>
           </div>
         </CardContent>
       </Card>
