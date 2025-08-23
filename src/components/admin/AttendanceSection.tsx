@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { MonthlyAttendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST } from '@/types/admin';
+import { Attendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST } from '@/types/admin';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AttendanceSectionProps {
-  monthlyAttendance: MonthlyAttendance[];
+  attendance: Attendance[];
   desas: Desa[];
   generusData: Generus[];
   startMonth: string;
@@ -33,7 +33,8 @@ type AdminSummary = {
   [desa: string]: {
     [jenjang: string]: {
       hadir: number;
-      total: number;
+      izin: number;
+      tidakHadir: number;
     }
   }
 };
@@ -41,12 +42,13 @@ type AdminSummary = {
 type KelompokSummary = {
   [jenjang: string]: {
     hadir: number;
-    total: number;
+    izin: number;
+    tidakHadir: number;
   }
 };
 
 export default function AttendanceSection({
-  monthlyAttendance,
+  attendance,
   desas,
   generusData,
   startMonth, setStartMonth, startYear, setStartYear,
@@ -56,52 +58,54 @@ export default function AttendanceSection({
 
   const isKelompokRole = currentUser?.role === 'kelompok';
 
-  const studentJenjangMap = useMemo(() => {
-    const map = new Map<string, string>();
-    generusData.forEach(g => {
-      map.set(g.id, getJenjangUsia(g.pendidikan));
-    });
-    return map;
-  }, [generusData]);
-
   const summaryData = useMemo(() => {
-    const startPeriod = parseInt(startYear) * 12 + parseInt(startMonth);
-    const endPeriod = parseInt(endYear) * 12 + parseInt(endMonth);
+    const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, 1);
+    const endDate = new Date(parseInt(endYear), parseInt(endMonth), 0);
 
-    const filtered = monthlyAttendance.filter(a => {
-      const recordPeriod = a.year * 12 + months.findIndex(m => m.label === a.month) + 1;
-      return recordPeriod >= startPeriod && recordPeriod <= endPeriod;
+    const filtered = attendance.filter(a => {
+      const recordDate = new Date(a.date);
+      return recordDate >= startDate && recordDate <= endDate;
     });
 
     if (isKelompokRole) {
       return filtered.reduce<KelompokSummary>((acc, record) => {
-        const jenjang = studentJenjangMap.get(record.studentId);
-        if (!jenjang || jenjang === '-') return acc;
-
-        if (!acc[jenjang]) acc[jenjang] = { hadir: 0, total: 0 };
+        if (record.kelompok !== currentUser?.kelompok) return acc;
         
-        acc[jenjang].hadir += record.meetingsAttended;
-        acc[jenjang].total += record.meetingsHeld;
+        const student = generusData.find(g => g.name === record.studentName);
+        if (!student) return acc;
+
+        const jenjang = getJenjangUsia(student.pendidikan);
+        if (jenjang === '-') return acc;
+
+        if (!acc[jenjang]) acc[jenjang] = { hadir: 0, izin: 0, tidakHadir: 0 };
+
+        if (record.status === 'Hadir') acc[jenjang].hadir++;
+        else if (record.status === 'Izin') acc[jenjang].izin++;
+        else if (record.status === 'Tidak Hadir') acc[jenjang].tidakHadir++;
         
         return acc;
       }, {});
     }
 
     return filtered.reduce<AdminSummary>((acc, record) => {
-      const jenjang = studentJenjangMap.get(record.studentId);
-      if (!jenjang || jenjang === '-') return acc;
+      const student = generusData.find(g => g.name === record.studentName);
+      if (!student) return acc;
+
+      const jenjang = getJenjangUsia(student.pendidikan);
+      if (jenjang === '-') return acc;
       
-      const { desa } = record;
+      const { desa, status } = record;
 
       if (!acc[desa]) acc[desa] = {};
-      if (!acc[desa][jenjang]) acc[desa][jenjang] = { hadir: 0, total: 0 };
+      if (!acc[desa][jenjang]) acc[desa][jenjang] = { hadir: 0, izin: 0, tidakHadir: 0 };
 
-      acc[desa][jenjang].hadir += record.meetingsAttended;
-      acc[desa][jenjang].total += record.meetingsHeld;
+      if (status === 'Hadir') acc[desa][jenjang].hadir++;
+      else if (status === 'Izin') acc[desa][jenjang].izin++;
+      else if (status === 'Tidak Hadir') acc[desa][jenjang].tidakHadir++;
       
       return acc;
     }, {});
-  }, [monthlyAttendance, studentJenjangMap, startMonth, startYear, endMonth, endYear, isKelompokRole]);
+  }, [attendance, generusData, startMonth, startYear, endMonth, endYear, isKelompokRole, currentUser]);
 
   const renderAdminDesaView = () => (
     <Accordion type="multiple" className="w-full space-y-4">
@@ -119,6 +123,7 @@ export default function AttendanceSection({
                     <TableRow>
                       <TableHead>Jenjang Usia</TableHead>
                       <TableHead className="text-center">Hadir</TableHead>
+                      <TableHead className="text-center">Izin</TableHead>
                       <TableHead className="text-center">Tidak Hadir</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -127,7 +132,8 @@ export default function AttendanceSection({
                       <TableRow key={jenjang}>
                         <TableCell>{jenjang}</TableCell>
                         <TableCell className="text-center">{stats.hadir}</TableCell>
-                        <TableCell className="text-center">{stats.total - stats.hadir}</TableCell>
+                        <TableCell className="text-center">{stats.izin}</TableCell>
+                        <TableCell className="text-center">{stats.tidakHadir}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -155,17 +161,19 @@ export default function AttendanceSection({
               <TableRow>
                 <TableHead>Jenjang Usia</TableHead>
                 <TableHead className="text-center">Hadir</TableHead>
+                <TableHead className="text-center">Izin</TableHead>
                 <TableHead className="text-center">Tidak Hadir</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {JENJANG_USIA_LIST.map(jenjang => {
-                const stats = kelompokSummary[jenjang] || { hadir: 0, total: 0 };
+                const stats = kelompokSummary[jenjang] || { hadir: 0, izin: 0, tidakHadir: 0 };
                 return (
                   <TableRow key={jenjang}>
                     <TableCell>{jenjang}</TableCell>
                     <TableCell className="text-center">{stats.hadir}</TableCell>
-                    <TableCell className="text-center">{stats.total - stats.hadir}</TableCell>
+                    <TableCell className="text-center">{stats.izin}</TableCell>
+                    <TableCell className="text-center">{stats.tidakHadir}</TableCell>
                   </TableRow>
                 )
               })}

@@ -21,10 +21,10 @@ import { useKelompok } from '@/hooks/useKelompok';
 import { useGenerus } from '@/hooks/useGenerus';
 import { useUsers } from '@/hooks/useUsers';
 import { useMaterials } from '@/hooks/useMaterials';
+import { useAttendance } from '@/hooks/useAttendance';
 import { useGurus } from '@/hooks/useGurus';
 import { useKelas } from '@/hooks/useKelas';
 import { useAuthManagement } from '@/hooks/useAuthManagement';
-import { useAttendanceSummary } from '@/hooks/useAttendanceSummary';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -82,7 +82,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus } = useGenerus(currentUser);
   const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, deleteUser } = useUsers(currentUser);
   const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials } = useMaterials();
-  const { attendanceSummary, loading: loadingAttendance, fetchAttendanceSummary } = useAttendanceSummary(currentUser);
+  const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
@@ -93,11 +93,11 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchGenerus();
       fetchUsers();
       fetchMaterials();
-      fetchAttendanceSummary();
+      fetchAttendance();
       fetchGurus();
       fetchKelas();
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendanceSummary, fetchGurus, fetchKelas]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -209,7 +209,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         );
       case 'kehadiran':
         return <AttendanceSection 
-          monthlyAttendance={attendanceSummary}
+          attendance={attendance}
           desas={desas}
           generusData={generus}
           startMonth={startMonth}

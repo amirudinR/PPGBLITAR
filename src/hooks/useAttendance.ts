@@ -1,34 +1,33 @@
 import { useState, useCallback } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { MonthlyAttendance, User } from '@/types/admin';
+import { Attendance, User } from '@/types/admin';
 import { showError } from '@/utils/toast';
 
-export function useAttendanceSummary(currentUser: User | null) {
-  const [attendanceSummary, setAttendanceSummary] = useState<MonthlyAttendance[]>([]);
+export function useAttendance(currentUser: User | null) {
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAttendanceSummary = useCallback(async () => {
+  const fetchAttendance = useCallback(async () => {
     if (!currentUser) return;
     setLoading(true);
     try {
-      let attendanceQuery = query(collection(db, "monthlyAttendance"));
+      let attendanceQuery = query(collection(db, "attendance"));
       if (currentUser.role === 'desa') {
         attendanceQuery = query(attendanceQuery, where("desa", "==", currentUser.desa));
       } else if (currentUser.role === 'kelompok') {
         attendanceQuery = query(attendanceQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
       }
-      
       const attendanceSnap = await getDocs(attendanceQuery);
-      const attendanceData = attendanceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as MonthlyAttendance[];
-      setAttendanceSummary(attendanceData);
+      const attendanceData = attendanceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Attendance[];
+      setAttendance(attendanceData);
     } catch (error) {
-      console.error("Error fetching attendance summary: ", error);
-      showError("Gagal memuat data rekap kehadiran.");
+      console.error("Error fetching attendance: ", error);
+      showError("Gagal memuat data kehadiran.");
     } finally {
       setLoading(false);
     }
   }, [currentUser]);
 
-  return { attendanceSummary, loading, fetchAttendanceSummary };
+  return { attendance, loading, fetchAttendance };
 }
