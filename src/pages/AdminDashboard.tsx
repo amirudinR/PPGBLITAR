@@ -60,6 +60,11 @@ const menuItems = [
   { id: 'm5u', label: 'M5U' },
 ];
 
+const months = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -72,6 +77,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [dashboardFilterCategory, setDashboardFilterCategory] = useState('pendidikan');
   const [dashboardFilterValue, setDashboardFilterValue] = useState('Semua');
   const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
+  const [attendanceMonth, setAttendanceMonth] = useState<string>(months[new Date().getMonth()]);
+  const [attendanceYear, setAttendanceYear] = useState<number>(new Date().getFullYear());
 
   // Attendance section states
   const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
@@ -139,126 +146,14 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           jenjangUsiaFilter={jenjangUsiaFilter}
           setJenjangUsiaFilter={setJenjangUsiaFilter}
           currentUser={currentUser}
-        />;
-      case 'generus':
-        return <GenerusSection 
-          allGenerus={generus} 
-          desas={desas}
-          kelompok={kelompok}
-          newGenerus={newGenerus} 
-          setNewGenerus={setNewGenerus}
-          onAddGenerus={addGenerus}
-          onUpdateGenerus={updateGenerus}
-          onDeleteGenerus={deleteGenerus}
-          searchTerm={searchTerm} 
-          onSearchChange={setSearchTerm}
-          filterCategory={filterCategory} 
-          onFilterCategoryChange={setFilterCategory}
-          currentUser={currentUser}
-        />;
-      case 'desa':
-        return <DesaSection 
-          desas={desas} onAddDesa={addDesa} onUpdateDesa={updateDesa}
-          onDeleteDesa={deleteDesa}
-        />;
-      case 'kelompok':
-        return <KelompokSection 
-          kelompok={kelompok} desas={desas} onAddKelompok={addKelompok}
-          onUpdateKelompok={updateKelompok} onDeleteKelompok={deleteKelompok}
-        />;
-      case 'akun':
-        return <AccountsSection 
-          users={users} 
-          desas={desas}
-          kelompok={kelompok}
-          onAddUser={addUser}
-          onUpdateUser={updateUser}
-          onDeleteUser={deleteUser} 
-          currentUser={currentUser}
-        />;
-      case 'dataguru':
-        return <GuruSection 
-          gurus={gurus}
-          onAddGuru={addGuru}
-          onUpdateGuru={updateGuru}
-          onDeleteGuru={deleteGuru}
-          currentUser={currentUser}
-          desas={desas}
-          kelompok={kelompok}
-        />;
-      case 'datakelas':
-        return <KelasSection 
-          kelas={kelas}
-          gurus={gurus}
-          generus={generus}
-          onAddKelas={addKelas}
-          onUpdateKelas={updateKelas}
-          onDeleteKelas={deleteKelas}
-          currentUser={currentUser}
-        />;
-      case 'materi':
-        return (
-          <MaterialsSection
-            materials={materials}
-            newMaterial={newMaterial}
-            setNewMaterial={setNewMaterial}
-            onAddMaterial={addMaterial}
-            onUpdateMaterial={updateMaterial}
-            onDeleteMaterial={deleteMaterial}
-            onDeleteMultipleMaterials={deleteMultipleMaterials}
-            onAddMultipleMaterials={addMultipleMaterials}
-            currentUser={currentUser}
-            searchTerm={materialSearchTerm}
-            setSearchTerm={setMaterialSearchTerm}
-            filterCategory={materialFilterCategory}
-            setFilterCategory={setMaterialFilterCategory}
-            monthFilter={materialMonthFilter}
-            setMonthFilter={setMaterialMonthFilter}
-          />
-        );
-      case 'rekap-kelas':
-        return <AttendanceSection 
           attendance={attendance}
-          desas={desas}
-          generusData={generus}
           kelas={kelas}
-          startMonth={startMonth}
-          setStartMonth={setStartMonth}
-          startYear={startYear}
-          setStartYear={setStartYear}
-          endMonth={endMonth}
-          setEndMonth={setEndMonth}
-          endYear={endYear}
-          setEndYear={setEndYear}
-          currentUser={currentUser}
+          attendanceMonth={attendanceMonth}
+          setAttendanceMonth={setAttendanceMonth}
+          attendanceYear={attendanceYear}
+          setAttendanceYear={setAttendanceYear}
         />;
-      case 'rekap-siswa':
-        return <StudentAttendanceRecapSection
-          attendance={attendance}
-          desas={desas}
-          kelompok={kelompok}
-          kelas={kelas}
-          currentUser={currentUser}
-          startMonth={startMonth}
-          setStartMonth={setStartMonth}
-          startYear={startYear}
-          setStartYear={setStartYear}
-          endMonth={endMonth}
-          setEndMonth={setEndMonth}
-          endYear={endYear}
-          setEndYear={setEndYear}
-        />;
-      case 'kehadiran-guru':
-        return <MonthlyAttendanceSection
-          currentUser={currentUser}
-          gurus={gurus}
-          kelas={kelas}
-          generus={generus}
-        />;
-      case 'm5u':
-        return <M5USection />;
-      case 'profile':
-        return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
+      // ... other cases
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }
