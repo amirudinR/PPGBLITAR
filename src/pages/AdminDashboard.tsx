@@ -57,6 +57,7 @@ const menuItems = [
     ]
   },
   { id: 'kehadiran-guru', label: 'Kehadiran Generus' },
+  { id: 'nilai-generus', label: 'Nilai Generus' },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
 ];
@@ -138,7 +139,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     switch (activeSection) {
       case 'dashboard':
         return <DashboardSection 
-          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length }} 
+          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length, kelas: kelas.length }} 
           generusData={generus}
           dashboardFilterCategory={dashboardFilterCategory}
           setDashboardFilterCategory={setDashboardFilterCategory}
