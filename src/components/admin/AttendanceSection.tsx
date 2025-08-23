@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
@@ -33,6 +33,7 @@ const months = [
   { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'Desember' }
 ];
 const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
+const monthLabelMap = Object.fromEntries(months.map(m => [m.value, m.label]));
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
 type SummaryData = {
@@ -46,60 +47,67 @@ export default function AttendanceSection({
 
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Kelas | null>(null);
+  const [detailData, setDetailData] = useState<any[]>([]);
 
   const isKelompokRole = currentUser?.role === 'kelompok';
 
-  const filteredAttendance = useMemo(() => {
-    const startDateNum = parseInt(startYear + startMonth, 10);
-    const endDateNum = parseInt(endYear + endMonth, 10);
-    return attendance.filter(a => {
-      const recordMonthNum = parseInt(a.year + (monthMap[a.month] || '00'), 10);
-      return recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
-    });
-  }, [attendance, startMonth, startYear, endMonth, endYear]);
-
-  const summaryData = useMemo(() => {
-    const generusMap = new Map(generusData.map(g => [g.id, g]));
-
-    if (isKelompokRole) {
-      const kelompokSummary: SummaryData = {};
-      filteredAttendance.forEach(record => {
-        if (!kelompokSummary[record.classId]) {
-          kelompokSummary[record.classId] = { attended: 0, held: 0 };
-        }
-        kelompokSummary[record.classId].attended += record.meetingsAttended;
-        kelompokSummary[record.classId].held += record.meetingsHeld;
+  const monthRange = useMemo(() => {
+    const range = [];
+    const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1);
+    const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1);
+    let current = startDate;
+    while (current <= endDate) {
+      range.push({
+        year: current.getFullYear(),
+        monthValue: (current.getMonth() + 1).toString().padStart(2, '0'),
+        monthName: months[current.getMonth()].label,
       });
-      return kelompokSummary;
+      current.setMonth(current.getMonth() + 1);
     }
+    return range.reverse();
+  }, [startMonth, startYear, endMonth, endYear]);
 
-    // Admin/Desa view
-    const adminSummary: Record<string, SummaryData> = {};
-    filteredAttendance.forEach(record => {
-      const { desa } = record;
-      const student = generusMap.get(record.studentId);
-      if (student) {
-        const jenjang = getJenjangUsia(student.pendidikan);
-        if (jenjang !== '-') {
-          if (!adminSummary[desa]) adminSummary[desa] = {};
-          if (!adminSummary[desa][jenjang]) adminSummary[desa][jenjang] = { attended: 0, held: 0 };
-          
-          adminSummary[desa][jenjang].attended += record.meetingsAttended;
-          adminSummary[desa][jenjang].held += record.meetingsHeld;
+  const monthlySummaryData = useMemo(() => {
+    const generusMap = new Map(generusData.map(g => [g.id, g]));
+    const summary: Record<string, any> = {};
+
+    attendance.forEach(record => {
+      const monthKey = `${record.year}-${monthMap[record.month]}`;
+      if (!summary[monthKey]) {
+        summary[monthKey] = isKelompokRole ? {} : {};
+      }
+
+      if (isKelompokRole) {
+        if (!summary[monthKey][record.classId]) {
+          summary[monthKey][record.classId] = { attended: 0, held: 0 };
+        }
+        summary[monthKey][record.classId].attended += record.meetingsAttended;
+        summary[monthKey][record.classId].held += record.meetingsHeld;
+      } else {
+        const student = generusMap.get(record.studentId);
+        if (student) {
+          const jenjang = getJenjangUsia(student.pendidikan);
+          if (jenjang !== '-') {
+            if (!summary[monthKey][record.desa]) summary[monthKey][record.desa] = {};
+            if (!summary[monthKey][record.desa][jenjang]) summary[monthKey][record.desa][jenjang] = { attended: 0, held: 0 };
+            summary[monthKey][record.desa][jenjang].attended += record.meetingsAttended;
+            summary[monthKey][record.desa][jenjang].held += record.meetingsHeld;
+          }
         }
       }
     });
-    return adminSummary;
+    return summary;
+  }, [attendance, generusData, isKelompokRole]);
 
-  }, [filteredAttendance, generusData, isKelompokRole]);
-
-  const detailData = useMemo(() => {
-    if (!selectedClass) return [];
+  const handleViewDetails = (k: Kelas, year: number, monthValue: string) => {
+    const monthName = monthLabelMap[monthValue];
     const studentSummary: { [studentId: string]: { name: string, attended: number, held: number } } = {};
     
-    const attendanceForClass = filteredAttendance.filter(a => a.classId === selectedClass.id);
+    const attendanceForClassInMonth = attendance.filter(a => 
+      a.classId === k.id && a.year === year && a.month === monthName
+    );
     
-    attendanceForClass.forEach(record => {
+    attendanceForClassInMonth.forEach(record => {
       if (!studentSummary[record.studentId]) {
         studentSummary[record.studentId] = { name: record.studentName, attended: 0, held: 0 };
       }
@@ -107,24 +115,21 @@ export default function AttendanceSection({
       studentSummary[record.studentId].held += record.meetingsHeld;
     });
 
-    return Object.values(studentSummary);
-  }, [selectedClass, filteredAttendance]);
-
-  const handleViewDetails = (k: Kelas) => {
+    setDetailData(Object.values(studentSummary));
     setSelectedClass(k);
     setIsDetailOpen(true);
   };
 
-  const renderAdminDesaView = () => (
-    <Accordion type="multiple" className="w-full space-y-4">
+  const renderAdminDesaView = (dataForMonth: Record<string, SummaryData>, monthKey: string) => (
+    <Accordion type="multiple" className="w-full space-y-2">
       {desas.map(desa => {
-        const desaSummary = (summaryData as Record<string, SummaryData>)[desa.name] || {};
+        const desaSummary = dataForMonth[desa.name] || {};
         return (
-          <AccordionItem value={desa.id} key={desa.id} className="bg-white rounded-lg shadow">
-            <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
+          <AccordionItem value={`${monthKey}-${desa.id}`} key={`${monthKey}-${desa.id}`} className="bg-gray-50 rounded-md">
+            <AccordionTrigger className="px-4 text-md font-medium hover:no-underline">
               {desa.name}
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-4">
+            <AccordionContent className="px-4 pb-2">
               <Table>
                 <TableHeader><TableRow><TableHead>Jenjang Usia</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -148,46 +153,40 @@ export default function AttendanceSection({
     </Accordion>
   );
 
-  const renderKelompokView = () => {
-    const kelompokSummary = summaryData as SummaryData;
+  const renderKelompokView = (dataForMonth: SummaryData, year: number, monthValue: string) => {
     const userKelompok = currentUser?.kelompok;
     const classesInKelompok = kelas.filter(k => k.kelompok === userKelompok);
 
     return (
-      <Card className="bg-white rounded-lg shadow">
-        <CardHeader><CardTitle>Rekap Kehadiran Kelompok: {userKelompok}</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead>Nama Guru</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {classesInKelompok.map(k => {
-                const stats = kelompokSummary[k.id] || { attended: 0, held: 0 };
-                const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
-                return (
-                  <TableRow key={k.id}>
-                    <TableCell>{k.namaKelas}</TableCell>
-                    <TableCell>{k.guruName}</TableCell>
-                    <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
-                    <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
-                    <TableCell className="text-center">
-                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(k)}>
-                        <Eye className="w-4 h-4 mr-2" />
-                        Lihat Detail
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <Table>
+        <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead>Nama Guru</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
+        <TableBody>
+          {classesInKelompok.map(k => {
+            const stats = dataForMonth[k.id] || { attended: 0, held: 0 };
+            const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
+            return (
+              <TableRow key={k.id}>
+                <TableCell>{k.namaKelas}</TableCell>
+                <TableCell>{k.guruName}</TableCell>
+                <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
+                <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
+                <TableCell className="text-center">
+                  <Button variant="outline" size="sm" onClick={() => handleViewDetails(k, year, monthValue)}>
+                    <Eye className="w-4 h-4 mr-2" />
+                    Lihat Detail
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     );
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran</h2>
+      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Kelas</h2>
       <Card className="mb-8">
         <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -207,7 +206,23 @@ export default function AttendanceSection({
             </div>
         </CardContent>
       </Card>
-      {isKelompokRole ? renderKelompokView() : renderAdminDesaView()}
+
+      <Accordion type="multiple" className="w-full space-y-4">
+        {monthRange.map(({ year, monthValue, monthName }) => {
+          const monthKey = `${year}-${monthValue}`;
+          const dataForMonth = monthlySummaryData[monthKey] || {};
+          return (
+            <AccordionItem value={monthKey} key={monthKey} className="bg-white rounded-lg shadow">
+              <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
+                {monthName} {year}
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                {isKelompokRole ? renderKelompokView(dataForMonth, year, monthValue) : renderAdminDesaView(dataForMonth, monthKey)}
+              </AccordionContent>
+            </AccordionItem>
+          )
+        })}
+      </Accordion>
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-lg">
