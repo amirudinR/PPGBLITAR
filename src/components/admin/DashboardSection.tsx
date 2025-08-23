@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface DashboardSectionProps {
   stats: {
@@ -155,60 +155,73 @@ export default function DashboardSection({
         )}
       </div>
 
-      {currentUser?.role === 'kelompok' && (
-        <div className="mb-6">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">Ringkasan Kehadiran</h3>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                </Select>
-                <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-            <AttendanceChart attendance={filteredAttendance} kelas={kelas} />
-          </div>
-          <Separator className="my-8" />
-        </div>
-      )}
+      <Accordion type="multiple" defaultValue={["kehadiran", "analisis"]} className="w-full space-y-4">
+        {currentUser?.role === 'kelompok' && (
+          <AccordionItem value="kehadiran" className="bg-white rounded-xl shadow-md border-none">
+            <AccordionTrigger className="px-6 text-xl font-bold text-gray-800 hover:no-underline">
+              Ringkasan Kehadiran
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t">
+                <Card>
+                  <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
+                  <CardContent className="flex flex-col gap-4">
+                    <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </CardContent>
+                </Card>
+                <AttendanceChart attendance={filteredAttendance} kelas={kelas} />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-      <h3 className="text-2xl font-bold tracking-tight mb-4">Analisis Generus</h3>
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6">
-        <div className="space-y-6">
-            <Card>
-              <CardHeader><CardTitle>Filter Generus</CardTitle></CardHeader>
-              <CardContent className="flex flex-col md:flex-row gap-4">
-                <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
-                  <SelectTrigger><SelectValue placeholder="Pilih Kategori..." /></SelectTrigger>
-                  <SelectContent>{filterCategories.map(option => (<SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>))}</SelectContent>
-                </Select>
-                <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
-                  <SelectTrigger><SelectValue placeholder="Pilih Nilai..." /></SelectTrigger>
-                  <SelectContent>{valueOptions.map(option => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-            <Card>
-                <CardHeader><CardTitle>Filter Jenjang Usia</CardTitle></CardHeader>
-                <CardContent className="flex flex-wrap gap-x-6 gap-y-4">
-                    {jenjangUsiaOptions.map(option => (
-                        <div key={option} className="flex items-center space-x-2">
-                            <Checkbox id={option} checked={jenjangUsiaFilter.includes(option)} onCheckedChange={(checked) => handleJenjangUsiaChange(option, checked)} />
-                            <Label htmlFor={option}>{option}</Label>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
-        <GenderChart data={genderData} />
-      </div>
-      <FilteredGenerusTable generus={filteredGenerus} />
+        <AccordionItem value="analisis" className="bg-white rounded-xl shadow-md border-none">
+          <AccordionTrigger className="px-6 text-xl font-bold text-gray-800 hover:no-underline">
+            Analisis Generus
+          </AccordionTrigger>
+          <AccordionContent className="px-6 pb-6">
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 pt-4 border-t">
+              <div className="space-y-6">
+                  <Card>
+                    <CardHeader><CardTitle>Filter Generus</CardTitle></CardHeader>
+                    <CardContent className="flex flex-col md:flex-row gap-4">
+                      <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
+                        <SelectTrigger><SelectValue placeholder="Pilih Kategori..." /></SelectTrigger>
+                        <SelectContent>{filterCategories.map(option => (<SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>))}</SelectContent>
+                      </Select>
+                      <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
+                        <SelectTrigger><SelectValue placeholder="Pilih Nilai..." /></SelectTrigger>
+                        <SelectContent>{valueOptions.map(option => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                      <CardHeader><CardTitle>Filter Jenjang Usia</CardTitle></CardHeader>
+                      <CardContent className="flex flex-wrap gap-x-6 gap-y-4">
+                          {jenjangUsiaOptions.map(option => (
+                              <div key={option} className="flex items-center space-x-2">
+                                  <Checkbox id={option} checked={jenjangUsiaFilter.includes(option)} onCheckedChange={(checked) => handleJenjangUsiaChange(option, checked)} />
+                                  <Label htmlFor={option}>{option}</Label>
+                              </div>
+                          ))}
+                      </CardContent>
+                  </Card>
+              </div>
+              <GenderChart data={genderData} />
+            </div>
+            <div className="mt-6">
+              <FilteredGenerusTable generus={filteredGenerus} />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }
