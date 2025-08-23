@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGrades } from '@/hooks/useGrades';
+import { Check } from 'lucide-react';
 
 interface RekapNilaiSectionProps {
   currentUser: User | null;
@@ -112,8 +113,12 @@ export default function RekapNilaiSection({ currentUser, kelas, generus, materia
                       <TableRow key={student.id}>
                         <TableCell className="sticky left-0 bg-white z-10 font-medium">{student.name}</TableCell>
                         {materialsForRecap.map(material => (
-                          <TableCell key={material.id}>
-                            {gradesMap.get(`${student.id}-${material.id}`) || '-'}
+                          <TableCell key={material.id} className="text-center">
+                            {gradesMap.get(`${student.id}-${material.id}`) === 'Tercapai' ? (
+                              <Check className="h-5 w-5 text-green-600 mx-auto" />
+                            ) : (
+                              '-'
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>

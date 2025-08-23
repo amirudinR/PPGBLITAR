@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGrades } from '@/hooks/useGrades';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface NilaiGenerusSectionProps {
   currentUser: User | null;
@@ -15,7 +16,6 @@ interface NilaiGenerusSectionProps {
 }
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
-const gradeOptions = ['Lancar', 'Cukup', 'Kurang', 'Belum'];
 const monthsInOrder = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
 export default function NilaiGenerusSection({ currentUser, kelas, generus, materials }: NilaiGenerusSectionProps) {
@@ -122,12 +122,13 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
     setGradesMatrix(newMatrix);
   }, [grades, filteredStudents, materialsForTable, selectedMonth, selectedYear]);
 
-  const handleGradeChange = (studentId: string, materialId: string, value: string) => {
+  const handleGradeChange = (studentId: string, materialId: string, checked: boolean | 'indeterminate') => {
+    const newGrade = checked ? 'Tercapai' : '';
     setGradesMatrix(prev => ({
       ...prev,
       [studentId]: {
         ...prev[studentId],
-        [materialId]: value,
+        [materialId]: newGrade,
       },
     }));
   };
@@ -138,7 +139,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
     filteredStudents.forEach(student => {
       materialsForTable.forEach(material => {
         const gradeValue = gradesMatrix[student.id]?.[material.id];
-        if (gradeValue) {
+        if (gradeValue !== undefined) {
           gradesToSave.push({
             studentId: student.id, studentName: student.name, classId: selectedClass.id,
             materialId: material.id, judulMateri: material.judulMateri, rincianMateri: material.rincianMateri,
@@ -183,7 +184,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
                     <TableHeader>
                       <TableRow>
                         <TableHead>Nama Siswa</TableHead>
-                        <TableHead className="w-48">Nilai</TableHead>
+                        <TableHead className="w-48 text-center">Tercapai</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -193,11 +194,12 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
                         filteredStudents.map(student => (
                           <TableRow key={student.id}>
                             <TableCell>{student.name}</TableCell>
-                            <TableCell>
-                              <Select value={gradesMatrix[student.id]?.[material.id] || ''} onValueChange={(value) => handleGradeChange(student.id, material.id, value)}>
-                                <SelectTrigger><SelectValue placeholder="Beri Nilai" /></SelectTrigger>
-                                <SelectContent>{gradeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                              </Select>
+                            <TableCell className="text-center">
+                              <Checkbox
+                                checked={gradesMatrix[student.id]?.[material.id] === 'Tercapai'}
+                                onCheckedChange={(checked) => handleGradeChange(student.id, material.id, checked)}
+                                className="h-5 w-5"
+                              />
                             </TableCell>
                           </TableRow>
                         ))
