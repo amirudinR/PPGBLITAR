@@ -271,7 +271,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           generus={generus}
         />;
       case 'm5u':
-        return <M5USection />;
+        return <M5USection currentUser={currentUser} />;
       case 'profile':
         return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
       default:
