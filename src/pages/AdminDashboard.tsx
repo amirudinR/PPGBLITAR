@@ -16,6 +16,7 @@ import ProfileSection from '@/components/admin/ProfileSection';
 import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSection';
 import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceRecapSection';
 import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
+import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -27,6 +28,7 @@ import { useAttendance } from '@/hooks/useAttendance';
 import { useGurus } from '@/hooks/useGurus';
 import { useKelas } from '@/hooks/useKelas';
 import { useAuthManagement } from '@/hooks/useAuthManagement';
+import { useGrades } from '@/hooks/useGrades';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -57,7 +59,14 @@ const menuItems = [
     ]
   },
   { id: 'kehadiran-guru', label: 'Kehadiran Generus' },
-  { id: 'nilai-generus', label: 'Nilai Generus' },
+  { 
+    id: 'nilai', 
+    label: 'Nilai Generus',
+    children: [
+      { id: 'input-nilai', label: 'Input Nilai' },
+      { id: 'rekap-nilai', label: 'Rekap Nilai' },
+    ]
+  },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
 ];
@@ -93,6 +102,10 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [materialFilterCategory, setMaterialFilterCategory] = useState('judulMateri');
   const [materialMonthFilter, setMaterialMonthFilter] = useState<string[]>([]);
 
+  // Rekap Nilai states
+  const [rekapNilaiSemester, setRekapNilaiSemester] = useState<'Ganjil' | 'Genap'>('Ganjil');
+  const [rekapNilaiYear, setRekapNilaiYear] = useState<number>(new Date().getFullYear());
+
   // Using custom hooks for data management
   const { desas, loading: loadingDesa, fetchDesas, addDesa, updateDesa, deleteDesa } = useDesa();
   const { kelompok, loading: loadingKelompok, fetchKelompok, addKelompok, updateKelompok, deleteKelompok } = useKelompok(desas, currentUser);
@@ -103,6 +116,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
+  const { grades, fetchGrades: fetchAllGrades } = useGrades(currentUser);
 
   useEffect(() => {
     if (currentUser) {
@@ -113,8 +127,11 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchAttendance();
       fetchGurus();
       fetchKelas();
+      if (currentUser.role === 'guru') {
+        kelas.forEach(k => fetchAllGrades(k.id));
+      }
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas, fetchAllGrades, kelas]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -272,12 +289,24 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelas={kelas}
           generus={generus}
         />;
-      case 'nilai-generus':
+      case 'input-nilai':
         return <NilaiGenerusSection
           currentUser={currentUser}
           kelas={kelas}
           generus={generus}
           materials={materials}
+        />;
+      case 'rekap-nilai':
+        return <RekapNilaiSection
+          currentUser={currentUser}
+          grades={grades}
+          kelas={kelas}
+          generus={generus}
+          materials={materials}
+          semester={rekapNilaiSemester}
+          setSemester={setRekapNilaiSemester}
+          year={rekapNilaiYear}
+          setYear={setRekapNilaiYear}
         />;
       case 'm5u':
         return <M5USection currentUser={currentUser} />;
