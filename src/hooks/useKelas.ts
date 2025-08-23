@@ -17,6 +17,17 @@ export function useKelas(currentUser: User | null) {
         kelasQuery = query(kelasQuery, where("desa", "==", currentUser.desa));
       } else if (currentUser.role === 'kelompok') {
         kelasQuery = query(kelasQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+      } else if (currentUser.role === 'guru') {
+        const guruQuery = query(collection(db, "gurus"), where("userId", "==", currentUser.id));
+        const guruSnap = await getDocs(guruQuery);
+        if (!guruSnap.empty) {
+            const guruDocId = guruSnap.docs[0].id;
+            kelasQuery = query(collection(db, "kelas"), where("guruId", "==", guruDocId));
+        } else {
+            setKelas([]);
+            setLoading(false);
+            return;
+        }
       }
       const kelasSnap = await getDocs(kelasQuery);
       const kelasData = kelasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Kelas[];

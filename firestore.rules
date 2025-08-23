@@ -2,89 +2,87 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // === Helper Functions ===
+    // Helper function to check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function currentUserData() {
+    // Helper function to get user data from 'users' collection
+    function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function hasRole(role) {
-      return isAuthenticated() && currentUserData().role == role;
-    }
-    
-    function hasOneOfRoles(roles) {
-      return isAuthenticated() && currentUserData().role in roles;
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    function isAdmin() {
-      return hasOneOfRoles(['adminsuper', 'admin']);
-    }
-
-    // === Aturan untuk Koleksi 'users' ===
+    // USERS collection
+    // Allow users to read their own data.
+    // Allow admins to read/write any user data.
+    // Allow users to update their own data.
     match /users/{userId} {
       allow read: if isAuthenticated();
-      
-      allow create: if true;
-                       
-      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
-      
-      allow delete: if hasRole('adminsuper') ||
-                     (hasRole('admin') && resource.data.role != 'adminsuper') ||
-                     (hasRole('desa') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa) ||
-                     (hasRole('kelompok') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow create: if isAuthenticated(); // For registration
+      allow update: if request.auth.uid == userId || getUserData().role in ['adminsuper', 'admin'];
+      allow delete: if getUserData().role in ['adminsuper', 'admin'];
     }
 
-    // === Aturan untuk Data Master ('desa', 'kelompok') ===
-    match /desa/{desaId} {
+    // DESA, KELOMPOK, MATERIALS collections
+    // Allow any authenticated user to read.
+    // Only admins can write.
+    match /(desa|kelompok|materials)/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if getUserData().role in ['adminsuper', 'admin', 'desa'];
     }
 
-    match /kelompok/{kelompokId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin() || hasRole('desa');
-    }
-
-    // === Aturan untuk Data Operasional ===
-    match /generus/{generusId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
-    }
-
+    // GURUS collection
+    // Allow authenticated users to read.
+    // Allow admins/desa admins to manage gurus.
     match /gurus/{guruId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+      allow write: if getUserData().role in ['adminsuper', 'admin', 'desa', 'kelompok'];
     }
 
-    match /kelas/{kelasId} {
+    // KELAS collection
+    // Allow read based on role.
+    // Allow write for admins/desa/kelompok.
+    match /kelas/{classId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+      allow write: if getUserData().role in ['adminsuper', 'admin', 'desa', 'kelompok'];
     }
 
-    match /attendance/{attendanceId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin() || 
-                         (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                         (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+    // GENERUS collection
+    // Allow read/write based on user's scope (desa/kelompok).
+    // Gurus can read students in their scope.
+    match /generus/{generusId} {
+      allow read: if isAuthenticated() && (
+        getUserData().role in ['adminsuper', 'admin'] ||
+        (getUserData().role == 'desa' && getUserData().desa == resource.data.desa) ||
+        (getUserData().role == 'kelompok' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa) ||
+        (getUserData().role == 'guru' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa)
+      );
+      allow write: if isAuthenticated() && (
+        getUserData().role in ['adminsuper', 'admin'] ||
+        (getUserData().role == 'desa' && getUserData().desa == resource.data.desa) ||
+        (getUserData().role == 'kelompok' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa)
+      );
     }
-    
+
+    // MONTHLY ATTENDANCE collection
+    // Admins/desa/kelompok can read/write within their scope.
+    // Gurus can only read/write attendance records where their UID matches the guruId.
     match /monthlyAttendance/{attendanceId} {
-      allow read: if isAuthenticated();
-      allow write: if hasRole('guru') && request.auth.uid == request.resource.data.guruId;
-    }
-    
-    match /materials/{materialId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin() || hasRole('kelompok');
+      allow read: if isAuthenticated() && (
+        getUserData().role in ['adminsuper', 'admin'] ||
+        (getUserData().role == 'desa' && getUserData().desa == resource.data.desa) ||
+        (getUserData().role == 'kelompok' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa) ||
+        (getUserData().role == 'guru' && request.auth.uid == resource.data.guruId)
+      );
+      allow write: if isAuthenticated() && (
+        getUserData().role in ['adminsuper', 'admin'] ||
+        (getUserData().role == 'guru' && request.auth.uid == request.resource.data.guruId)
+      );
     }
   }
 }
