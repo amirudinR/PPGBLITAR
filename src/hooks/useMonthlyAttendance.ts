@@ -16,7 +16,8 @@ export function useMonthlyAttendance(currentUser: User | null) {
         collection(db, "monthlyAttendance"),
         where("classId", "==", classId),
         where("year", "==", year),
-        where("month", "==", month)
+        where("month", "==", month),
+        where("guruId", "==", currentUser.id) // Filter keamanan ditambahkan di sini
       );
       const attendanceSnap = await getDocs(attendanceQuery);
       const attendanceData = attendanceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as MonthlyAttendance[];
