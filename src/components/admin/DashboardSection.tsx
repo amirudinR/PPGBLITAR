@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import DashboardStatCard from './DashboardStatCard';
 import GenderChart from './GenderChart';
 import FilteredGenerusTable from './FilteredGenerusTable';
-import AttendanceChart from './AttendanceChart';
 import { GraduationCap, Home, Users2, Users, Contact } from 'lucide-react';
-import { Generus, Pendidikan, User, MonthlyAttendance, Kelas } from '@/types/admin';
+import { Generus, Pendidikan, User } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
@@ -26,12 +26,6 @@ interface DashboardSectionProps {
   jenjangUsiaFilter: string[];
   setJenjangUsiaFilter: (value: string[]) => void;
   currentUser: User | null;
-  attendance: MonthlyAttendance[];
-  kelas: Kelas[];
-  attendanceMonth: string;
-  setAttendanceMonth: (value: string) => void;
-  attendanceYear: number;
-  setAttendanceYear: (value: number) => void;
 }
 
 const filterCategories = [
@@ -42,8 +36,6 @@ const filterCategories = [
 ];
 
 const jenjangUsiaOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
-const months = [ 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember' ];
-const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
 const getJenjangUsia = (pendidikan: Pendidikan): string => {
   switch (pendidikan) {
@@ -70,12 +62,6 @@ export default function DashboardSection({
     jenjangUsiaFilter,
     setJenjangUsiaFilter,
     currentUser,
-    attendance,
-    kelas,
-    attendanceMonth,
-    setAttendanceMonth,
-    attendanceYear,
-    setAttendanceYear,
 }: DashboardSectionProps) {
 
   const valueOptions = useMemo(() => {
@@ -107,29 +93,6 @@ export default function DashboardSection({
       { name: 'Perempuan', value: perempuan },
     ];
   }, [filteredGenerus]);
-
-  const attendanceChartData = useMemo(() => {
-    if (currentUser?.role !== 'kelompok') return [];
-
-    const filteredAttendance = attendance.filter(a => a.month === attendanceMonth && a.year === attendanceYear);
-    const summary: { [classId: string]: { attended: number; held: number } } = {};
-
-    filteredAttendance.forEach(record => {
-      if (!summary[record.classId]) {
-        summary[record.classId] = { attended: 0, held: 0 };
-      }
-      summary[record.classId].attended += record.meetingsAttended;
-      summary[record.classId].held += record.meetingsHeld;
-    });
-
-    const classesInKelompok = kelas.filter(k => k.kelompok === currentUser.kelompok);
-    
-    return classesInKelompok.map(k => {
-      const stats = summary[k.id] || { attended: 0, held: 0 };
-      const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
-      return { name: k.namaKelas, percentage };
-    });
-  }, [attendance, kelas, currentUser, attendanceMonth, attendanceYear]);
 
   const handleCategoryChange = (value: string) => {
     setDashboardFilterCategory(value);
@@ -164,78 +127,53 @@ export default function DashboardSection({
           </>
         )}
       </div>
-      
-      {currentUser?.role === 'kelompok' && (
-        <div className="mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Filter Kehadiran</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col md:flex-row gap-4">
-              <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6">
-        {currentUser?.role === 'kelompok' ? (
-          <AttendanceChart data={attendanceChartData} />
-        ) : (
-          <div className="space-y-6">
-              <Card>
+        <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Filter Generus</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col md:flex-row gap-4">
+                <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Kategori..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterCategories.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Nilai..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {valueOptions.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+            <Card>
                 <CardHeader>
-                  <CardTitle>Filter Generus</CardTitle>
+                    <CardTitle>Filter Jenjang Usia</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col md:flex-row gap-4">
-                  <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Kategori..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filterCategories.map(option => (
-                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Nilai..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {valueOptions.map(option => (
-                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <CardContent className="flex flex-wrap gap-x-6 gap-y-4">
+                    {jenjangUsiaOptions.map(option => (
+                        <div key={option} className="flex items-center space-x-2">
+                            <Checkbox 
+                                id={option} 
+                                checked={jenjangUsiaFilter.includes(option)}
+                                onCheckedChange={(checked) => handleJenjangUsiaChange(option, checked)}
+                            />
+                            <Label htmlFor={option}>{option}</Label>
+                        </div>
+                    ))}
                 </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader>
-                      <CardTitle>Filter Jenjang Usia</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-wrap gap-x-6 gap-y-4">
-                      {jenjangUsiaOptions.map(option => (
-                          <div key={option} className="flex items-center space-x-2">
-                              <Checkbox 
-                                  id={option} 
-                                  checked={jenjangUsiaFilter.includes(option)}
-                                  onCheckedChange={(checked) => handleJenjangUsiaChange(option, checked)}
-                              />
-                              <Label htmlFor={option}>{option}</Label>
-                          </div>
-                      ))}
-                  </CardContent>
-              </Card>
-          </div>
-        )}
+            </Card>
+        </div>
         <GenderChart data={genderData} />
       </div>
       <FilteredGenerusTable generus={filteredGenerus} />
