@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGrades } from '@/hooks/useGrades';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface NilaiGenerusSectionProps {
   currentUser: User | null;
@@ -162,7 +164,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nama Siswa</TableHead>
-                    <TableHead className="w-48">Nilai</TableHead>
+                    <TableHead className="w-[400px]">Nilai</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -173,15 +175,18 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
                       <TableRow key={student.id}>
                         <TableCell>{student.name}</TableCell>
                         <TableCell>
-                          <Select 
+                          <RadioGroup
                             value={studentGrades[student.id] || ''}
                             onValueChange={(value) => handleGradeChange(student.id, value)}
+                            className="flex items-center space-x-4"
                           >
-                            <SelectTrigger><SelectValue placeholder="Beri Nilai" /></SelectTrigger>
-                            <SelectContent>
-                              {gradeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
+                            {gradeOptions.map(opt => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`${student.id}-${opt}`} />
+                                <Label htmlFor={`${student.id}-${opt}`} className="font-normal">{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
                         </TableCell>
                       </TableRow>
                     ))
