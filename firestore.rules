@@ -2,87 +2,108 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if user is authenticated
+    // === Helper Functions ===
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper function to get user data from 'users' collection
-    function getUserData() {
+    function currentUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Default deny all
-    match /{document=**} {
-      allow read, write: if false;
+    function hasRole(role) {
+      return isAuthenticated() && currentUserData().role == role;
+    }
+    
+    function hasOneOfRoles(roles) {
+      return isAuthenticated() && currentUserData().role in roles;
     }
 
-    // USERS collection
-    // Allow users to read their own data.
-    // Allow admins to read/write any user data.
-    // Allow users to update their own data.
+    function isAdmin() {
+      return hasOneOfRoles(['adminsuper', 'admin']);
+    }
+
+    // === Aturan untuk Koleksi 'users' ===
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated(); // For registration
-      allow update: if request.auth.uid == userId || getUserData().role in ['adminsuper', 'admin'];
-      allow delete: if getUserData().role in ['adminsuper', 'admin'];
+      // Membatasi pembuatan dokumen hanya untuk pengguna yang sudah terotentikasi
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow delete: if hasRole('adminsuper') ||
+                     (hasRole('admin') && resource.data.role != 'adminsuper') ||
+                     (hasRole('desa') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa) ||
+                     (hasRole('kelompok') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
     }
 
-    // DESA, KELOMPOK, MATERIALS collections
-    // Allow any authenticated user to read.
-    // Only admins can write.
-    match /(desa|kelompok|materials)/{docId} {
+    // === Aturan untuk Data Master ('desa', 'kelompok') ===
+    match /desa/{desaId} {
       allow read: if isAuthenticated();
-      allow write: if getUserData().role in ['adminsuper', 'admin', 'desa'];
+      allow write: if isAdmin();
     }
 
-    // GURUS collection
-    // Allow authenticated users to read.
-    // Allow admins/desa admins to manage gurus.
-    match /gurus/{guruId} {
+    match /kelompok/{kelompokId} {
       allow read: if isAuthenticated();
-      allow write: if getUserData().role in ['adminsuper', 'admin', 'desa', 'kelompok'];
+      allow write: if isAdmin() || hasRole('desa');
     }
 
-    // KELAS collection
-    // Allow read based on role.
-    // Allow write for admins/desa/kelompok.
-    match /kelas/{classId} {
-      allow read: if isAuthenticated();
-      allow write: if getUserData().role in ['adminsuper', 'admin', 'desa', 'kelompok'];
-    }
-
-    // GENERUS collection
-    // Allow read/write based on user's scope (desa/kelompok).
-    // Gurus can read students in their scope.
+    // === Aturan untuk Data Operasional ===
     match /generus/{generusId} {
-      allow read: if isAuthenticated() && (
-        getUserData().role in ['adminsuper', 'admin'] ||
-        (getUserData().role == 'desa' && getUserData().desa == resource.data.desa) ||
-        (getUserData().role == 'kelompok' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa) ||
-        (getUserData().role == 'guru' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa)
-      );
-      allow write: if isAuthenticated() && (
-        getUserData().role in ['adminsuper', 'admin'] ||
-        (getUserData().role == 'desa' && getUserData().desa == resource.data.desa) ||
-        (getUserData().role == 'kelompok' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa)
-      );
+      // Pengguna hanya bisa membaca data generus dalam lingkup mereka (desa/kelompok)
+      allow read: if isAdmin() ||
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == resource.data.kelompok) ||
+                   (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
-    // MONTHLY ATTENDANCE collection
-    // Admins/desa/kelompok can read/write within their scope.
-    // Gurus can only read/write attendance records where their UID matches the guruId.
+    match /gurus/{guruId} {
+      // Pengguna hanya bisa membaca data guru dalam lingkup mereka
+      allow read: if isAdmin() ||
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
+                   (hasRole('guru') && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+    }
+
+    match /kelas/{kelasId} {
+      // Pengguna hanya bisa membaca data kelas dalam lingkup mereka
+      allow read: if isAdmin() ||
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
+                   (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+    }
+
+    // Aturan untuk koleksi 'attendance' yang lama (jika masih digunakan)
+    match /attendance/{attendanceId} {
+      allow read: if isAdmin() ||
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow write: if isAdmin() || 
+                   (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+    }
+    
     match /monthlyAttendance/{attendanceId} {
-      allow read: if isAuthenticated() && (
-        getUserData().role in ['adminsuper', 'admin'] ||
-        (getUserData().role == 'desa' && getUserData().desa == resource.data.desa) ||
-        (getUserData().role == 'kelompok' && getUserData().kelompok == resource.data.kelompok && getUserData().desa == resource.data.desa) ||
-        (getUserData().role == 'guru' && request.auth.uid == resource.data.guruId)
-      );
-      allow write: if isAuthenticated() && (
-        getUserData().role in ['adminsuper', 'admin'] ||
-        (getUserData().role == 'guru' && request.auth.uid == request.resource.data.guruId)
-      );
+      // Admin, PJP Desa, dan PJP Kelompok dapat membaca data kehadiran dalam lingkup mereka.
+      // Guru hanya dapat membaca data kehadiran yang mereka buat.
+      allow read: if isAdmin() ||
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
+                   (hasRole('guru') && resource.data.guruId == request.auth.uid);
+      // Hanya guru yang bisa menulis data kehadiran, dan harus sesuai dengan ID mereka. Admin juga bisa menulis.
+      allow write: if isAdmin() || (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
+    }
+    
+    match /materials/{materialId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || hasRole('kelompok');
     }
   }
 }
