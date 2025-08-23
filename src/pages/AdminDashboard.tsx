@@ -13,6 +13,7 @@ import M5USection from '@/components/admin/M5USection';
 import GuruSection from '@/components/admin/GuruSection';
 import KelasSection from '@/components/admin/KelasSection';
 import ProfileSection from '@/components/admin/ProfileSection';
+import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -32,6 +33,7 @@ interface AdminDashboardProps {
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'profile', label: 'Profil Saya' },
   { 
     id: 'master', 
     label: 'Data Master', 
@@ -45,9 +47,9 @@ const menuItems = [
   },
   { id: 'generus', label: 'Data Generus' },
   { id: 'kehadiran', label: 'Kehadiran' },
+  { id: 'kehadiran-guru', label: 'Kehadiran Generus' },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
-  { id: 'profile', label: 'Profil Saya' },
 ];
 
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
@@ -218,6 +220,13 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           setEndMonth={setEndMonth}
           endYear={endYear}
           setEndYear={setEndYear}
+        />;
+      case 'kehadiran-guru':
+        return <MonthlyAttendanceSection
+          currentUser={currentUser}
+          gurus={gurus}
+          kelas={kelas}
+          generus={generus}
         />;
       case 'm5u':
         return <M5USection />;

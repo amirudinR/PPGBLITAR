@@ -119,6 +119,20 @@ export interface Attendance {
   kelompok: string;
 }
 
+export interface MonthlyAttendance {
+  id: string;
+  studentId: string;
+  studentName: string;
+  classId: string;
+  guruId: string;
+  desa: string;
+  kelompok: string;
+  year: number;
+  month: string;
+  meetingsHeld: number;
+  meetingsAttended: number;
+}
+
 export interface Desa {
     id: string;
     name: string;
