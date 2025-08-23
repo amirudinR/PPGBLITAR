@@ -16,6 +16,7 @@ import ProfileSection from '@/components/admin/ProfileSection';
 import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSection';
 import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceRecapSection';
 import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
+import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -52,12 +53,19 @@ const menuItems = [
     id: 'kehadiran', 
     label: 'Kehadiran', 
     children: [
+      { id: 'kehadiran-guru', label: 'Input Kehadiran' },
       { id: 'rekap-kelas', label: 'Rekap Per Kelas' },
       { id: 'rekap-siswa', label: 'Rekap Per Siswa' },
     ]
   },
-  { id: 'kehadiran-guru', label: 'Kehadiran Generus' },
-  { id: 'nilai-generus', label: 'Nilai Generus' },
+  { 
+    id: 'nilai', 
+    label: 'Nilai Generus',
+    children: [
+      { id: 'input-nilai', label: 'Input Nilai' },
+      { id: 'rekap-nilai', label: 'Rekap Nilai' },
+    ]
+  },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
 ];
@@ -272,8 +280,15 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelas={kelas}
           generus={generus}
         />;
-      case 'nilai-generus':
+      case 'input-nilai':
         return <NilaiGenerusSection
+          currentUser={currentUser}
+          kelas={kelas}
+          generus={generus}
+          materials={materials}
+        />;
+      case 'rekap-nilai':
+        return <RekapNilaiSection
           currentUser={currentUser}
           kelas={kelas}
           generus={generus}

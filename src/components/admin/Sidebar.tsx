@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,7 +32,16 @@ const menuItems = [
       { id: 'rekap-siswa', label: 'Rekap Per Siswa', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
     ]
   },
-  { id: 'nilai-generus', label: 'Nilai Generus', icon: ClipboardCheck, roles: ['guru'] },
+  { 
+    id: 'nilai', 
+    label: 'Nilai Generus', 
+    icon: ClipboardCheck, 
+    roles: ['guru'],
+    children: [
+      { id: 'input-nilai', label: 'Input Nilai', icon: Edit, roles: ['guru'] },
+      { id: 'rekap-nilai', label: 'Rekap Nilai', icon: BookOpen, roles: ['guru'] },
+    ]
+  },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
 ];
@@ -85,7 +94,7 @@ export default function Sidebar({
         return { ...item, children: visibleChildren };
       }
       // If parent is visible but no children are, don't render the parent if it's just a container
-      if (item.id === 'master' || item.id === 'kehadiran') return null;
+      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai') return null;
     }
     return item;
   }).filter(Boolean) as (typeof menuItems[number])[];
