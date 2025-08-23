@@ -27,11 +27,11 @@ const menuItems = [
     icon: Calendar, 
     roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'],
     children: [
+      { id: 'kehadiran-guru', label: 'Input Kehadiran', icon: Calendar, roles: ['guru'] },
       { id: 'rekap-kelas', label: 'Rekap Per Kelas', icon: School, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
       { id: 'rekap-siswa', label: 'Rekap Per Siswa', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
     ]
   },
-  { id: 'kehadiran-guru', label: 'Input Kehadiran', icon: Calendar, roles: ['guru'] },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
 ];
