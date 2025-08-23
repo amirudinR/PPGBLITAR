@@ -144,43 +144,50 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
       </Card>
 
       {selectedJudulMateri && (
-        <Card>
-          <CardHeader><CardTitle>Input Nilai: {selectedJudulMateri} - {selectedMonth} {selectedYear}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="sticky left-0 bg-white z-10">Nama Siswa</TableHead>
-                    {materialsForTable.map(m => <TableHead key={m.id} className="min-w-[200px]">{m.rincianMateri}</TableHead>)}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow><TableCell colSpan={materialsForTable.length + 1} className="text-center">Memuat...</TableCell></TableRow>
-                  ) : (
-                    filteredStudents.map(student => (
-                      <TableRow key={student.id}>
-                        <TableCell className="sticky left-0 bg-white z-10 font-medium">{student.name}</TableCell>
-                        {materialsForTable.map(material => (
-                          <TableCell key={material.id}>
-                            <Select value={gradesMatrix[student.id]?.[material.id] || ''} onValueChange={(value) => handleGradeChange(student.id, material.id, value)}>
-                              <SelectTrigger><SelectValue placeholder="Beri Nilai" /></SelectTrigger>
-                              <SelectContent>{gradeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                            </Select>
-                          </TableCell>
-                        ))}
+        <div>
+          <h3 className="text-2xl font-bold mb-4">Input Nilai: {selectedJudulMateri} - {selectedMonth} {selectedYear}</h3>
+          <div className="space-y-6">
+            {materialsForTable.map(material => (
+              <Card key={material.id}>
+                <CardHeader>
+                  <CardTitle>{material.rincianMateri}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nama Siswa</TableHead>
+                        <TableHead className="w-48">Nilai</TableHead>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow><TableCell colSpan={2} className="text-center">Memuat...</TableCell></TableRow>
+                      ) : (
+                        filteredStudents.map(student => (
+                          <TableRow key={student.id}>
+                            <TableCell>{student.name}</TableCell>
+                            <TableCell>
+                              <Select value={gradesMatrix[student.id]?.[material.id] || ''} onValueChange={(value) => handleGradeChange(student.id, material.id, value)}>
+                                <SelectTrigger><SelectValue placeholder="Beri Nilai" /></SelectTrigger>
+                                <SelectContent>{gradeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {materialsForTable.length > 0 && (
             <div className="mt-6 flex justify-end">
-              <Button onClick={handleSave}>Simpan Perubahan</Button>
+              <Button onClick={handleSave}>Simpan Semua Perubahan</Button>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       )}
     </div>
   );
