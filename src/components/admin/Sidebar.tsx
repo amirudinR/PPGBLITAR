@@ -20,7 +20,16 @@ const menuItems = [
     ]
   },
   { id: 'generus', label: 'Data Generus', icon: GraduationCap, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
-  { id: 'kehadiran', label: 'Kehadiran', icon: Calendar, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+  { 
+    id: 'kehadiran', 
+    label: 'Kehadiran', 
+    icon: Calendar, 
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok'],
+    children: [
+      { id: 'rekap-kelas', label: 'Rekap Per Kelas', icon: School, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+      { id: 'rekap-siswa', label: 'Rekap Per Siswa', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+    ]
+  },
   { id: 'kehadiran-guru', label: 'Kehadiran Generus', icon: CheckSquare, roles: ['guru'] },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },

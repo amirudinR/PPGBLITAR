@@ -14,6 +14,7 @@ import GuruSection from '@/components/admin/GuruSection';
 import KelasSection from '@/components/admin/KelasSection';
 import ProfileSection from '@/components/admin/ProfileSection';
 import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSection';
+import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceRecapSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -46,7 +47,14 @@ const menuItems = [
     ]
   },
   { id: 'generus', label: 'Data Generus' },
-  { id: 'kehadiran', label: 'Kehadiran' },
+  { 
+    id: 'kehadiran', 
+    label: 'Kehadiran', 
+    children: [
+      { id: 'rekap-kelas', label: 'Rekap Per Kelas' },
+      { id: 'rekap-siswa', label: 'Rekap Per Siswa' },
+    ]
+  },
   { id: 'kehadiran-guru', label: 'Kehadiran Generus' },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
@@ -207,7 +215,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
             setMonthFilter={setMaterialMonthFilter}
           />
         );
-      case 'kehadiran':
+      case 'rekap-kelas':
         return <AttendanceSection 
           attendance={attendance}
           desas={desas}
@@ -222,6 +230,22 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           endYear={endYear}
           setEndYear={setEndYear}
           currentUser={currentUser}
+        />;
+      case 'rekap-siswa':
+        return <StudentAttendanceRecapSection
+          attendance={attendance}
+          desas={desas}
+          kelompok={kelompok}
+          kelas={kelas}
+          currentUser={currentUser}
+          startMonth={startMonth}
+          setStartMonth={setStartMonth}
+          startYear={startYear}
+          setStartYear={setStartYear}
+          endMonth={endMonth}
+          setEndMonth={setEndMonth}
+          endYear={endYear}
+          setEndYear={setEndYear}
         />;
       case 'kehadiran-guru':
         return <MonthlyAttendanceSection
