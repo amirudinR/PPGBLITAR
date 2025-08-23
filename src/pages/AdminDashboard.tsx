@@ -130,7 +130,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     switch (activeSection) {
       case 'dashboard':
         return <DashboardSection 
-          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length }} 
+          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length }} 
           generusData={generus}
           dashboardFilterCategory={dashboardFilterCategory}
           setDashboardFilterCategory={setDashboardFilterCategory}
@@ -138,6 +138,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           setDashboardFilterValue={setDashboardFilterValue}
           jenjangUsiaFilter={jenjangUsiaFilter}
           setJenjangUsiaFilter={setJenjangUsiaFilter}
+          currentUser={currentUser}
         />;
       case 'generus':
         return <GenerusSection 

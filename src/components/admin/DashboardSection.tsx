@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import DashboardStatCard from './DashboardStatCard';
 import GenderChart from './GenderChart';
 import FilteredGenerusTable from './FilteredGenerusTable';
-import { GraduationCap, Home, Users2, Users } from 'lucide-react';
-import { Generus, Pendidikan } from '@/types/admin';
+import { GraduationCap, Home, Users2, Users, Contact } from 'lucide-react';
+import { Generus, Pendidikan, User } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ interface DashboardSectionProps {
     desa: number;
     kelompok: number;
     users: number;
+    gurus: number;
   };
   generusData: Generus[];
   dashboardFilterCategory: string;
@@ -24,6 +25,7 @@ interface DashboardSectionProps {
   setDashboardFilterValue: (value: string) => void;
   jenjangUsiaFilter: string[];
   setJenjangUsiaFilter: (value: string[]) => void;
+  currentUser: User | null;
 }
 
 const filterCategories = [
@@ -59,6 +61,7 @@ export default function DashboardSection({
     setDashboardFilterValue,
     jenjangUsiaFilter,
     setJenjangUsiaFilter,
+    currentUser,
 }: DashboardSectionProps) {
 
   const valueOptions = useMemo(() => {
@@ -111,9 +114,18 @@ export default function DashboardSection({
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
-        <DashboardStatCard title="Total Desa" value={stats.desa} icon={Home} />
-        <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
-        <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+        {currentUser?.role === 'kelompok' ? (
+          <>
+            <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
+            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+          </>
+        ) : (
+          <>
+            <DashboardStatCard title="Total Desa" value={stats.desa} icon={Home} />
+            <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
+            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+          </>
+        )}
       </div>
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6">
         <div className="space-y-6">
