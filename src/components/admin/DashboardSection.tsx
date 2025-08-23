@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface DashboardSectionProps {
   stats: {
@@ -151,50 +152,65 @@ export default function DashboardSection({
 
       {currentUser?.role === 'kelompok' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card>
-            <CardHeader><CardTitle>Filter Kehadiran</CardTitle></CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
+          <Accordion type="single" collapsible className="w-full bg-white rounded-xl shadow-md">
+            <AccordionItem value="item-1" className="border-b-0">
+              <AccordionTrigger className="p-6 text-xl font-bold text-gray-800 hover:no-underline">
+                Filter Kehadiran
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <div className="flex flex-col gap-4">
+                  <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           <AttendanceChart attendance={filteredAttendance} kelas={kelas} />
         </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6">
-        <div className="space-y-6">
-            <Card>
-              <CardHeader><CardTitle>Filter Generus</CardTitle></CardHeader>
-              <CardContent className="flex flex-col md:flex-row gap-4">
-                <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
-                  <SelectTrigger><SelectValue placeholder="Pilih Kategori..." /></SelectTrigger>
-                  <SelectContent>{filterCategories.map(option => (<SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>))}</SelectContent>
-                </Select>
-                <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
-                  <SelectTrigger><SelectValue placeholder="Pilih Nilai..." /></SelectTrigger>
-                  <SelectContent>{valueOptions.map(option => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-            <Card>
-                <CardHeader><CardTitle>Filter Jenjang Usia</CardTitle></CardHeader>
-                <CardContent className="flex flex-wrap gap-x-6 gap-y-4">
-                    {jenjangUsiaOptions.map(option => (
-                        <div key={option} className="flex items-center space-x-2">
-                            <Checkbox id={option} checked={jenjangUsiaFilter.includes(option)} onCheckedChange={(checked) => handleJenjangUsiaChange(option, checked)} />
-                            <Label htmlFor={option}>{option}</Label>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
+        <Accordion type="single" collapsible className="w-full bg-white rounded-xl shadow-md">
+          <AccordionItem value="item-1" className="border-b-0">
+            <AccordionTrigger className="p-6 text-xl font-bold text-gray-800 hover:no-underline">
+              Filter Data Generus
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6">
+              <div className="space-y-6">
+                <div>
+                  <Label className="font-semibold">Filter Kategori</Label>
+                  <div className="flex flex-col md:flex-row gap-4 mt-2">
+                    <Select value={dashboardFilterCategory} onValueChange={handleCategoryChange}>
+                      <SelectTrigger><SelectValue placeholder="Pilih Kategori..." /></SelectTrigger>
+                      <SelectContent>{filterCategories.map(option => (<SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>))}</SelectContent>
+                    </Select>
+                    <Select value={dashboardFilterValue} onValueChange={setDashboardFilterValue}>
+                      <SelectTrigger><SelectValue placeholder="Pilih Nilai..." /></SelectTrigger>
+                      <SelectContent>{valueOptions.map(option => (<SelectItem key={option} value={option}>{option}</SelectItem>))}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="font-semibold">Filter Jenjang Usia</Label>
+                  <div className="flex flex-wrap gap-x-6 gap-y-4 mt-2">
+                      {jenjangUsiaOptions.map(option => (
+                          <div key={option} className="flex items-center space-x-2">
+                              <Checkbox id={option} checked={jenjangUsiaFilter.includes(option)} onCheckedChange={(checked) => handleJenjangUsiaChange(option, checked)} />
+                              <Label htmlFor={option} className="font-normal">{option}</Label>
+                          </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         <GenderChart data={genderData} />
       </div>
       <FilteredGenerusTable generus={filteredGenerus} />
