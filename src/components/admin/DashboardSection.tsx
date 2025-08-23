@@ -34,7 +34,7 @@ interface DashboardSectionProps {
   setAttendanceYear: (value: number) => void;
 }
 
-const filterCategories = [
+const allFilterCategories = [
     { value: 'pendidikan', label: 'Pendidikan' },
     { value: 'desa', label: 'Desa' },
     { value: 'kelompok', label: 'Kelompok' },
@@ -80,6 +80,13 @@ export default function DashboardSection({
     attendanceYear,
     setAttendanceYear,
 }: DashboardSectionProps) {
+
+  const filterCategories = useMemo(() => {
+    if (currentUser?.role === 'kelompok' || currentUser?.role === 'desa') {
+      return allFilterCategories.filter(cat => cat.value !== 'desa' && cat.value !== 'kelompok');
+    }
+    return allFilterCategories;
+  }, [currentUser]);
 
   const valueOptions = useMemo(() => {
     if (!dashboardFilterCategory) return [];
