@@ -5,6 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Eye } from 'lucide-react';
 
 interface StudentAttendanceRecapSectionProps {
   attendance: MonthlyAttendance[];
@@ -39,6 +42,8 @@ export default function StudentAttendanceRecapSection({
   const [selectedDesa, setSelectedDesa] = useState(currentUser?.role === 'desa' || currentUser?.role === 'kelompok' ? currentUser.desa || '' : '');
   const [selectedKelompok, setSelectedKelompok] = useState(currentUser?.role === 'kelompok' ? currentUser.kelompok || '' : '');
   const [selectedKelas, setSelectedKelas] = useState('');
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<{ name: string; id: string } | null>(null);
 
   const filteredKelompok = useMemo(() => {
     if (!selectedDesa) return kelompok;
@@ -50,18 +55,19 @@ export default function StudentAttendanceRecapSection({
     return kelas.filter(k => k.kelompok === selectedKelompok);
   }, [selectedKelompok, selectedDesa, kelas]);
 
-  const studentRecap = useMemo(() => {
+  const filteredAttendance = useMemo(() => {
     const startDateNum = parseInt(startYear + startMonth, 10);
     const endDateNum = parseInt(endYear + endMonth, 10);
-
-    const filteredAttendance = attendance.filter(a => {
+    return attendance.filter(a => {
       const recordMonthNum = parseInt(a.year + (monthMap[a.month] || '00'), 10);
       return recordMonthNum >= startDateNum && recordMonthNum <= endDateNum &&
              (!selectedDesa || a.desa === selectedDesa) &&
              (!selectedKelompok || a.kelompok === selectedKelompok) &&
              (!selectedKelas || a.classId === selectedKelas);
     });
+  }, [attendance, startMonth, startYear, endMonth, endYear, selectedDesa, selectedKelompok, selectedKelas]);
 
+  const studentRecap = useMemo(() => {
     const recap: { [studentId: string]: { name: string; classId: string; attended: number; held: number } } = {};
     for (const record of filteredAttendance) {
       if (!recap[record.studentId]) {
@@ -72,13 +78,30 @@ export default function StudentAttendanceRecapSection({
     }
     
     const kelasMap = new Map(kelas.map(k => [k.id, k]));
-    return Object.values(recap).map(r => ({
+    return Object.entries(recap).map(([studentId, r]) => ({
       ...r,
+      studentId,
       className: kelasMap.get(r.classId)?.namaKelas || 'N/A',
       guruName: kelasMap.get(r.classId)?.guruName || 'N/A',
       percentage: r.held > 0 ? Math.round((r.attended / r.held) * 100) : 0,
     }));
-  }, [attendance, startMonth, startYear, endMonth, endYear, selectedDesa, selectedKelompok, selectedKelas, kelas]);
+  }, [filteredAttendance, kelas]);
+
+  const studentDetailData = useMemo(() => {
+    if (!selectedStudent) return [];
+    return filteredAttendance
+      .filter(a => a.studentId === selectedStudent.id)
+      .map(record => ({
+        ...record,
+        percentage: record.meetingsHeld > 0 ? Math.round((record.meetingsAttended / record.meetingsHeld) * 100) : 0,
+      }))
+      .sort((a, b) => b.year - a.year || months.findIndex(m => m.label === a.month) - months.findIndex(m => m.label === b.month));
+  }, [selectedStudent, filteredAttendance]);
+
+  const handleViewDetails = (student: { studentId: string, name: string }) => {
+    setSelectedStudent({ id: student.studentId, name: student.name });
+    setIsDetailOpen(true);
+  };
 
   return (
     <div>
@@ -134,22 +157,64 @@ export default function StudentAttendanceRecapSection({
                 <TableHead>Guru</TableHead>
                 <TableHead className="text-center">Total Kehadiran</TableHead>
                 <TableHead className="w-48">Persentase</TableHead>
+                <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {studentRecap.map(student => (
-                <TableRow key={student.name + student.classId}>
+                <TableRow key={student.studentId}>
                   <TableCell>{student.name}</TableCell>
                   <TableCell>{student.className}</TableCell>
                   <TableCell>{student.guruName}</TableCell>
                   <TableCell className="text-center">{student.attended} / {student.held}</TableCell>
                   <TableCell><div className="flex items-center gap-2"><Progress value={student.percentage} className="w-24" /><span>{student.percentage}%</span></div></TableCell>
+                  <TableCell className="text-center">
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(student)}>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Lihat Detail
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detail Kehadiran: {selectedStudent?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Bulan</TableHead>
+                  <TableHead>Tahun</TableHead>
+                  <TableHead className="text-center">Kehadiran</TableHead>
+                  <TableHead className="w-40">Persentase</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {studentDetailData.map(record => (
+                  <TableRow key={record.id}>
+                    <TableCell>{record.month}</TableCell>
+                    <TableCell>{record.year}</TableCell>
+                    <TableCell className="text-center">{record.meetingsAttended} / {record.meetingsHeld}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={record.percentage} className="w-24" />
+                        <span>{record.percentage}%</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
