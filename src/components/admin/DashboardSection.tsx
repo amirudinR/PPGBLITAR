@@ -84,7 +84,7 @@ export default function DashboardSection({
 }: DashboardSectionProps) {
 
   const filterCategories = useMemo(() => {
-    if (currentUser?.role === 'kelompok' || currentUser?.role === 'desa') {
+    if (currentUser?.role === 'kelompok' || currentUser?.role === 'desa' || currentUser?.role === 'guru') {
       return allFilterCategories.filter(cat => cat.value !== 'desa' && cat.value !== 'kelompok');
     }
     return allFilterCategories;
