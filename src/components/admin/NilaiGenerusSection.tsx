@@ -16,6 +16,7 @@ interface NilaiGenerusSectionProps {
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 const gradeOptions = ['Lancar', 'Cukup', 'Kurang', 'Belum'];
+const monthsInOrder = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
 export default function NilaiGenerusSection({ currentUser, kelas, generus, materials }: NilaiGenerusSectionProps) {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
@@ -81,21 +82,45 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
   }, [selectedPendidikan, selectedSemester, availableMonths, selectedMonth]);
 
   useEffect(() => {
-    if (selectedClassId && selectedPendidikan) {
-      fetchGrades(selectedClassId, selectedYear, selectedMonth);
+    if (selectedClassId) {
+      fetchGrades(selectedClassId);
     }
-  }, [selectedClassId, selectedPendidikan, selectedYear, selectedMonth, fetchGrades]);
+  }, [selectedClassId, fetchGrades]);
 
   useEffect(() => {
+    const currentMonthIndex = monthsInOrder.indexOf(selectedMonth);
+    let prevYear = selectedYear;
+    let prevMonth = '';
+    if (currentMonthIndex === 0) {
+        prevMonth = monthsInOrder[11];
+        prevYear = selectedYear - 1;
+    } else {
+        prevMonth = monthsInOrder[currentMonthIndex - 1];
+    }
+
+    const currentGradesMap = new Map(
+      grades
+        .filter(g => g.year === selectedYear && g.month === selectedMonth)
+        .map(g => [`${g.studentId}-${g.materialId}`, g.grade])
+    );
+    
+    const previousGradesMap = new Map(
+      grades
+        .filter(g => g.year === prevYear && g.month === prevMonth)
+        .map(g => [`${g.studentId}-${g.materialId}`, g.grade])
+    );
+
     const newMatrix: Record<string, Record<string, string>> = {};
-    grades.forEach(grade => {
-      if (!newMatrix[grade.studentId]) {
-        newMatrix[grade.studentId] = {};
-      }
-      newMatrix[grade.studentId][grade.materialId] = grade.grade;
+    filteredStudents.forEach(student => {
+      newMatrix[student.id] = {};
+      materialsForTable.forEach(material => {
+        const currentGrade = currentGradesMap.get(`${student.id}-${material.id}`);
+        const previousGrade = previousGradesMap.get(`${student.id}-${material.id}`);
+        newMatrix[student.id][material.id] = currentGrade || previousGrade || '';
+      });
     });
     setGradesMatrix(newMatrix);
-  }, [grades]);
+  }, [grades, filteredStudents, materialsForTable, selectedMonth, selectedYear]);
 
   const handleGradeChange = (studentId: string, materialId: string, value: string) => {
     setGradesMatrix(prev => ({
@@ -125,7 +150,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
     });
     const success = await saveGradesBatch(gradesToSave);
     if (success) {
-      fetchGrades(selectedClassId, selectedYear, selectedMonth);
+      fetchGrades(selectedClassId);
     }
   };
 

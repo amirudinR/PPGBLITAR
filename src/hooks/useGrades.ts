@@ -8,7 +8,7 @@ export function useGrades(currentUser: User | null) {
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchGrades = useCallback(async (classId: string, year: number, month: string) => {
+  const fetchAllGradesForClass = useCallback(async (classId: string) => {
     if (!currentUser || !classId) {
       setGrades([]);
       return;
@@ -18,8 +18,6 @@ export function useGrades(currentUser: User | null) {
       const gradesQuery = query(
         collection(db, "grades"),
         where("classId", "==", classId),
-        where("year", "==", year),
-        where("month", "==", month),
         where("guruId", "==", currentUser.id)
       );
       const gradesSnap = await getDocs(gradesQuery);
@@ -62,5 +60,5 @@ export function useGrades(currentUser: User | null) {
     }
   };
 
-  return { grades, loading, fetchGrades, saveGradesBatch };
+  return { grades, loading, fetchGrades: fetchAllGradesForClass, saveGradesBatch };
 }
