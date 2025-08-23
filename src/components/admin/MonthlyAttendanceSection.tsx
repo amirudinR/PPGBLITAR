@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useMonthlyAttendance } from '@/hooks/useMonthlyAttendance';
+import { Progress } from "@/components/ui/progress";
 
 interface MonthlyAttendanceSectionProps {
   currentUser: User | null;
@@ -85,6 +86,16 @@ export default function MonthlyAttendanceSection({ currentUser, gurus, kelas, ge
     saveAttendanceBatch(attendanceData, selectedClass, selectedYear, selectedMonth, meetingsHeld);
   };
 
+  const attendanceSummary = useMemo(() => {
+    return monthlyAttendance.map(record => {
+      const percentage = record.meetingsHeld > 0 ? (record.meetingsAttended / record.meetingsHeld) * 100 : 0;
+      return {
+        ...record,
+        percentage: Math.round(percentage),
+      };
+    });
+  }, [monthlyAttendance]);
+
   return (
     <div>
       <h2 className="text-3xl font-bold tracking-tight mb-6">Kehadiran Generus</h2>
@@ -109,55 +120,96 @@ export default function MonthlyAttendanceSection({ currentUser, gurus, kelas, ge
       </Card>
 
       {selectedClassId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Input Kehadiran - {kelas.find(k => k.id === selectedClassId)?.namaKelas}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-6 max-w-xs">
-              <Label htmlFor="meetingsHeld">Jumlah Pertemuan Bulan Ini</Label>
-              <Input 
-                id="meetingsHeld" 
-                type="number" 
-                value={meetingsHeld}
-                onChange={(e) => setMeetingsHeld(parseInt(e.target.value, 10) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div className="overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama Siswa</TableHead>
-                    <TableHead className="w-48">Jumlah Kehadiran</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow><TableCell colSpan={2} className="text-center">Memuat...</TableCell></TableRow>
-                  ) : (
-                    studentsInClass.map(student => (
-                      <TableRow key={student.id}>
-                        <TableCell>{student.name}</TableCell>
-                        <TableCell>
-                          <Input 
-                            type="number"
-                            value={studentAttendances[student.id] || ''}
-                            onChange={(e) => handleAttendanceChange(student.id, e.target.value)}
-                            max={meetingsHeld}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <Button onClick={handleSave}>Simpan Perubahan</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Input Kehadiran - {kelas.find(k => k.id === selectedClassId)?.namaKelas}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <Label htmlFor="meetingsHeld">Jumlah Pertemuan Bulan Ini</Label>
+                <Input 
+                  id="meetingsHeld" 
+                  type="number" 
+                  value={meetingsHeld}
+                  onChange={(e) => setMeetingsHeld(parseInt(e.target.value, 10) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              <div className="overflow-auto max-h-96">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama Siswa</TableHead>
+                      <TableHead className="w-48">Jumlah Kehadiran</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow><TableCell colSpan={2} className="text-center">Memuat...</TableCell></TableRow>
+                    ) : (
+                      studentsInClass.map(student => (
+                        <TableRow key={student.id}>
+                          <TableCell>{student.name}</TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={studentAttendances[student.id] || ''}
+                              onChange={(e) => handleAttendanceChange(student.id, e.target.value)}
+                              max={meetingsHeld}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={handleSave}>Simpan Perubahan</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Rekap Kehadiran - {selectedMonth} {selectedYear}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-auto max-h-[30rem]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama Siswa</TableHead>
+                      <TableHead className="text-center">Kehadiran</TableHead>
+                      <TableHead className="w-40">Persentase</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow><TableCell colSpan={3} className="text-center">Memuat...</TableCell></TableRow>
+                    ) : attendanceSummary.length > 0 ? (
+                      attendanceSummary.map(record => (
+                        <TableRow key={record.id}>
+                          <TableCell>{record.studentName}</TableCell>
+                          <TableCell className="text-center">{record.meetingsAttended}/{record.meetingsHeld}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={record.percentage} className="w-24" />
+                              <span>{record.percentage}%</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow><TableCell colSpan={3} className="text-center">Belum ada data untuk periode ini.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
