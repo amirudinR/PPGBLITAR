@@ -72,6 +72,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [dashboardFilterCategory, setDashboardFilterCategory] = useState('pendidikan');
   const [dashboardFilterValue, setDashboardFilterValue] = useState('Semua');
   const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
+  const [attendanceMonth, setAttendanceMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
+  const [attendanceYear, setAttendanceYear] = useState(new Date().getFullYear().toString());
 
   // Attendance section states
   const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
@@ -132,6 +134,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         return <DashboardSection 
           stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length }} 
           generusData={generus}
+          attendanceData={attendance}
           dashboardFilterCategory={dashboardFilterCategory}
           setDashboardFilterCategory={setDashboardFilterCategory}
           dashboardFilterValue={dashboardFilterValue}
@@ -139,6 +142,10 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           jenjangUsiaFilter={jenjangUsiaFilter}
           setJenjangUsiaFilter={setJenjangUsiaFilter}
           currentUser={currentUser}
+          attendanceMonth={attendanceMonth}
+          setAttendanceMonth={setAttendanceMonth}
+          attendanceYear={attendanceYear}
+          setAttendanceYear={setAttendanceYear}
         />;
       case 'generus':
         return <GenerusSection 
@@ -267,18 +274,27 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar
-        activeSection={activeSection} setActiveSection={setActiveSection}
-        sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        onLogout={handleLogout}
         currentUser={currentUser}
       />
-      <div className="flex-1 overflow-auto">
-        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between flex-shrink-0">
+          <button onClick={() => setSidebarOpen(true)}>
+            <Menu className="w-6 h-6" />
+          </button>
           <h2 className="text-lg font-semibold">{getPageTitle()}</h2>
           <div className="w-6" />
-        </div>
-        <main className="p-6">
-          {loading ? <div className="text-center p-8">Memuat data...</div> : renderSection()}
+        </header>
+        <main className="flex-1 overflow-auto p-6">
+          {loading ? (
+            <div className="text-center p-8">Memuat data...</div>
+          ) : (
+            renderSection()
+          )}
         </main>
       </div>
     </div>
