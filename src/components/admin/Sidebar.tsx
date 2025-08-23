@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, CheckSquare } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
@@ -90,7 +91,14 @@ export default function Sidebar({
   return (
     <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground shadow-lg flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
-        <h1 className="text-xl font-bold text-white truncate" title={panelTitle}>{panelTitle}</h1>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <h1 className="text-xl font-bold text-white truncate cursor-pointer">{panelTitle}</h1>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{panelTitle}</p>
+          </TooltipContent>
+        </Tooltip>
         <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
           <X className="w-6 h-6" />
         </button>
