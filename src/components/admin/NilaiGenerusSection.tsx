@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Kelas, Generus, Material, Grade, KELAS_MATERI_LIST } from '@/types/admin';
+import { User, Kelas, Generus, Material, Grade, KELAS_MATERI_LIST, SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -13,17 +13,14 @@ interface NilaiGenerusSectionProps {
   materials: Material[];
 }
 
-const months = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-];
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 const gradeOptions = ['Lancar', 'Cukup', 'Kurang', 'Belum'];
 
 export default function NilaiGenerusSection({ currentUser, kelas, generus, materials }: NilaiGenerusSectionProps) {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedPendidikan, setSelectedPendidikan] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>(months[new Date().getMonth()]);
+  const [selectedSemester, setSelectedSemester] = useState<'Ganjil' | 'Genap'>('Ganjil');
+  const [selectedMonth, setSelectedMonth] = useState<string>('Juli');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedJudulMateri, setSelectedJudulMateri] = useState<string>('');
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('');
@@ -50,12 +47,16 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
     return studentsInClass.filter(s => s.pendidikan === selectedPendidikan);
   }, [studentsInClass, selectedPendidikan]);
 
+  const availableMonths = useMemo(() => {
+    return selectedSemester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS;
+  }, [selectedSemester]);
+
   const availableMaterialsForPendidikan = useMemo(() => {
     if (!selectedClass || !selectedPendidikan) return [];
     const isValidKelasMateri = (KELAS_MATERI_LIST as readonly string[]).includes(selectedPendidikan);
     if (!isValidKelasMateri) return [];
-    return materials.filter(m => m.kelas === selectedPendidikan);
-  }, [materials, selectedClass, selectedPendidikan]);
+    return materials.filter(m => m.kelas === selectedPendidikan && m.semester === selectedSemester);
+  }, [materials, selectedClass, selectedPendidikan, selectedSemester]);
 
   const availableJudulMateri = useMemo(() => {
     if (!availableMaterialsForPendidikan.length) return [];
@@ -77,11 +78,17 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
   useEffect(() => {
     setSelectedJudulMateri('');
     setSelectedMaterialId('');
-  }, [selectedPendidikan]);
+  }, [selectedPendidikan, selectedSemester]);
 
   useEffect(() => {
     setSelectedMaterialId('');
   }, [selectedJudulMateri]);
+
+  useEffect(() => {
+    if (!(availableMonths as readonly string[]).includes(selectedMonth)) {
+      setSelectedMonth(availableMonths[0]);
+    }
+  }, [selectedSemester, availableMonths, selectedMonth]);
 
   useEffect(() => {
     if (selectedClassId && selectedMaterialId) {
@@ -123,7 +130,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
         <CardHeader>
           <CardTitle>Pilih Kelas, Materi, dan Periode</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           <Select value={selectedClassId} onValueChange={setSelectedClassId}>
             <SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger>
             <SelectContent>{kelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
@@ -140,9 +147,16 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
             <SelectTrigger><SelectValue placeholder="Pilih Rincian..." /></SelectTrigger>
             <SelectContent>{availableRincianMateri.map(m => <SelectItem key={m.id} value={m.id}>{m.rincianMateri}</SelectItem>)}</SelectContent>
           </Select>
+          <Select value={selectedSemester} onValueChange={(value) => setSelectedSemester(value as 'Ganjil' | 'Genap')}>
+            <SelectTrigger><SelectValue placeholder="Pilih Semester..." /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Ganjil">Ganjil</SelectItem>
+              <SelectItem value="Genap">Genap</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
             <SelectTrigger><SelectValue placeholder="Pilih Bulan..." /></SelectTrigger>
-            <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+            <SelectContent>{availableMonths.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={String(selectedYear)} onValueChange={(y) => setSelectedYear(Number(y))}>
             <SelectTrigger><SelectValue placeholder="Pilih Tahun..." /></SelectTrigger>
