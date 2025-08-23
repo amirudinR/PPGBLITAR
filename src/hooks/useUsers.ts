@@ -22,6 +22,14 @@ export function useUsers(currentUser: User | null) {
 
   const fetchUsers = useCallback(async () => {
     if (!currentUser) return;
+
+    // Guru tidak perlu mengambil daftar semua pengguna
+    if (currentUser.role === 'guru') {
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       let usersQuery = query(collection(db, "users"));
