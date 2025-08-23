@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Separator } from '@/components/ui/separator';
 
 interface DashboardSectionProps {
   stats: {
@@ -155,24 +156,29 @@ export default function DashboardSection({
       </div>
 
       {currentUser?.role === 'kelompok' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card>
-            <CardHeader><CardTitle>Filter Kehadiran</CardTitle></CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-          <AttendanceChart attendance={filteredAttendance} kelas={kelas} />
+        <div className="mb-6">
+          <h3 className="text-2xl font-bold tracking-tight mb-4">Ringkasan Kehadiran</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <Select value={attendanceMonth} onValueChange={setAttendanceMonth}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={String(attendanceYear)} onValueChange={(y) => setAttendanceYear(Number(y))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+            <AttendanceChart attendance={filteredAttendance} kelas={kelas} />
+          </div>
+          <Separator className="my-8" />
         </div>
       )}
 
+      <h3 className="text-2xl font-bold tracking-tight mb-4">Analisis Generus</h3>
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6">
         <div className="space-y-6">
             <Card>
