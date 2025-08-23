@@ -220,6 +220,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           setEndMonth={setEndMonth}
           endYear={endYear}
           setEndYear={setEndYear}
+          currentUser={currentUser}
         />;
       case 'kehadiran-guru':
         return <MonthlyAttendanceSection

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Attendance, Desa, Generus, getJenjangUsia } from '@/types/admin';
+import { Attendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST } from '@/types/admin';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,6 +17,7 @@ interface AttendanceSectionProps {
   setEndMonth: (month: string) => void;
   endYear: string;
   setEndYear: (year: string) => void;
+  currentUser: User | null;
 }
 
 const months = [
@@ -28,7 +29,7 @@ const months = [
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
-type Summary = {
+type AdminSummary = {
   [desa: string]: {
     [jenjang: string]: {
       hadir: number;
@@ -38,28 +39,61 @@ type Summary = {
   }
 };
 
+type KelompokSummary = {
+  [jenjang: string]: {
+    hadir: number;
+    izin: number;
+    tidakHadir: number;
+  }
+};
+
 export default function AttendanceSection({
   attendance,
   desas,
   generusData,
   startMonth, setStartMonth, startYear, setStartYear,
-  endMonth, setEndMonth, endYear, setEndYear
+  endMonth, setEndMonth, endYear, setEndYear,
+  currentUser
 }: AttendanceSectionProps) {
 
-  const summaryData = useMemo<Summary>(() => {
+  const isKelompokRole = currentUser?.role === 'kelompok';
+
+  const summaryData = useMemo(() => {
     const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, 1);
-    const endDate = new Date(parseInt(endYear), parseInt(endMonth), 0); // Day 0 of next month gives last day of current month
+    const endDate = new Date(parseInt(endYear), parseInt(endMonth), 0);
 
     const filtered = attendance.filter(a => {
       const recordDate = new Date(a.date);
       return recordDate >= startDate && recordDate <= endDate;
     });
 
-    return filtered.reduce<Summary>((acc, record) => {
+    if (isKelompokRole) {
+      return filtered.reduce<KelompokSummary>((acc, record) => {
+        if (record.kelompok !== currentUser?.kelompok) return acc;
+        
+        const student = generusData.find(g => g.name === record.studentName);
+        if (!student) return acc;
+
+        const jenjang = getJenjangUsia(student.pendidikan);
+        if (jenjang === '-') return acc;
+
+        if (!acc[jenjang]) acc[jenjang] = { hadir: 0, izin: 0, tidakHadir: 0 };
+
+        if (record.status === 'Hadir') acc[jenjang].hadir++;
+        else if (record.status === 'Izin') acc[jenjang].izin++;
+        else if (record.status === 'Tidak Hadir') acc[jenjang].tidakHadir++;
+        
+        return acc;
+      }, {});
+    }
+
+    return filtered.reduce<AdminSummary>((acc, record) => {
       const student = generusData.find(g => g.name === record.studentName);
       if (!student) return acc;
 
       const jenjang = getJenjangUsia(student.pendidikan);
+      if (jenjang === '-') return acc;
+      
       const { desa, status } = record;
 
       if (!acc[desa]) acc[desa] = {};
@@ -71,7 +105,84 @@ export default function AttendanceSection({
       
       return acc;
     }, {});
-  }, [attendance, generusData, startMonth, startYear, endMonth, endYear]);
+  }, [attendance, generusData, startMonth, startYear, endMonth, endYear, isKelompokRole, currentUser]);
+
+  const renderAdminDesaView = () => (
+    <Accordion type="multiple" className="w-full space-y-4">
+      {desas.map(desa => {
+        const desaSummary = (summaryData as AdminSummary)[desa.name];
+        return (
+          <AccordionItem value={desa.id} key={desa.id} className="bg-white rounded-lg shadow">
+            <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
+              {desa.name}
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-4">
+              {desaSummary ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Jenjang Usia</TableHead>
+                      <TableHead className="text-center">Hadir</TableHead>
+                      <TableHead className="text-center">Izin</TableHead>
+                      <TableHead className="text-center">Tidak Hadir</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.entries(desaSummary).map(([jenjang, stats]) => (
+                      <TableRow key={jenjang}>
+                        <TableCell>{jenjang}</TableCell>
+                        <TableCell className="text-center">{stats.hadir}</TableCell>
+                        <TableCell className="text-center">{stats.izin}</TableCell>
+                        <TableCell className="text-center">{stats.tidakHadir}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-gray-500 text-center py-4">Tidak ada data kehadiran untuk desa ini di periode yang dipilih.</p>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        )
+      })}
+    </Accordion>
+  );
+
+  const renderKelompokView = () => {
+    const kelompokSummary = summaryData as KelompokSummary;
+    return (
+      <Card className="bg-white rounded-lg shadow">
+        <CardHeader>
+          <CardTitle>Rekap Kehadiran Kelompok: {currentUser?.kelompok}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Jenjang Usia</TableHead>
+                <TableHead className="text-center">Hadir</TableHead>
+                <TableHead className="text-center">Izin</TableHead>
+                <TableHead className="text-center">Tidak Hadir</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {JENJANG_USIA_LIST.map(jenjang => {
+                const stats = kelompokSummary[jenjang] || { hadir: 0, izin: 0, tidakHadir: 0 };
+                return (
+                  <TableRow key={jenjang}>
+                    <TableCell>{jenjang}</TableCell>
+                    <TableCell className="text-center">{stats.hadir}</TableCell>
+                    <TableCell className="text-center">{stats.izin}</TableCell>
+                    <TableCell className="text-center">{stats.tidakHadir}</TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div>
@@ -105,44 +216,7 @@ export default function AttendanceSection({
         </CardContent>
       </Card>
 
-      <Accordion type="multiple" className="w-full space-y-4">
-        {desas.map(desa => {
-          const desaSummary = summaryData[desa.name];
-          return (
-            <AccordionItem value={desa.id} key={desa.id} className="bg-white rounded-lg shadow">
-              <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
-                {desa.name}
-              </AccordionTrigger>
-              <AccordionContent className="px-6 pb-4">
-                {desaSummary ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Jenjang Usia</TableHead>
-                        <TableHead className="text-center">Hadir</TableHead>
-                        <TableHead className="text-center">Izin</TableHead>
-                        <TableHead className="text-center">Tidak Hadir</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Object.entries(desaSummary).map(([jenjang, stats]) => (
-                        <TableRow key={jenjang}>
-                          <TableCell>{jenjang}</TableCell>
-                          <TableCell className="text-center">{stats.hadir}</TableCell>
-                          <TableCell className="text-center">{stats.izin}</TableCell>
-                          <TableCell className="text-center">{stats.tidakHadir}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <p className="text-gray-500 text-center py-4">Tidak ada data kehadiran untuk desa ini di periode yang dipilih.</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          )
-        })}
-      </Accordion>
+      {isKelompokRole ? renderKelompokView() : renderAdminDesaView()}
     </div>
   );
 }
