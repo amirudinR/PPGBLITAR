@@ -18,19 +18,26 @@ export function useKelas(currentUser: User | null) {
       } else if (currentUser.role === 'kelompok') {
         kelasQuery = query(kelasQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
       } else if (currentUser.role === 'guru') {
+        // For gurus, we must query by what the security rules allow (desa/kelompok)
+        // and then filter client-side for the classes they teach.
         const guruQuery = query(collection(db, "gurus"), where("userId", "==", currentUser.id));
         const guruSnap = await getDocs(guruQuery);
         if (!guruSnap.empty) {
             const guruDocId = guruSnap.docs[0].id;
-            kelasQuery = query(collection(db, "kelas"), where("guruId", "==", guruDocId));
+            const allClassesInKelompokQuery = query(collection(db, "kelas"), where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+            const kelasSnap = await getDocs(allClassesInKelompokQuery);
+            const kelasData = kelasSnap.docs
+              .map(doc => ({ id: doc.id, ...doc.data() }) as Kelas)
+              .filter(k => k.guruId === guruDocId);
+            setKelas(kelasData);
         } else {
             setKelas([]);
-            setLoading(false);
-            return;
         }
+        setLoading(false);
+        return; // Return early as we've handled the guru case completely.
       }
       const kelasSnap = await getDocs(kelasQuery);
-      const kelasData = kelasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Kelas[];
+      const kelasData = kelasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Kelas);
       setKelas(kelasData);
     } catch (error) {
       console.error("Error fetching kelas: ", error);

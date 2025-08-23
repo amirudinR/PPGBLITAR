@@ -29,6 +29,8 @@ export function useGurus(currentUser: User | null, callbacks?: { onDataChange?: 
         gurusQuery = query(gurusQuery, where("desa", "==", currentUser.desa));
       } else if (currentUser.role === 'kelompok') {
         gurusQuery = query(gurusQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+      } else if (currentUser.role === 'guru') {
+        gurusQuery = query(gurusQuery, where("userId", "==", currentUser.id));
       }
       const gurusSnap = await getDocs(gurusQuery);
       const gurusData = gurusSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Guru[];
