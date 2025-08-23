@@ -158,7 +158,7 @@ export default function AttendanceSection({
         <CardHeader><CardTitle>Rekap Kehadiran Kelompok: {userKelompok}</CardTitle></CardHeader>
         <CardContent>
           <Table>
-            <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead>Nama Guru</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead>Jenjang Usia</TableHead><TableHead>Nama Guru</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
               {classesInKelompok.map(k => {
                 const stats = kelompokSummary[k.id] || { attended: 0, held: 0 };
@@ -166,6 +166,7 @@ export default function AttendanceSection({
                 return (
                   <TableRow key={k.id}>
                     <TableCell>{k.namaKelas}</TableCell>
+                    <TableCell>{k.jenjangUsia}</TableCell>
                     <TableCell>{k.guruName}</TableCell>
                     <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
                     <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
@@ -187,7 +188,7 @@ export default function AttendanceSection({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran</h2>
+      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Kelas</h2>
       <Card className="mb-8">
         <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
