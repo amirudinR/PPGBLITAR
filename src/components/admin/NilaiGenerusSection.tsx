@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useGrades } from '@/hooks/useGrades';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface NilaiGenerusSectionProps {
   currentUser: User | null;
@@ -204,23 +205,25 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
               return (
                 <AccordionItem value={material.id} key={material.id} className="bg-white rounded-lg shadow border-none">
                   <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
-                    {material.rincianMateri}
+                    <div className="flex justify-between items-center w-full">
+                      <span>{material.rincianMateri}</span>
+                      <div className="flex items-center gap-2 mr-4" onClick={(e) => e.stopPropagation()}>
+                        <Label htmlFor={`select-all-${material.id}`} className="text-sm font-normal">Tandai Semua</Label>
+                        <Checkbox
+                          id={`select-all-${material.id}`}
+                          checked={isAllChecked ? true : (isSomeChecked ? 'indeterminate' : false)}
+                          onCheckedChange={() => handleSelectAllForMaterial(material.id)}
+                          className="h-5 w-5"
+                        />
+                      </div>
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4 pt-0">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Nama Siswa</TableHead>
-                          <TableHead className="w-48 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <span>Tercapai</span>
-                              <Checkbox
-                                checked={isAllChecked ? true : (isSomeChecked ? 'indeterminate' : false)}
-                                onCheckedChange={() => handleSelectAllForMaterial(material.id)}
-                                className="h-5 w-5"
-                              />
-                            </div>
-                          </TableHead>
+                          <TableHead className="w-48 text-center">Tercapai</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
