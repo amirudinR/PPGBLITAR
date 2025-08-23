@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGrades } from '@/hooks/useGrades';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface NilaiGenerusSectionProps {
   currentUser: User | null;
@@ -146,13 +147,13 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
       {selectedJudulMateri && (
         <div>
           <h3 className="text-2xl font-bold mb-4">Input Nilai: {selectedJudulMateri} - {selectedMonth} {selectedYear}</h3>
-          <div className="space-y-6">
+          <Accordion type="multiple" className="w-full space-y-4">
             {materialsForTable.map(material => (
-              <Card key={material.id}>
-                <CardHeader>
-                  <CardTitle>{material.rincianMateri}</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <AccordionItem value={material.id} key={material.id} className="bg-white rounded-lg shadow border-none">
+                <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
+                  {material.rincianMateri}
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-4 pt-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -178,10 +179,10 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
                       )}
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
           {materialsForTable.length > 0 && (
             <div className="mt-6 flex justify-end">
               <Button onClick={handleSave}>Simpan Semua Perubahan</Button>
