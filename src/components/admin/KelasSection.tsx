@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Kelas, Guru, User, JENJANG_USIA_LIST, JenjangUsia, Generus, getJenjangUsia } from '@/types/admin';
+import { Kelas, Guru, User, JENJANG_USIA_LIST, JenjangUsia, Generus, getJenjangUsia, Desa, Kelompok } from '@/types/admin';
 import { Plus, Edit, Trash2, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,18 +19,22 @@ interface KelasSectionProps {
   onUpdateKelas: (id: string, kelasData: Omit<Kelas, 'id'>) => Promise<boolean>;
   onDeleteKelas: (id: string) => void;
   currentUser: User | null;
+  desas: Desa[];
+  kelompok: Kelompok[];
 }
 
-export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpdateKelas, onDeleteKelas, currentUser }: KelasSectionProps) {
+export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpdateKelas, onDeleteKelas, currentUser, desas, kelompok }: KelasSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Omit<Kelas, 'id'>>>({
-    namaKelas: '', guruId: '', guruName: '', jenjangUsia: 'Caberawit'
+    namaKelas: '', guruId: '', guruName: '', jenjangUsia: 'Caberawit', desa: '', kelompok: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [manageStudentsDialogOpen, setManageStudentsDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Kelas | null>(null);
   const [studentToAdd, setStudentToAdd] = useState<string>('');
+
+  const isAdmin = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin';
 
   const openDialog = (item?: Kelas) => {
     if (item) {
@@ -39,16 +43,21 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
       setEditingId(item.id);
     } else {
       setIsEditMode(false);
-      setCurrentItem({ namaKelas: '', guruId: '', guruName: '', jenjangUsia: 'Caberawit' });
+      setCurrentItem({ 
+        namaKelas: '', 
+        guruId: '', 
+        guruName: '', 
+        jenjangUsia: 'Caberawit',
+        desa: isAdmin ? '' : currentUser?.desa || '',
+        kelompok: isAdmin ? '' : currentUser?.kelompok || '',
+      });
       setEditingId(null);
     }
     setIsDialogOpen(true);
   };
 
   const handleSave = async () => {
-    const desa = currentUser?.desa || '';
-    const kelompok = currentUser?.kelompok || '';
-    const finalItem = { ...currentItem, desa, kelompok, studentIds: currentItem.studentIds || [] };
+    const finalItem = { ...currentItem, studentIds: currentItem.studentIds || [] };
 
     let success = false;
     if (isEditMode && editingId) {
@@ -71,6 +80,10 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
   };
 
   const availableGurus = useMemo(() => {
+    if (isAdmin) {
+      if (!currentItem.kelompok) return [];
+      return gurus.filter(g => g.kelompok === currentItem.kelompok);
+    }
     if (currentUser?.role === 'desa') {
       return gurus.filter(g => g.desa === currentUser.desa);
     }
@@ -78,7 +91,12 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
       return gurus.filter(g => g.desa === currentUser.desa && g.kelompok === currentUser.kelompok);
     }
     return gurus;
-  }, [gurus, currentUser]);
+  }, [gurus, currentUser, isAdmin, currentItem.kelompok]);
+
+  const filteredKelompok = useMemo(() => {
+    if (!currentItem.desa) return [];
+    return kelompok.filter(k => k.desaName === currentItem.desa);
+  }, [currentItem.desa, kelompok]);
 
   const openManageStudentsDialog = (k: Kelas) => {
     setSelectedClass(k);
@@ -141,6 +159,8 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
           <TableHeader>
             <TableRow>
               <TableHead>Nama Kelas</TableHead>
+              {isAdmin && <TableHead>Desa</TableHead>}
+              {isAdmin && <TableHead>Kelompok</TableHead>}
               <TableHead>Guru</TableHead>
               <TableHead>Jenjang Usia</TableHead>
               <TableHead>Jumlah Siswa</TableHead>
@@ -151,6 +171,8 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
             {kelas.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.namaKelas}</TableCell>
+                {isAdmin && <TableCell>{item.desa}</TableCell>}
+                {isAdmin && <TableCell>{item.kelompok}</TableCell>}
                 <TableCell>{item.guruName}</TableCell>
                 <TableCell>{item.jenjangUsia}</TableCell>
                 <TableCell>{(item.studentIds || []).length}</TableCell>
@@ -175,6 +197,12 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>{isEditMode ? 'Edit Data Kelas' : 'Tambah Kelas Baru'}</DialogTitle></DialogHeader>
           <div className="py-4 space-y-4">
+            {isAdmin && (
+              <>
+                <div><Label>Desa</Label><Select value={currentItem.desa} onValueChange={desa => setCurrentItem(prev => ({ ...prev, desa, kelompok: '' }))}><SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger><SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label>Kelompok</Label><Select value={currentItem.kelompok} onValueChange={kelompok => setCurrentItem(prev => ({ ...prev, kelompok }))}><SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger><SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent></Select></div>
+              </>
+            )}
             <div><Label>Nama Kelas</Label><Input value={currentItem.namaKelas} onChange={(e) => setCurrentItem(prev => ({ ...prev, namaKelas: e.target.value }))} /></div>
             <div><Label>Guru</Label><Select value={currentItem.guruId} onValueChange={handleGuruChange}><SelectTrigger><SelectValue placeholder="Pilih Guru" /></SelectTrigger><SelectContent>{availableGurus.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent></Select></div>
             <div><Label>Jenjang Usia</Label><Select value={currentItem.jenjangUsia} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, jenjangUsia: value as JenjangUsia }))}><SelectTrigger><SelectValue placeholder="Pilih Jenjang Usia" /></SelectTrigger><SelectContent>{JENJANG_USIA_LIST.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></div>

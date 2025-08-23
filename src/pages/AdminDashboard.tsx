@@ -208,6 +208,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           onUpdateKelas={updateKelas}
           onDeleteKelas={deleteKelas}
           currentUser={currentUser}
+          desas={desas}
+          kelompok={kelompok}
         />;
       case 'materi':
         return (
