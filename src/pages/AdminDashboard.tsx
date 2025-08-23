@@ -72,6 +72,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [dashboardFilterCategory, setDashboardFilterCategory] = useState('pendidikan');
   const [dashboardFilterValue, setDashboardFilterValue] = useState('Semua');
   const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
+  const [attendanceMonth, setAttendanceMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
+  const [attendanceYear, setAttendanceYear] = useState(new Date().getFullYear());
 
   // Attendance section states
   const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
@@ -139,6 +141,12 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           jenjangUsiaFilter={jenjangUsiaFilter}
           setJenjangUsiaFilter={setJenjangUsiaFilter}
           currentUser={currentUser}
+          attendance={attendance}
+          kelas={kelas}
+          attendanceMonth={attendanceMonth}
+          setAttendanceMonth={setAttendanceMonth}
+          attendanceYear={attendanceYear}
+          setAttendanceYear={setAttendanceYear}
         />;
       case 'generus':
         return <GenerusSection 
