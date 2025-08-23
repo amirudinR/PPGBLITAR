@@ -51,7 +51,7 @@ service cloud.firestore {
       // Pengguna hanya bisa membaca data generus dalam lingkup mereka (desa/kelompok)
       allow read: if isAdmin() ||
                    (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == resource.data.kelompok) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
                    (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
@@ -104,6 +104,17 @@ service cloud.firestore {
     match /materials/{materialId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin() || hasRole('kelompok');
+    }
+
+    match /grades/{gradeId} {
+      // Admin, PJP Desa, dan PJP Kelompok dapat membaca data nilai dalam lingkup mereka.
+      // Guru hanya dapat membaca data nilai yang mereka buat.
+      allow read: if isAdmin() ||
+                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
+                   (hasRole('guru') && resource.data.guruId == request.auth.uid);
+      // Hanya guru yang bertanggung jawab yang dapat membuat/memperbarui nilai.
+      allow write: if hasRole('guru') && request.resource.data.guruId == request.auth.uid;
     }
   }
 }

@@ -15,6 +15,7 @@ import KelasSection from '@/components/admin/KelasSection';
 import ProfileSection from '@/components/admin/ProfileSection';
 import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSection';
 import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceRecapSection';
+import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -269,6 +270,13 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           gurus={gurus}
           kelas={kelas}
           generus={generus}
+        />;
+      case 'nilai-generus':
+        return <NilaiGenerusSection
+          currentUser={currentUser}
+          kelas={kelas}
+          generus={generus}
+          materials={materials}
         />;
       case 'm5u':
         return <M5USection currentUser={currentUser} />;

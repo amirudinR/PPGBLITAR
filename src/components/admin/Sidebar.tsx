@@ -32,6 +32,7 @@ const menuItems = [
       { id: 'rekap-siswa', label: 'Rekap Per Siswa', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
     ]
   },
+  { id: 'nilai-generus', label: 'Nilai Generus', icon: ClipboardCheck, roles: ['guru'] },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
 ];
