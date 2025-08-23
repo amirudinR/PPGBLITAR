@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
 
@@ -18,10 +18,11 @@ const menuItems = [
       { id: 'datakelas', label: 'Data Kelas', icon: School, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
     ]
   },
-  { id: 'generus', label: 'Data Generus', icon: GraduationCap, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+  { id: 'generus', label: 'Data Generus', icon: GraduationCap, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
   { id: 'kehadiran', label: 'Kehadiran', icon: Calendar, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
+  { id: 'profile', label: 'Profil Saya', icon: UserCircle, roles: ['guru'] },
 ];
 
 interface SidebarProps {

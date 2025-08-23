@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Generus, User, Desa, Kelompok, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
 import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
@@ -19,15 +19,71 @@ export function useGenerus(currentUser: User | null) {
     if (!currentUser) return;
     setLoading(true);
     try {
-      let generusQuery = query(collection(db, "generus"));
+      let generusQuery;
+
+      if (currentUser.role === 'guru') {
+        // 1. Find the guru document based on userId
+        const guruQuery = query(collection(db, "gurus"), where("userId", "==", currentUser.id));
+        const guruSnap = await getDocs(guruQuery);
+        if (guruSnap.empty) {
+          setGenerus([]);
+          return;
+        }
+        const guruDoc = guruSnap.docs[0];
+
+        // 2. Find classes taught by this guru
+        const kelasQuery = query(collection(db, "kelas"), where("guruId", "==", guruDoc.id));
+        const kelasSnap = await getDocs(kelasQuery);
+        if (kelasSnap.empty) {
+          setGenerus([]);
+          return;
+        }
+
+        // 3. Collect all student IDs from these classes
+        let studentIds: string[] = [];
+        kelasSnap.forEach(doc => {
+          const kelasData = doc.data();
+          if (kelasData.studentIds && Array.isArray(kelasData.studentIds)) {
+            studentIds = studentIds.concat(kelasData.studentIds);
+          }
+        });
+        
+        const uniqueStudentIds = [...new Set(studentIds)];
+
+        // 4. Fetch generus data for these students
+        if (uniqueStudentIds.length > 0) {
+          // Firestore 'in' query is limited to 30 elements. Chunk if necessary.
+          const chunks = [];
+          for (let i = 0; i < uniqueStudentIds.length; i += 30) {
+            chunks.push(uniqueStudentIds.slice(i, i + 30));
+          }
+          
+          const generusData: Generus[] = [];
+          for (const chunk of chunks) {
+            generusQuery = query(collection(db, "generus"), where(documentId(), "in", chunk));
+            const generusSnap = await getDocs(generusQuery);
+            generusSnap.forEach(doc => {
+              generusData.push(Object.assign({ id: doc.id }, doc.data()) as Generus);
+            });
+          }
+          setGenerus(generusData);
+        } else {
+          setGenerus([]);
+        }
+        return; // Exit after handling guru case
+      }
+      
+      // Existing logic for other roles
+      generusQuery = query(collection(db, "generus"));
       if (currentUser.role === 'desa') {
         generusQuery = query(generusQuery, where("desa", "==", currentUser.desa));
       } else if (currentUser.role === 'kelompok') {
         generusQuery = query(generusQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
       }
       const generusSnap = await getDocs(generusQuery);
-      const generusData = generusSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Generus[];
+      const generusData = generusSnap.docs.map(doc => Object.assign({ id: doc.id }, doc.data())) as Generus[];
       setGenerus(generusData);
+
     } catch (error) {
       console.error("Error fetching generus: ", error);
       showError("Gagal memuat data generus.");

@@ -12,6 +12,7 @@ import DashboardSection from '@/components/admin/DashboardSection';
 import M5USection from '@/components/admin/M5USection';
 import GuruSection from '@/components/admin/GuruSection';
 import KelasSection from '@/components/admin/KelasSection';
+import ProfileSection from '@/components/admin/ProfileSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -22,6 +23,7 @@ import { useMaterials } from '@/hooks/useMaterials';
 import { useAttendance } from '@/hooks/useAttendance';
 import { useGurus } from '@/hooks/useGurus';
 import { useKelas } from '@/hooks/useKelas';
+import { useAuthManagement } from '@/hooks/useAuthManagement';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -45,6 +47,7 @@ const menuItems = [
   { id: 'kehadiran', label: 'Kehadiran' },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
+  { id: 'profile', label: 'Profil Saya' },
 ];
 
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
@@ -80,6 +83,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
+  const { updateCurrentUserPassword } = useAuthManagement();
 
   useEffect(() => {
     if (currentUser) {
@@ -217,6 +221,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'm5u':
         return <M5USection />;
+      case 'profile':
+        return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }
