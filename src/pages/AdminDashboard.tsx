@@ -212,6 +212,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           attendance={attendance}
           desas={desas}
           generusData={generus}
+          kelas={kelas}
           startMonth={startMonth}
           setStartMonth={setStartMonth}
           startYear={startYear}

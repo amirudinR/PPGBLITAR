@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MonthlyAttendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST } from '@/types/admin';
+import { MonthlyAttendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST, Kelas } from '@/types/admin';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,6 +10,7 @@ interface AttendanceSectionProps {
   attendance: MonthlyAttendance[];
   desas: Desa[];
   generusData: Generus[];
+  kelas: Kelas[];
   startMonth: string;
   setStartMonth: (month: string) => void;
   startYear: string;
@@ -35,7 +36,7 @@ type SummaryData = {
 };
 
 export default function AttendanceSection({
-  attendance, desas, generusData, startMonth, setStartMonth, startYear, setStartYear,
+  attendance, desas, generusData, kelas, startMonth, setStartMonth, startYear, setStartYear,
   endMonth, setEndMonth, endYear, setEndYear, currentUser
 }: AttendanceSectionProps) {
 
@@ -54,17 +55,12 @@ export default function AttendanceSection({
 
     if (isKelompokRole) {
       const kelompokSummary: SummaryData = {};
-      JENJANG_USIA_LIST.forEach(j => { kelompokSummary[j] = { attended: 0, held: 0 }; });
-
       filtered.forEach(record => {
-        const student = generusMap.get(record.studentId);
-        if (student) {
-          const jenjang = getJenjangUsia(student.pendidikan);
-          if (jenjang !== '-' && kelompokSummary[jenjang]) {
-            kelompokSummary[jenjang].attended += record.meetingsAttended;
-            kelompokSummary[jenjang].held += record.meetingsHeld;
-          }
+        if (!kelompokSummary[record.classId]) {
+          kelompokSummary[record.classId] = { attended: 0, held: 0 };
         }
+        kelompokSummary[record.classId].attended += record.meetingsAttended;
+        kelompokSummary[record.classId].held += record.meetingsHeld;
       });
       return kelompokSummary;
     }
@@ -124,19 +120,22 @@ export default function AttendanceSection({
 
   const renderKelompokView = () => {
     const kelompokSummary = summaryData as SummaryData;
+    const userKelompok = currentUser?.kelompok;
+    const classesInKelompok = kelas.filter(k => k.kelompok === userKelompok);
+
     return (
       <Card className="bg-white rounded-lg shadow">
-        <CardHeader><CardTitle>Rekap Kehadiran Kelompok: {currentUser?.kelompok}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Rekap Kehadiran Kelompok: {userKelompok}</CardTitle></CardHeader>
         <CardContent>
           <Table>
-            <TableHeader><TableRow><TableHead>Jenjang Usia</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead></TableRow></TableHeader>
             <TableBody>
-              {JENJANG_USIA_LIST.map(jenjang => {
-                const stats = kelompokSummary[jenjang] || { attended: 0, held: 0 };
+              {classesInKelompok.map(k => {
+                const stats = kelompokSummary[k.id] || { attended: 0, held: 0 };
                 const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
                 return (
-                  <TableRow key={jenjang}>
-                    <TableCell>{jenjang}</TableCell>
+                  <TableRow key={k.id}>
+                    <TableCell>{k.namaKelas}</TableCell>
                     <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
                     <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
                   </TableRow>
