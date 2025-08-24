@@ -93,6 +93,31 @@ export default function AttendanceSection({
 
   }, [filteredAttendance, generusData, isRestrictedRole]);
 
+  const jenjangUsiaSummary = useMemo(() => {
+    if (currentUser?.role !== 'kelompok') return [];
+
+    const summary: { [key: string]: { attended: number; held: number } } = {};
+    JENJANG_USIA_LIST.forEach(j => {
+      summary[j] = { attended: 0, held: 0 };
+    });
+
+    const kelasMap = new Map(kelas.map(k => [k.id, k.jenjangUsia]));
+
+    filteredAttendance.forEach(record => {
+      const jenjang = kelasMap.get(record.classId);
+      if (jenjang && summary[jenjang]) {
+        summary[jenjang].attended += record.meetingsAttended;
+        summary[jenjang].held += record.meetingsHeld;
+      }
+    });
+
+    return Object.entries(summary).map(([name, stats]) => ({
+      name,
+      ...stats,
+      percentage: stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0,
+    }));
+  }, [filteredAttendance, kelas, currentUser]);
+
   const detailData = useMemo(() => {
     if (!selectedClass) return [];
     const studentSummary: { [studentId: string]: { name: string, attended: number, held: number } } = {};
@@ -210,6 +235,38 @@ export default function AttendanceSection({
             </div>
         </CardContent>
       </Card>
+
+      {currentUser?.role === 'kelompok' && (
+        <Card className="mb-8">
+          <CardHeader><CardTitle>Rata-rata Kehadiran per Jenjang Usia</CardTitle></CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Jenjang Usia</TableHead>
+                  <TableHead className="text-center">Total Kehadiran</TableHead>
+                  <TableHead className="w-48">Persentase</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jenjangUsiaSummary.map(summary => (
+                  <TableRow key={summary.name}>
+                    <TableCell>{summary.name}</TableCell>
+                    <TableCell className="text-center">{summary.attended} / {summary.held}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={summary.percentage} className="w-24" />
+                        <span>{summary.percentage}%</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       {isRestrictedRole ? renderRestrictedView() : renderAdminDesaView()}
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
