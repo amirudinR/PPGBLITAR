@@ -1,26 +1,47 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { User, Kelas, Generus, Material, KELAS_MATERI_LIST, SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS } from '@/types/admin';
+import { User, Kelas, Generus, Material } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGrades } from '@/hooks/useGrades';
-import { Check } from 'lucide-react';
+import { Check, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 
 interface RekapNilaiSectionProps {
   currentUser: User | null;
   kelas: Kelas[];
   generus: Generus[];
   materials: Material[];
+  startMonth: string;
+  setStartMonth: (month: string) => void;
+  startYear: string;
+  setStartYear: (year: string) => void;
+  endMonth: string;
+  setEndMonth: (month: string) => void;
+  endYear: string;
+  setEndYear: (year: string) => void;
 }
 
-const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+const months = [
+  { value: '01', label: 'Januari' }, { value: '02', label: 'Februari' }, { value: '03', label: 'Maret' },
+  { value: '04', label: 'April' }, { value: '05', label: 'Mei' }, { value: '06', label: 'Juni' },
+  { value: '07', label: 'Juli' }, { value: '08', label: 'Agustus' }, { value: '09', label: 'September' },
+  { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'Desember' }
+];
+const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
+const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
-export default function RekapNilaiSection({ currentUser, kelas, generus, materials }: RekapNilaiSectionProps) {
+export default function RekapNilaiSection({
+  currentUser, kelas, generus, materials,
+  startMonth, setStartMonth, startYear, setStartYear,
+  endMonth, setEndMonth, endYear, setEndYear
+}: RekapNilaiSectionProps) {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [selectedPendidikan, setSelectedPendidikan] = useState<string>('');
-  const [selectedSemester, setSelectedSemester] = useState<'Ganjil' | 'Genap'>('Ganjil');
-  const [selectedMonth, setSelectedMonth] = useState<string>('Juli');
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Generus | null>(null);
 
   const { grades, loading, fetchGrades } = useGrades(currentUser);
 
@@ -31,105 +52,159 @@ export default function RekapNilaiSection({ currentUser, kelas, generus, materia
     return generus.filter(g => selectedClass.studentIds.includes(g.id));
   }, [generus, selectedClass]);
 
-  const availablePendidikan = useMemo(() => {
-    if (!studentsInClass.length) return [];
-    const pendidikanSet = new Set(studentsInClass.map(s => s.pendidikan));
-    return Array.from(pendidikanSet);
-  }, [studentsInClass]);
-
-  const filteredStudents = useMemo(() => {
-    if (!selectedPendidikan) return [];
-    return studentsInClass.filter(s => s.pendidikan === selectedPendidikan);
-  }, [studentsInClass, selectedPendidikan]);
-
-  const availableMonths = useMemo(() => selectedSemester === 'Ganjil' ? SEMESTER_GANJIL_MONTHS : SEMESTER_GENAP_MONTHS, [selectedSemester]);
-
-  const materialsForRecap = useMemo(() => {
-    if (!selectedPendidikan) return [];
-    return materials.filter(m => 
-      m.kelas === selectedPendidikan && 
-      m.semester === selectedSemester &&
-      m.targetBulan.includes(selectedMonth)
-    );
-  }, [materials, selectedPendidikan, selectedSemester, selectedMonth]);
-
-  useEffect(() => {
-    setSelectedPendidikan('');
-  }, [selectedClassId]);
-
-  useEffect(() => {
-    if (!(availableMonths as readonly string[]).includes(selectedMonth)) {
-      setSelectedMonth(availableMonths[0]);
-    }
-  }, [selectedSemester, availableMonths, selectedMonth]);
-
   useEffect(() => {
     if (selectedClassId) {
       fetchGrades(selectedClassId);
     }
   }, [selectedClassId, fetchGrades]);
 
-  const gradesMap = useMemo(() => {
-    const map = new Map<string, string>();
-    grades
-      .filter(g => g.year === selectedYear && g.month === selectedMonth)
-      .forEach(grade => {
-        map.set(`${grade.studentId}-${grade.materialId}`, grade.grade);
+  const studentRecap = useMemo(() => {
+    const startDateNum = parseInt(startYear + startMonth, 10);
+    const endDateNum = parseInt(endYear + endMonth, 10);
+
+    const possibleMaterials = materials.filter(m => {
+      const studentPendidikan = studentsInClass[0]?.pendidikan;
+      if (!studentPendidikan) return false;
+      return m.kelas === studentPendidikan;
+    });
+
+    return studentsInClass.map(student => {
+      const studentGrades = grades.filter(g => {
+        const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
+        return g.studentId === student.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
       });
-    return map;
-  }, [grades, selectedYear, selectedMonth]);
+
+      const achievedCount = studentGrades.filter(g => g.grade === 'Tercapai').length;
+      const totalPossibleCount = possibleMaterials.length;
+      
+      const percentage = totalPossibleCount > 0 ? Math.round((achievedCount / totalPossibleCount) * 100) : 0;
+
+      return {
+        student,
+        percentage,
+        achievedCount,
+        totalPossibleCount
+      };
+    });
+  }, [grades, studentsInClass, materials, startMonth, startYear, endMonth, endYear]);
+
+  const studentDetailData = useMemo(() => {
+    if (!selectedStudent) return [];
+    const startDateNum = parseInt(startYear + startMonth, 10);
+    const endDateNum = parseInt(endYear + endMonth, 10);
+
+    const possibleMaterials = materials.filter(m => m.kelas === selectedStudent.pendidikan);
+    const studentGrades = grades.filter(g => {
+      const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
+      return g.studentId === selectedStudent.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
+    });
+
+    const achievedMaterialIds = new Set(studentGrades.filter(g => g.grade === 'Tercapai').map(g => g.materialId));
+
+    return possibleMaterials.map(material => ({
+      ...material,
+      status: achievedMaterialIds.has(material.id) ? 'Tercapai' : 'Belum'
+    }));
+  }, [selectedStudent, grades, materials, startMonth, startYear, endMonth, endYear]);
+
+  const handleViewDetails = (student: Generus) => {
+    setSelectedStudent(student);
+    setIsDetailOpen(true);
+  };
 
   return (
     <div>
       <h2 className="text-3xl font-bold tracking-tight mb-6">Rekap Nilai Generus</h2>
       <Card className="mb-6">
         <CardHeader><CardTitle>Filter Data Rekap</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <Select value={selectedClassId} onValueChange={setSelectedClassId}><SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger><SelectContent>{kelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent></Select>
-          <Select value={selectedPendidikan} onValueChange={setSelectedPendidikan} disabled={!selectedClassId}><SelectTrigger><SelectValue placeholder="Pilih Pendidikan..." /></SelectTrigger><SelectContent>{availablePendidikan.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
-          <Select value={selectedSemester} onValueChange={(value) => setSelectedSemester(value as 'Ganjil' | 'Genap')}><SelectTrigger><SelectValue placeholder="Pilih Semester..." /></SelectTrigger><SelectContent><SelectItem value="Ganjil">Ganjil</SelectItem><SelectItem value="Genap">Genap</SelectItem></SelectContent></Select>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}><SelectTrigger><SelectValue placeholder="Pilih Bulan..." /></SelectTrigger><SelectContent>{availableMonths.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
-          <Select value={String(selectedYear)} onValueChange={(y) => setSelectedYear(Number(y))}><SelectTrigger><SelectValue placeholder="Pilih Tahun..." /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent></Select>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label>Kelas</Label>
+            <Select value={selectedClassId} onValueChange={setSelectedClassId}><SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger><SelectContent>{kelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent></Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Dari</Label>
+            <div className="flex gap-2">
+              <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={startYear} onValueChange={setStartYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Sampai</Label>
+            <div className="flex gap-2">
+              <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={endYear} onValueChange={setEndYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {selectedPendidikan && (
+      {selectedClassId && (
         <Card>
-          <CardHeader><CardTitle>Rekap Nilai - {selectedPendidikan} - {selectedMonth} {selectedYear}</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Rekapitulasi Nilai Kelas: {selectedClass?.namaKelas}</CardTitle></CardHeader>
           <CardContent>
-            <div className="overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="sticky left-0 bg-white z-10">Nama Siswa</TableHead>
-                    {materialsForRecap.map(m => <TableHead key={m.id} className="min-w-[200px]">{m.rincianMateri}</TableHead>)}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow><TableCell colSpan={materialsForRecap.length + 1} className="text-center">Memuat...</TableCell></TableRow>
-                  ) : (
-                    filteredStudents.map(student => (
-                      <TableRow key={student.id}>
-                        <TableCell className="sticky left-0 bg-white z-10 font-medium">{student.name}</TableCell>
-                        {materialsForRecap.map(material => (
-                          <TableCell key={material.id} className="text-center">
-                            {gradesMap.get(`${student.id}-${material.id}`) === 'Tercapai' ? (
-                              <Check className="h-5 w-5 text-green-600 mx-auto" />
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Siswa</TableHead>
+                  <TableHead className="w-48">Persentase Tercapai</TableHead>
+                  <TableHead className="text-center">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={3} className="text-center">Memuat...</TableCell></TableRow>
+                ) : (
+                  studentRecap.map(recap => (
+                    <TableRow key={recap.student.id}>
+                      <TableCell>{recap.student.name}</TableCell>
+                      <TableCell><div className="flex items-center gap-2"><Progress value={recap.percentage} className="w-24" /><span>{recap.percentage}%</span></div></TableCell>
+                      <TableCell className="text-center">
+                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(recap.student)}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Lihat Detail
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detail Nilai: {selectedStudent?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Rincian Materi</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {studentDetailData.map(material => (
+                  <TableRow key={material.id}>
+                    <TableCell>{material.rincianMateri}</TableCell>
+                    <TableCell className="text-center">
+                      {material.status === 'Tercapai' ? (
+                        <Check className="h-5 w-5 text-green-600 mx-auto" />
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
