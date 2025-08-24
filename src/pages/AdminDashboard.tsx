@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, ArrowLeft } from 'lucide-react';
 import { User } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
@@ -78,6 +79,7 @@ const months = [
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
   
   // Generus section states
   const [searchTerm, setSearchTerm] = useState('');
@@ -311,10 +313,16 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         currentUser={currentUser}
       />
       <div className="flex-1 overflow-auto">
-        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
-          <h2 className="text-lg font-semibold">{getPageTitle()}</h2>
-          <div className="w-6" />
+        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="text-gray-600">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h2 className="text-lg font-semibold">{getPageTitle()}</h2>
+          </div>
+          <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
+            <Menu className="w-6 h-6" />
+          </button>
         </div>
         <main className="p-6">
           {loading ? <div className="text-center p-8">Memuat data...</div> : renderSection()}
