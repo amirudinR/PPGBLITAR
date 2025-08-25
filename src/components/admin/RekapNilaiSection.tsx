@@ -148,8 +148,24 @@ export default function RekapNilaiSection({
     doc.save(`laporan_nilai_${selectedClass.namaKelas}.pdf`);
   };
 
-  const handleExportStudentDetailPDF = () => {
-    if (!selectedStudent || !selectedClass) return;
+  const handleExportStudentDetailPDF = (student: Generus) => {
+    if (!selectedClass) return;
+
+    const startDateNum = parseInt(startYear + startMonth, 10);
+    const endDateNum = parseInt(endYear + endMonth, 10);
+
+    const possibleMaterials = materials.filter(m => m.kelas === student.pendidikan);
+    const studentGrades = grades.filter(g => {
+      const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
+      return g.studentId === student.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
+    });
+
+    const achievedMaterialIds = new Set(studentGrades.filter(g => g.grade === 'Tercapai').map(g => g.materialId));
+
+    const detailDataForPDF = possibleMaterials.map(material => ({
+      ...material,
+      status: achievedMaterialIds.has(material.id) ? 'Tercapai' : 'Belum'
+    }));
 
     const doc = new jsPDF();
     const startMonthLabel = months.find(m => m.value === startMonth)?.label;
@@ -159,15 +175,15 @@ export default function RekapNilaiSection({
     doc.text(`Laporan Detail Nilai`, 14, 22);
     doc.setFontSize(11);
     doc.setTextColor(100);
-    doc.text(`Nama Siswa: ${selectedStudent.name}`, 14, 32);
-    doc.text(`Pendidikan: ${selectedStudent.pendidikan}`, 14, 38);
+    doc.text(`Nama Siswa: ${student.name}`, 14, 32);
+    doc.text(`Pendidikan: ${student.pendidikan}`, 14, 38);
     doc.text(`Kelas: ${selectedClass.namaKelas}`, 14, 44);
     doc.text(`Periode: ${startMonthLabel} ${startYear} - ${endMonthLabel} ${endYear}`, 14, 50);
 
     autoTable(doc, {
       startY: 56,
       head: [['No', 'Rincian Materi', 'Target Bulan', 'Status']],
-      body: studentDetailData.map((material, index) => [
+      body: detailDataForPDF.map((material, index) => [
         index + 1,
         material.rincianMateri,
         Array.isArray(material.targetBulan) ? material.targetBulan.join(', ') : '',
@@ -181,7 +197,7 @@ export default function RekapNilaiSection({
       }
     });
 
-    doc.save(`laporan_detail_${selectedStudent.name.replace(/ /g, '_')}.pdf`);
+    doc.save(`laporan_detail_${student.name.replace(/ /g, '_')}.pdf`);
   };
 
   return (
@@ -239,10 +255,14 @@ export default function RekapNilaiSection({
                       <TableCell>{recap.student.name}</TableCell>
                       <TableCell>{recap.student.pendidikan}</TableCell>
                       <TableCell><div className="flex items-center gap-2"><Progress value={recap.percentage} className="w-24" /><span>{recap.percentage}%</span></div></TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-center space-x-2">
                         <Button variant="outline" size="sm" onClick={() => handleViewDetails(recap.student)}>
                           <Eye className="w-4 h-4 mr-2" />
-                          Lihat Detail
+                          Detail
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleExportStudentDetailPDF(recap.student)}>
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -256,12 +276,8 @@ export default function RekapNilaiSection({
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader className="flex flex-row items-center justify-between">
+          <DialogHeader>
             <DialogTitle>Detail Nilai: {selectedStudent?.name}</DialogTitle>
-            <Button onClick={handleExportStudentDetailPDF} variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Export PDF
-            </Button>
           </DialogHeader>
           <div className="py-4 max-h-[60vh] overflow-y-auto">
             <Table>
