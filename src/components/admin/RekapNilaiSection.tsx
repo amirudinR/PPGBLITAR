@@ -62,21 +62,18 @@ export default function RekapNilaiSection({
     const startDateNum = parseInt(startYear + startMonth, 10);
     const endDateNum = parseInt(endYear + endMonth, 10);
 
-    const possibleMaterials = materials.filter(m => {
-      const studentPendidikan = studentsInClass[0]?.pendidikan;
-      if (!studentPendidikan) return false;
-      return m.kelas === studentPendidikan;
-    });
-
     return studentsInClass.map(student => {
+      const possibleMaterialsForStudent = materials.filter(m => m.kelas === student.pendidikan);
+      
       const studentGrades = grades.filter(g => {
         const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
         return g.studentId === student.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
       });
 
-      const achievedCount = studentGrades.filter(g => g.grade === 'Tercapai').length;
-      const totalPossibleCount = possibleMaterials.length;
+      const achievedMaterialIds = new Set(studentGrades.filter(g => g.grade === 'Tercapai').map(g => g.materialId));
+      const achievedCount = achievedMaterialIds.size;
       
+      const totalPossibleCount = possibleMaterialsForStudent.length;
       const percentage = totalPossibleCount > 0 ? Math.round((achievedCount / totalPossibleCount) * 100) : 0;
 
       return {
@@ -147,17 +144,19 @@ export default function RekapNilaiSection({
               <TableHeader>
                 <TableRow>
                   <TableHead>Nama Siswa</TableHead>
+                  <TableHead>Pendidikan</TableHead>
                   <TableHead className="w-48">Persentase Tercapai</TableHead>
                   <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={3} className="text-center">Memuat...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center">Memuat...</TableCell></TableRow>
                 ) : (
                   studentRecap.map(recap => (
                     <TableRow key={recap.student.id}>
                       <TableCell>{recap.student.name}</TableCell>
+                      <TableCell>{recap.student.pendidikan}</TableCell>
                       <TableCell><div className="flex items-center gap-2"><Progress value={recap.percentage} className="w-24" /><span>{recap.percentage}%</span></div></TableCell>
                       <TableCell className="text-center">
                         <Button variant="outline" size="sm" onClick={() => handleViewDetails(recap.student)}>
