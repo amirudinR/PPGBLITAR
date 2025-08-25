@@ -47,7 +47,7 @@ export default function AttendanceSection({
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Kelas | null>(null);
 
-  const isKelompokRole = currentUser?.role === 'kelompok';
+  const isRestrictedRole = currentUser?.role === 'kelompok' || currentUser?.role === 'guru';
 
   const filteredAttendance = useMemo(() => {
     const startDateNum = parseInt(startYear + startMonth, 10);
@@ -61,16 +61,16 @@ export default function AttendanceSection({
   const summaryData = useMemo(() => {
     const generusMap = new Map(generusData.map(g => [g.id, g]));
 
-    if (isKelompokRole) {
-      const kelompokSummary: SummaryData = {};
+    if (isRestrictedRole) {
+      const restrictedSummary: SummaryData = {};
       filteredAttendance.forEach(record => {
-        if (!kelompokSummary[record.classId]) {
-          kelompokSummary[record.classId] = { attended: 0, held: 0 };
+        if (!restrictedSummary[record.classId]) {
+          restrictedSummary[record.classId] = { attended: 0, held: 0 };
         }
-        kelompokSummary[record.classId].attended += record.meetingsAttended;
-        kelompokSummary[record.classId].held += record.meetingsHeld;
+        restrictedSummary[record.classId].attended += record.meetingsAttended;
+        restrictedSummary[record.classId].held += record.meetingsHeld;
       });
-      return kelompokSummary;
+      return restrictedSummary;
     }
 
     // Admin/Desa view
@@ -91,7 +91,32 @@ export default function AttendanceSection({
     });
     return adminSummary;
 
-  }, [filteredAttendance, generusData, isKelompokRole]);
+  }, [filteredAttendance, generusData, isRestrictedRole]);
+
+  const jenjangUsiaSummary = useMemo(() => {
+    if (currentUser?.role !== 'kelompok') return [];
+
+    const summary: { [key: string]: { attended: number; held: number } } = {};
+    JENJANG_USIA_LIST.forEach(j => {
+      summary[j] = { attended: 0, held: 0 };
+    });
+
+    const kelasMap = new Map(kelas.map(k => [k.id, k.jenjangUsia]));
+
+    filteredAttendance.forEach(record => {
+      const jenjang = kelasMap.get(record.classId);
+      if (jenjang && summary[jenjang]) {
+        summary[jenjang].attended += record.meetingsAttended;
+        summary[jenjang].held += record.meetingsHeld;
+      }
+    });
+
+    return Object.entries(summary).map(([name, stats]) => ({
+      name,
+      ...stats,
+      percentage: stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0,
+    }));
+  }, [filteredAttendance, kelas, currentUser]);
 
   const detailData = useMemo(() => {
     if (!selectedClass) return [];
@@ -148,20 +173,22 @@ export default function AttendanceSection({
     </Accordion>
   );
 
-  const renderKelompokView = () => {
-    const kelompokSummary = summaryData as SummaryData;
-    const userKelompok = currentUser?.kelompok;
-    const classesInKelompok = kelas.filter(k => k.kelompok === userKelompok);
+  const renderRestrictedView = () => {
+    const summary = summaryData as SummaryData;
+    const classesForUser = kelas; // Data 'kelas' sudah difilter oleh hook
+    const viewTitle = currentUser?.role === 'kelompok' 
+      ? `Rekap Kehadiran Kelompok: ${currentUser.kelompok}` 
+      : 'Rekap Kehadiran Kelas Saya';
 
     return (
       <Card className="bg-white rounded-lg shadow">
-        <CardHeader><CardTitle>Rekap Kehadiran Kelompok: {userKelompok}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{viewTitle}</CardTitle></CardHeader>
         <CardContent>
           <Table>
             <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead>Jenjang Usia</TableHead><TableHead>Nama Guru</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
             <TableBody>
-              {classesInKelompok.map(k => {
-                const stats = kelompokSummary[k.id] || { attended: 0, held: 0 };
+              {classesForUser.map(k => {
+                const stats = summary[k.id] || { attended: 0, held: 0 };
                 const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
                 return (
                   <TableRow key={k.id}>
@@ -208,7 +235,39 @@ export default function AttendanceSection({
             </div>
         </CardContent>
       </Card>
-      {isKelompokRole ? renderKelompokView() : renderAdminDesaView()}
+
+      {currentUser?.role === 'kelompok' && (
+        <Card className="mb-8">
+          <CardHeader><CardTitle>Rata-rata Kehadiran per Jenjang Usia</CardTitle></CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Jenjang Usia</TableHead>
+                  <TableHead className="text-center">Total Kehadiran</TableHead>
+                  <TableHead className="w-48">Persentase</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jenjangUsiaSummary.map(summary => (
+                  <TableRow key={summary.name}>
+                    <TableCell>{summary.name}</TableCell>
+                    <TableCell className="text-center">{summary.attended} / {summary.held}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={summary.percentage} className="w-24" />
+                        <span>{summary.percentage}%</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {isRestrictedRole ? renderRestrictedView() : renderAdminDesaView()}
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-lg">

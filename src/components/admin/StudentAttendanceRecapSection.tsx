@@ -39,8 +39,10 @@ export default function StudentAttendanceRecapSection({
   startMonth, setStartMonth, startYear, setStartYear,
   endMonth, setEndMonth, endYear, setEndYear
 }: StudentAttendanceRecapSectionProps) {
-  const [selectedDesa, setSelectedDesa] = useState(currentUser?.role === 'desa' || currentUser?.role === 'kelompok' ? currentUser.desa || '' : '');
-  const [selectedKelompok, setSelectedKelompok] = useState(currentUser?.role === 'kelompok' ? currentUser.kelompok || '' : '');
+  const isGuruRole = currentUser?.role === 'guru';
+  
+  const [selectedDesa, setSelectedDesa] = useState(currentUser?.role === 'desa' || isGuruRole ? currentUser.desa || '' : '');
+  const [selectedKelompok, setSelectedKelompok] = useState(currentUser?.role === 'kelompok' || isGuruRole ? currentUser.kelompok || '' : '');
   const [selectedKelas, setSelectedKelas] = useState('');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<{ name: string; id: string } | null>(null);
@@ -51,9 +53,10 @@ export default function StudentAttendanceRecapSection({
   }, [selectedDesa, kelompok]);
 
   const filteredKelas = useMemo(() => {
+    if (isGuruRole) return kelas; // Untuk guru, 'kelas' sudah difilter oleh hook
     if (!selectedKelompok) return kelas.filter(k => k.desa === selectedDesa);
     return kelas.filter(k => k.kelompok === selectedKelompok);
-  }, [selectedKelompok, selectedDesa, kelas]);
+  }, [selectedKelompok, selectedDesa, kelas, isGuruRole]);
 
   const filteredAttendance = useMemo(() => {
     const startDateNum = parseInt(startYear + startMonth, 10);
@@ -108,8 +111,8 @@ export default function StudentAttendanceRecapSection({
       <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Siswa</h2>
       <Card className="mb-8">
         <CardHeader><CardTitle>Filter Data</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {currentUser?.role !== 'desa' && currentUser?.role !== 'kelompok' && (
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {!isGuruRole && currentUser?.role !== 'desa' && currentUser?.role !== 'kelompok' && (
             <div className="space-y-2">
               <Label>Desa</Label>
               <Select value={selectedDesa} onValueChange={setSelectedDesa}>
@@ -118,7 +121,7 @@ export default function StudentAttendanceRecapSection({
               </Select>
             </div>
           )}
-          {currentUser?.role !== 'kelompok' && (
+          {!isGuruRole && currentUser?.role !== 'kelompok' && (
             <div className="space-y-2">
               <Label>Kelompok</Label>
               <Select value={selectedKelompok} onValueChange={setSelectedKelompok}>

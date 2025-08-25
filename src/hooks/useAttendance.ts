@@ -17,6 +17,8 @@ export function useAttendance(currentUser: User | null) {
         attendanceQuery = query(attendanceQuery, where("desa", "==", currentUser.desa));
       } else if (currentUser.role === 'kelompok') {
         attendanceQuery = query(attendanceQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+      } else if (currentUser.role === 'guru') {
+        attendanceQuery = query(attendanceQuery, where("guruId", "==", currentUser.id));
       }
       const attendanceSnap = await getDocs(attendanceQuery);
       const attendanceData = attendanceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as MonthlyAttendance[];

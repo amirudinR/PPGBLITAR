@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, ArrowLeft } from 'lucide-react';
 import { User } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
@@ -15,6 +16,8 @@ import KelasSection from '@/components/admin/KelasSection';
 import ProfileSection from '@/components/admin/ProfileSection';
 import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSection';
 import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceRecapSection';
+import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
+import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -51,11 +54,19 @@ const menuItems = [
     id: 'kehadiran', 
     label: 'Kehadiran', 
     children: [
+      { id: 'kehadiran-guru', label: 'Input Kehadiran' },
       { id: 'rekap-kelas', label: 'Rekap Per Kelas' },
       { id: 'rekap-siswa', label: 'Rekap Per Siswa' },
     ]
   },
-  { id: 'kehadiran-guru', label: 'Kehadiran Generus' },
+  { 
+    id: 'nilai', 
+    label: 'Nilai Generus',
+    children: [
+      { id: 'input-nilai', label: 'Input Nilai' },
+      { id: 'rekap-nilai', label: 'Rekap Nilai' },
+    ]
+  },
   { id: 'materi', label: 'Materi' },
   { id: 'm5u', label: 'M5U' },
 ];
@@ -68,6 +79,7 @@ const months = [
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
   
   // Generus section states
   const [searchTerm, setSearchTerm] = useState('');
@@ -137,7 +149,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     switch (activeSection) {
       case 'dashboard':
         return <DashboardSection 
-          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length }} 
+          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length, kelas: kelas.length }} 
           generusData={generus}
           dashboardFilterCategory={dashboardFilterCategory}
           setDashboardFilterCategory={setDashboardFilterCategory}
@@ -270,8 +282,30 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelas={kelas}
           generus={generus}
         />;
+      case 'input-nilai':
+        return <NilaiGenerusSection
+          currentUser={currentUser}
+          kelas={kelas}
+          generus={generus}
+          materials={materials}
+        />;
+      case 'rekap-nilai':
+        return <RekapNilaiSection
+          currentUser={currentUser}
+          kelas={kelas}
+          generus={generus}
+          materials={materials}
+          startMonth={startMonth}
+          setStartMonth={setStartMonth}
+          startYear={startYear}
+          setStartYear={setStartYear}
+          endMonth={endMonth}
+          setEndMonth={setEndMonth}
+          endYear={endYear}
+          setEndYear={setEndYear}
+        />;
       case 'm5u':
-        return <M5USection />;
+        return <M5USection currentUser={currentUser} />;
       case 'profile':
         return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
       default:
@@ -287,10 +321,16 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         currentUser={currentUser}
       />
       <div className="flex-1 overflow-auto">
-        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
-          <h2 className="text-lg font-semibold">{getPageTitle()}</h2>
-          <div className="w-6" />
+        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="text-gray-600">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h2 className="text-lg font-semibold">{getPageTitle()}</h2>
+          </div>
+          <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
+            <Menu className="w-6 h-6" />
+          </button>
         </div>
         <main className="p-6">
           {loading ? <div className="text-center p-8">Memuat data...</div> : renderSection()}

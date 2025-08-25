@@ -22,27 +22,27 @@ export function useGenerus(currentUser: User | null) {
       let generusQuery;
 
       if (currentUser.role === 'guru') {
-        // 1. Find the guru document based on userId
+        // For gurus, we must query based on security rules (desa/kelompok) and filter client-side.
+        // 1. Find the guru's document ID
         const guruQuery = query(collection(db, "gurus"), where("userId", "==", currentUser.id));
         const guruSnap = await getDocs(guruQuery);
         if (guruSnap.empty) {
           setGenerus([]);
+          setLoading(false);
           return;
         }
         const guruDoc = guruSnap.docs[0];
 
-        // 2. Find classes taught by this guru
-        const kelasQuery = query(collection(db, "kelas"), where("guruId", "==", guruDoc.id));
+        // 2. Find classes taught by this guru by fetching all in their kelompok and filtering
+        const kelasQuery = query(collection(db, "kelas"), where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
         const kelasSnap = await getDocs(kelasQuery);
-        if (kelasSnap.empty) {
-          setGenerus([]);
-          return;
-        }
+        const guruKelas = kelasSnap.docs
+          .map(doc => doc.data() as any)
+          .filter(k => k.guruId === guruDoc.id);
 
         // 3. Collect all student IDs from these classes
         let studentIds: string[] = [];
-        kelasSnap.forEach(doc => {
-          const kelasData = doc.data();
+        guruKelas.forEach(kelasData => {
           if (kelasData.studentIds && Array.isArray(kelasData.studentIds)) {
             studentIds = studentIds.concat(kelasData.studentIds);
           }
@@ -50,22 +50,13 @@ export function useGenerus(currentUser: User | null) {
         
         const uniqueStudentIds = [...new Set(studentIds)];
 
-        // 4. Fetch generus data for these students
+        // 4. Fetch all generus in the guru's kelompok and filter by the student IDs
         if (uniqueStudentIds.length > 0) {
-          // Firestore 'in' query is limited to 30 elements. Chunk if necessary.
-          const chunks = [];
-          for (let i = 0; i < uniqueStudentIds.length; i += 30) {
-            chunks.push(uniqueStudentIds.slice(i, i + 30));
-          }
-          
-          const generusData: Generus[] = [];
-          for (const chunk of chunks) {
-            generusQuery = query(collection(db, "generus"), where(documentId(), "in", chunk));
-            const generusSnap = await getDocs(generusQuery);
-            generusSnap.forEach(doc => {
-              generusData.push(Object.assign({ id: doc.id }, doc.data()) as Generus);
-            });
-          }
+          const allGenerusInKelompokQuery = query(collection(db, "generus"), where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+          const generusSnap = await getDocs(allGenerusInKelompokQuery);
+          const generusData = generusSnap.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }) as Generus)
+            .filter(g => uniqueStudentIds.includes(g.id));
           setGenerus(generusData);
         } else {
           setGenerus([]);

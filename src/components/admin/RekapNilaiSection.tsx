@@ -32,7 +32,6 @@ const months = [
   { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'Desember' }
 ];
 const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
-const monthsInOrder = months.map(m => m.label);
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
 export default function RekapNilaiSection({
@@ -59,84 +58,53 @@ export default function RekapNilaiSection({
     }
   }, [selectedClassId, fetchGrades]);
 
-  const getMonthsInRange = (startYearStr: string, startMonthStr: string, endYearStr: string, endMonthStr: string) => {
-    const monthsList = [];
-    let currentDate = new Date(parseInt(startYearStr), parseInt(startMonthStr, 10) - 1);
-    const endDate = new Date(parseInt(endYearStr), parseInt(endMonthStr, 10) - 1);
-
-    while (currentDate <= endDate) {
-        monthsList.push({
-            year: currentDate.getFullYear(),
-            month: monthsInOrder[currentDate.getMonth()],
-        });
-        currentDate.setMonth(currentDate.getMonth() + 1);
-    }
-    return monthsList;
-  };
-
   const studentRecap = useMemo(() => {
     const startDateNum = parseInt(startYear + startMonth, 10);
     const endDateNum = parseInt(endYear + endMonth, 10);
-    const monthsInRange = getMonthsInRange(startYear, startMonth, endYear, endMonth);
+
+    const possibleMaterials = materials.filter(m => {
+      const studentPendidikan = studentsInClass[0]?.pendidikan;
+      if (!studentPendidikan) return false;
+      return m.kelas === studentPendidikan;
+    });
 
     return studentsInClass.map(student => {
-      const relevantMaterials = materials.filter(m => m.kelas === student.pendidikan);
-      
-      let totalPossibleCount = 0;
-      monthsInRange.forEach(date => {
-        relevantMaterials.forEach(material => {
-          if (material.targetBulan.includes(date.month)) {
-            totalPossibleCount++;
-          }
-        });
-      });
-
       const studentGrades = grades.filter(g => {
         const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
         return g.studentId === student.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
       });
 
       const achievedCount = studentGrades.filter(g => g.grade === 'Tercapai').length;
+      const totalPossibleCount = possibleMaterials.length;
+      
       const percentage = totalPossibleCount > 0 ? Math.round((achievedCount / totalPossibleCount) * 100) : 0;
 
-      return { student, percentage };
+      return {
+        student,
+        percentage,
+        achievedCount,
+        totalPossibleCount
+      };
     });
   }, [grades, studentsInClass, materials, startMonth, startYear, endMonth, endYear]);
 
   const studentDetailData = useMemo(() => {
     if (!selectedStudent) return [];
-    const monthsInRange = getMonthsInRange(startYear, startMonth, endYear, endYear);
     const startDateNum = parseInt(startYear + startMonth, 10);
     const endDateNum = parseInt(endYear + endMonth, 10);
 
+    const possibleMaterials = materials.filter(m => m.kelas === selectedStudent.pendidikan);
     const studentGrades = grades.filter(g => {
       const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
       return g.studentId === selectedStudent.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
     });
-    const achievedGradesMap = new Map(
-        studentGrades
-            .filter(g => g.grade === 'Tercapai')
-            .map(g => [`${g.materialId}-${g.month}-${g.year}`, true])
-    );
 
-    const relevantMaterials = materials.filter(m => m.kelas === selectedStudent.pendidikan);
-    
-    const detailedList: { id: string; rincianMateri: string; month: string; year: number; status: string }[] = [];
-    monthsInRange.forEach(date => {
-        relevantMaterials.forEach(material => {
-            if (material.targetBulan.includes(date.month)) {
-                detailedList.push({
-                    id: `${material.id}-${date.month}-${date.year}`,
-                    rincianMateri: material.rincianMateri,
-                    month: date.month,
-                    year: date.year,
-                    status: achievedGradesMap.has(`${material.id}-${date.month}-${date.year}`) ? 'Tercapai' : 'Belum'
-                });
-            }
-        });
-    });
+    const achievedMaterialIds = new Set(studentGrades.filter(g => g.grade === 'Tercapai').map(g => g.materialId));
 
-    return detailedList;
+    return possibleMaterials.map(material => ({
+      ...material,
+      status: achievedMaterialIds.has(material.id) ? 'Tercapai' : 'Belum'
+    }));
   }, [selectedStudent, grades, materials, startMonth, startYear, endMonth, endYear]);
 
   const handleViewDetails = (student: Generus) => {
@@ -215,18 +183,16 @@ export default function RekapNilaiSection({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Bulan</TableHead>
                   <TableHead>Rincian Materi</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {studentDetailData.map(detail => (
-                  <TableRow key={detail.id}>
-                    <TableCell>{detail.month} {detail.year}</TableCell>
-                    <TableCell>{detail.rincianMateri}</TableCell>
+                {studentDetailData.map(material => (
+                  <TableRow key={material.id}>
+                    <TableCell>{material.rincianMateri}</TableCell>
                     <TableCell className="text-center">
-                      {detail.status === 'Tercapai' ? (
+                      {material.status === 'Tercapai' ? (
                         <Check className="h-5 w-5 text-green-600 mx-auto" />
                       ) : (
                         '-'

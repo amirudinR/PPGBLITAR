@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import RegisterPage from "./pages/RegisterPage";
 import { useState, useEffect } from "react";
 import { User } from "./types/admin";
 import { auth, db } from "./lib/firebase";
@@ -71,7 +70,6 @@ const App = () => {
             ) : (
               <>
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </>
