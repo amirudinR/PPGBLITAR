@@ -226,6 +226,7 @@ export default function RekapNilaiSection({
               <TableHeader>
                 <TableRow>
                   <TableHead>Rincian Materi</TableHead>
+                  <TableHead>Target Bulan</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -233,6 +234,7 @@ export default function RekapNilaiSection({
                 {studentDetailData.map(material => (
                   <TableRow key={material.id}>
                     <TableCell>{material.rincianMateri}</TableCell>
+                    <TableCell>{Array.isArray(material.targetBulan) ? material.targetBulan.join(', ') : ''}</TableCell>
                     <TableCell className="text-center">
                       {material.status === 'Tercapai' ? (
                         <Check className="h-5 w-5 text-green-600 mx-auto" />
