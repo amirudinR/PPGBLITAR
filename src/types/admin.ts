@@ -197,3 +197,10 @@ export interface Grade {
   desa: string;
   kelompok: string;
 }
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: any; // Firestore Timestamp
+}

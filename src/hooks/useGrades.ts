@@ -8,18 +8,20 @@ export function useGrades(currentUser: User | null) {
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchAllGradesForClass = useCallback(async (classId: string) => {
-    if (!currentUser || !classId) {
-      setGrades([]);
-      return;
-    };
+  const fetchGrades = useCallback(async (classId?: string) => {
+    if (!currentUser) return;
     setLoading(true);
     try {
-      const gradesQuery = query(
-        collection(db, "grades"),
-        where("classId", "==", classId),
-        where("guruId", "==", currentUser.id)
-      );
+      let gradesQuery = query(collection(db, "grades"));
+
+      if (currentUser.role === 'guru') {
+        gradesQuery = query(gradesQuery, where("guruId", "==", currentUser.id));
+      }
+      
+      if (classId) {
+        gradesQuery = query(gradesQuery, where("classId", "==", classId));
+      }
+
       const gradesSnap = await getDocs(gradesQuery);
       const gradesData = gradesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Grade[];
       setGrades(gradesData);
@@ -60,5 +62,5 @@ export function useGrades(currentUser: User | null) {
     }
   };
 
-  return { grades, loading, fetchGrades: fetchAllGradesForClass, saveGradesBatch };
+  return { grades, loading, fetchGrades, saveGradesBatch };
 }

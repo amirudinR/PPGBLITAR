@@ -29,6 +29,8 @@ import { useAttendance } from '@/hooks/useAttendance';
 import { useGurus } from '@/hooks/useGurus';
 import { useKelas } from '@/hooks/useKelas';
 import { useAuthManagement } from '@/hooks/useAuthManagement';
+import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useGrades } from '@/hooks/useGrades';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -71,11 +73,6 @@ const menuItems = [
   { id: 'm5u', label: 'M5U' },
 ];
 
-const months = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-];
-
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -85,13 +82,6 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('name');
   
-  // Dashboard section states
-  const [dashboardFilterCategory, setDashboardFilterCategory] = useState('pendidikan');
-  const [dashboardFilterValue, setDashboardFilterValue] = useState('Semua');
-  const [jenjangUsiaFilter, setJenjangUsiaFilter] = useState<string[]>([]);
-  const [attendanceMonth, setAttendanceMonth] = useState<string>(months[new Date().getMonth()]);
-  const [attendanceYear, setAttendanceYear] = useState<number>(new Date().getFullYear());
-
   // Attendance section states
   const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
   const [startYear, setStartYear] = useState(new Date().getFullYear().toString());
@@ -113,6 +103,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
+  const { announcements } = useAnnouncements();
+  const { grades, fetchGrades } = useGrades(currentUser);
 
   useEffect(() => {
     if (currentUser) {
@@ -123,8 +115,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchAttendance();
       fetchGurus();
       fetchKelas();
+      fetchGrades();
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas, fetchGrades]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -151,19 +144,12 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         return <DashboardSection 
           stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length, kelas: kelas.length }} 
           generusData={generus}
-          dashboardFilterCategory={dashboardFilterCategory}
-          setDashboardFilterCategory={setDashboardFilterCategory}
-          dashboardFilterValue={dashboardFilterValue}
-          setDashboardFilterValue={setDashboardFilterValue}
-          jenjangUsiaFilter={jenjangUsiaFilter}
-          setJenjangUsiaFilter={setJenjangUsiaFilter}
           currentUser={currentUser}
           attendance={attendance}
           kelas={kelas}
-          attendanceMonth={attendanceMonth}
-          setAttendanceMonth={setAttendanceMonth}
-          attendanceYear={attendanceYear}
-          setAttendanceYear={setAttendanceYear}
+          materials={materials}
+          grades={grades}
+          announcements={announcements}
         />;
       case 'generus':
         return <GenerusSection 
