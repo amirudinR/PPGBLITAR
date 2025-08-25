@@ -2,7 +2,7 @@ import React from 'react';
 import { Announcement } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Megaphone } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Separator } from '@/components/ui/separator';
 
 interface AnnouncementCardProps {
   announcements: Announcement[];
@@ -20,24 +20,17 @@ export default function AnnouncementCard({ announcements }: AnnouncementCardProp
         <Megaphone className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <Carousel className="w-full">
-          <CarouselContent>
-            {announcements.map(announcement => (
-              <CarouselItem key={announcement.id}>
-                <div className="p-1">
-                  <h3 className="font-semibold text-lg">{announcement.title}</h3>
-                  <p className="text-sm text-muted-foreground">{announcement.content}</p>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          {announcements.length > 1 && (
-            <>
-              <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2" />
-              <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2" />
-            </>
-          )}
-        </Carousel>
+        <div className="space-y-4 pt-2">
+          {announcements.map((announcement, index) => (
+            <React.Fragment key={announcement.id}>
+              <div>
+                <h3 className="font-semibold text-lg">{announcement.title}</h3>
+                <p className="text-sm text-muted-foreground">{announcement.content}</p>
+              </div>
+              {index < announcements.length - 1 && <Separator />}
+            </React.Fragment>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
