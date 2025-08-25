@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit, Megaphone } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -43,6 +43,7 @@ const menuItems = [
     ]
   },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
+  { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, roles: ['adminsuper', 'admin'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
 ];
 

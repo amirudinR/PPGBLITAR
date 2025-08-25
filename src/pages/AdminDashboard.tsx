@@ -18,6 +18,7 @@ import MonthlyAttendanceSection from '@/components/admin/MonthlyAttendanceSectio
 import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceRecapSection';
 import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
 import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
+import AnnouncementsSection from '@/components/admin/AnnouncementsSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -70,6 +71,7 @@ const menuItems = [
     ]
   },
   { id: 'materi', label: 'Materi' },
+  { id: 'pengumuman', label: 'Pengumuman' },
   { id: 'm5u', label: 'M5U' },
 ];
 
@@ -103,7 +105,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
-  const { announcements } = useAnnouncements();
+  const { announcements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements();
   const { grades, fetchGrades } = useGrades(currentUser);
 
   useEffect(() => {
@@ -289,6 +291,13 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           setEndMonth={setEndMonth}
           endYear={endYear}
           setEndYear={setEndYear}
+        />;
+      case 'pengumuman':
+        return <AnnouncementsSection 
+          announcements={announcements}
+          onAdd={addAnnouncement}
+          onUpdate={updateAnnouncement}
+          onDelete={deleteAnnouncement}
         />;
       case 'm5u':
         return <M5USection currentUser={currentUser} />;

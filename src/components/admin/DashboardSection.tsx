@@ -37,6 +37,16 @@ export default function DashboardSection({
     announcements
 }: DashboardSectionProps) {
 
+  const visibleAnnouncements = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === 'adminsuper' || currentUser.role === 'admin') {
+      return announcements;
+    }
+    return announcements.filter(ann => 
+      ann.targetRoles && ann.targetRoles.includes(currentUser.role)
+    );
+  }, [announcements, currentUser]);
+
   const guruDashboardData = useMemo(() => {
     if (currentUser?.role !== 'guru') return null;
 
@@ -114,7 +124,7 @@ export default function DashboardSection({
           <p className="text-muted-foreground">Selamat datang di dasbor Kelompok {currentUser.kelompok}.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <AnnouncementCard announcements={announcements} />
+          <AnnouncementCard announcements={visibleAnnouncements} />
           <PrioritasGenerusCard 
             lowAttendanceStudents={guruDashboardData.lowAttendanceStudents}
             behindTargetStudents={guruDashboardData.behindTargetStudents}
