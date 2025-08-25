@@ -148,6 +148,42 @@ export default function RekapNilaiSection({
     doc.save(`laporan_nilai_${selectedClass.namaKelas}.pdf`);
   };
 
+  const handleExportStudentDetailPDF = () => {
+    if (!selectedStudent || !selectedClass) return;
+
+    const doc = new jsPDF();
+    const startMonthLabel = months.find(m => m.value === startMonth)?.label;
+    const endMonthLabel = months.find(m => m.value === endMonth)?.label;
+
+    doc.setFontSize(18);
+    doc.text(`Laporan Detail Nilai`, 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Nama Siswa: ${selectedStudent.name}`, 14, 32);
+    doc.text(`Pendidikan: ${selectedStudent.pendidikan}`, 14, 38);
+    doc.text(`Kelas: ${selectedClass.namaKelas}`, 14, 44);
+    doc.text(`Periode: ${startMonthLabel} ${startYear} - ${endMonthLabel} ${endYear}`, 14, 50);
+
+    autoTable(doc, {
+      startY: 56,
+      head: [['No', 'Rincian Materi', 'Target Bulan', 'Status']],
+      body: studentDetailData.map((material, index) => [
+        index + 1,
+        material.rincianMateri,
+        Array.isArray(material.targetBulan) ? material.targetBulan.join(', ') : '',
+        material.status
+      ]),
+      headStyles: { fillColor: [79, 70, 229] },
+      didDrawPage: (data) => {
+        const pageCount = doc.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.text(`Halaman ${data.pageNumber} dari ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+      }
+    });
+
+    doc.save(`laporan_detail_${selectedStudent.name.replace(/ /g, '_')}.pdf`);
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold tracking-tight mb-6">Rekap Nilai Generus</h2>
@@ -220,8 +256,12 @@ export default function RekapNilaiSection({
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle>Detail Nilai: {selectedStudent?.name}</DialogTitle>
+            <Button onClick={handleExportStudentDetailPDF} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export PDF
+            </Button>
           </DialogHeader>
           <div className="py-4 max-h-[60vh] overflow-y-auto">
             <Table>
