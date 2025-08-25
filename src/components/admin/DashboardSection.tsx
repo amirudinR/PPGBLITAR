@@ -40,10 +40,11 @@ export default function DashboardSection({
   const guruDashboardData = useMemo(() => {
     if (currentUser?.role !== 'guru') return null;
 
-    const currentMonth = months[new Date().getMonth()];
+    const currentMonthIndex = new Date().getMonth();
     const currentYear = new Date().getFullYear();
+    const currentMonth = months[currentMonthIndex];
 
-    // Kelas Progress
+    // Kelas Progress (hanya untuk bulan ini)
     const kelasProgress = kelas.map(k => {
       const studentsInClass = generusData.filter(g => k.studentIds.includes(g.id));
       const studentIds = studentsInClass.map(s => s.id);
@@ -69,22 +70,38 @@ export default function DashboardSection({
       };
     });
 
-    // Generus Prioritas
+    // Generus Prioritas (kumulatif sampai bulan ini)
     const studentStats = generusData.map(student => {
-      const studentAttendance = attendance.filter(a => a.studentId === student.id);
+      // Kehadiran Kumulatif
+      const studentAttendance = attendance.filter(a => a.studentId === student.id && a.year === currentYear && months.indexOf(a.month) <= currentMonthIndex);
       const totalAttended = studentAttendance.reduce((sum, a) => sum + a.meetingsAttended, 0);
       const totalHeld = studentAttendance.reduce((sum, a) => sum + a.meetingsHeld, 0);
       const attendancePercentage = totalHeld > 0 ? Math.round((totalAttended / totalHeld) * 100) : 100;
 
-      const possibleMaterials = materials.filter(m => m.kelas === student.pendidikan);
-      const studentGrades = grades.filter(g => g.studentId === student.id && g.grade === 'Tercapai');
-      const targetPercentage = possibleMaterials.length > 0 ? Math.round((studentGrades.length / possibleMaterials.length) * 100) : 100;
+      // Target Materi Kumulatif
+      const allMonthsSoFar = months.slice(0, currentMonthIndex + 1);
+      const cumulativeTargetMaterials = materials.filter(m => m.kelas === student.pendidikan && m.targetBulan.some(b => allMonthsSoFar.includes(b)));
+      const studentGrades = grades.filter(g => g.studentId === student.id && g.year === currentYear && months.indexOf(g.month) <= currentMonthIndex && g.grade === 'Tercapai');
+      const achievedMaterialIds = new Set(studentGrades.map(g => g.materialId));
+      
+      const totalPossibleCount = cumulativeTargetMaterials.length;
+      const achievedCount = achievedMaterialIds.size;
+      const targetPercentage = totalPossibleCount > 0 ? Math.round((achievedCount / totalPossibleCount) * 100) : 100;
 
       return { name: student.name, attendancePercentage, targetPercentage };
     });
 
-    const lowAttendanceStudents = [...studentStats].sort((a, b) => a.attendancePercentage - b.attendancePercentage).slice(0, 3).map(s => ({ name: s.name, stat: s.attendancePercentage }));
-    const behindTargetStudents = [...studentStats].sort((a, b) => a.targetPercentage - b.targetPercentage).slice(0, 3).map(s => ({ name: s.name, stat: s.targetPercentage }));
+    const lowAttendanceStudents = studentStats
+      .filter(s => s.attendancePercentage < 80)
+      .sort((a, b) => a.attendancePercentage - b.attendancePercentage)
+      .slice(0, 5)
+      .map(s => ({ name: s.name, stat: s.attendancePercentage }));
+
+    const behindTargetStudents = studentStats
+      .filter(s => s.targetPercentage < 70)
+      .sort((a, b) => a.targetPercentage - b.targetPercentage)
+      .slice(0, 5)
+      .map(s => ({ name: s.name, stat: s.targetPercentage }));
 
     return { kelasProgress, lowAttendanceStudents, behindTargetStudents };
   }, [currentUser, kelas, generusData, materials, grades, attendance]);
