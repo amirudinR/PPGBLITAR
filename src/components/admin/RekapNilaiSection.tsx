@@ -15,6 +15,14 @@ interface RekapNilaiSectionProps {
   kelas: Kelas[];
   generus: Generus[];
   materials: Material[];
+  startMonth: string;
+  setStartMonth: (month: string) => void;
+  startYear: string;
+  setStartYear: (year: string) => void;
+  endMonth: string;
+  setEndMonth: (month: string) => void;
+  endYear: string;
+  setEndYear: (year: string) => void;
 }
 
 const months = [
@@ -27,13 +35,13 @@ const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
 export default function RekapNilaiSection({
-  currentUser, kelas, generus, materials
+  currentUser, kelas, generus, materials,
+  startMonth, setStartMonth, startYear, setStartYear,
+  endMonth, setEndMonth, endYear, setEndYear
 }: RekapNilaiSectionProps) {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Generus | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 
   const { grades, loading, fetchGrades } = useGrades(currentUser);
 
@@ -51,14 +59,15 @@ export default function RekapNilaiSection({
   }, [selectedClassId, fetchGrades]);
 
   const studentRecap = useMemo(() => {
-    const endDateNum = parseInt(selectedYear + selectedMonth, 10);
+    const startDateNum = parseInt(startYear + startMonth, 10);
+    const endDateNum = parseInt(endYear + endMonth, 10);
 
     return studentsInClass.map(student => {
       const possibleMaterialsForStudent = materials.filter(m => m.kelas === student.pendidikan);
       
       const studentGrades = grades.filter(g => {
         const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
-        return g.studentId === student.id && recordMonthNum <= endDateNum;
+        return g.studentId === student.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
       });
 
       const achievedMaterialIds = new Set(studentGrades.filter(g => g.grade === 'Tercapai').map(g => g.materialId));
@@ -70,19 +79,21 @@ export default function RekapNilaiSection({
       return {
         student,
         percentage,
+        achievedCount,
+        totalPossibleCount
       };
     });
-  }, [grades, studentsInClass, materials, selectedMonth, selectedYear]);
+  }, [grades, studentsInClass, materials, startMonth, startYear, endMonth, endYear]);
 
   const studentDetailData = useMemo(() => {
     if (!selectedStudent) return [];
-    const endDateNum = parseInt(selectedYear + selectedMonth, 10);
+    const startDateNum = parseInt(startYear + startMonth, 10);
+    const endDateNum = parseInt(endYear + endMonth, 10);
 
     const possibleMaterials = materials.filter(m => m.kelas === selectedStudent.pendidikan);
-    
     const studentGrades = grades.filter(g => {
       const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
-      return g.studentId === selectedStudent.id && recordMonthNum <= endDateNum;
+      return g.studentId === selectedStudent.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
     });
 
     const achievedMaterialIds = new Set(studentGrades.filter(g => g.grade === 'Tercapai').map(g => g.materialId));
@@ -91,7 +102,7 @@ export default function RekapNilaiSection({
       ...material,
       status: achievedMaterialIds.has(material.id) ? 'Tercapai' : 'Belum'
     }));
-  }, [selectedStudent, grades, materials, selectedMonth, selectedYear]);
+  }, [selectedStudent, grades, materials, startMonth, startYear, endMonth, endYear]);
 
   const handleViewDetails = (student: Generus) => {
     setSelectedStudent(student);
@@ -109,10 +120,17 @@ export default function RekapNilaiSection({
             <Select value={selectedClassId} onValueChange={setSelectedClassId}><SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger><SelectContent>{kelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent></Select>
           </div>
           <div className="space-y-2">
-            <Label>Periode Sampai</Label>
+            <Label>Dari</Label>
             <div className="flex gap-2">
-              <Select value={selectedMonth} onValueChange={setSelectedMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-              <Select value={selectedYear} onValueChange={setSelectedYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+              <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={startYear} onValueChange={setStartYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Sampai</Label>
+            <div className="flex gap-2">
+              <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={endYear} onValueChange={setEndYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
             </div>
           </div>
         </CardContent>
