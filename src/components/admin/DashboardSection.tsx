@@ -173,6 +173,11 @@ export default function DashboardSection({
           </>
         )}
       </div>
+      { (currentUser?.role === 'desa' || currentUser?.role === 'kelompok') &&
+        <div className="mb-6">
+          <AnnouncementCard announcements={visibleAnnouncements} />
+        </div>
+      }
     </div>
   );
 }
