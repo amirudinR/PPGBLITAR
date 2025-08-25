@@ -14,10 +14,16 @@ export function useGrades(currentUser: User | null) {
     try {
       let gradesQuery = query(collection(db, "grades"));
 
+      // Apply role-based security filters first
       if (currentUser.role === 'guru') {
         gradesQuery = query(gradesQuery, where("guruId", "==", currentUser.id));
+      } else if (currentUser.role === 'kelompok') {
+        gradesQuery = query(gradesQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+      } else if (currentUser.role === 'desa') {
+        gradesQuery = query(gradesQuery, where("desa", "==", currentUser.desa));
       }
       
+      // Apply optional classId filter
       if (classId) {
         gradesQuery = query(gradesQuery, where("classId", "==", classId));
       }

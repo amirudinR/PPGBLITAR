@@ -1,19 +1,32 @@
 import { useState, useCallback, useEffect } from 'react';
-import { collection, getDocs, query, orderBy, addDoc, serverTimestamp, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Announcement } from '@/types/admin';
+import { Announcement, User } from '@/types/admin';
 import { showError, showSuccess } from '@/utils/toast';
 
-export function useAnnouncements() {
+export function useAnnouncements(currentUser: User | null) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchAnnouncements = useCallback(async () => {
+    if (!currentUser) {
+        setLoading(false);
+        return;
+    }
     setLoading(true);
     try {
-      const announcementsQuery = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+      let announcementsQuery;
+      if (currentUser.role === 'adminsuper' || currentUser.role === 'admin') {
+        announcementsQuery = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+      } else {
+        announcementsQuery = query(
+            collection(db, "announcements"), 
+            where("targetRoles", "array-contains", currentUser.role),
+            orderBy("createdAt", "desc")
+        );
+      }
       const announcementsSnap = await getDocs(announcementsQuery);
-      const announcementsData = announcementsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Announcement[];
+      const announcementsData = announcementsSnap.docs.map(doc => Object.assign({ id: doc.id }, doc.data())) as Announcement[];
       setAnnouncements(announcementsData);
     } catch (error) {
       console.error("Error fetching announcements: ", error);
@@ -21,7 +34,7 @@ export function useAnnouncements() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUser]);
 
   const addAnnouncement = async (data: Omit<Announcement, 'id' | 'createdAt'>) => {
     try {

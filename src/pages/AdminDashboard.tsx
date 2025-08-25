@@ -105,7 +105,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
-  const { announcements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements();
+  const { announcements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(currentUser);
   const { grades, fetchGrades } = useGrades(currentUser);
 
   useEffect(() => {
