@@ -295,14 +295,6 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelas={kelas}
           generus={generus}
           materials={materials}
-          startMonth={startMonth}
-          setStartMonth={setStartMonth}
-          startYear={startYear}
-          setStartYear={setStartYear}
-          endMonth={endMonth}
-          setEndMonth={setEndMonth}
-          endYear={endYear}
-          setEndYear={setEndYear}
         />;
       case 'm5u':
         return <M5USection currentUser={currentUser} />;
