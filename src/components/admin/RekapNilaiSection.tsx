@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { User, Kelas, Generus, Material } from '@/types/admin';
+import { User, Kelas, Generus, Material, KELAS_MATERI_LIST, SEMESTER_GANJIL_MONTHS, SEMESTER_GENAP_MONTHS, getJenjangUsia } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,7 +29,7 @@ const months = [
   { value: '01', label: 'Januari' }, { value: '02', label: 'Februari' }, { value: '03', label: 'Maret' },
   { value: '04', label: 'April' }, { value: '05', label: 'Mei' }, { value: '06', label: 'Juni' },
   { value: '07', label: 'Juli' }, { value: '08', label: 'Agustus' }, { value: '09', label: 'September' },
-  { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'Desember' }
+  { value: '10', label: 'Oktober' }, { value: '11', label: 'November', }, { value: '12', label: 'Desember' }
 ];
 const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
@@ -62,11 +62,12 @@ export default function RekapNilaiSection({
     const startDateNum = parseInt(startYear + startMonth, 10);
     const endDateNum = parseInt(endYear + endMonth, 10);
 
-    const possibleMaterials = materials.filter(m => {
-      const studentPendidikan = studentsInClass[0]?.pendidikan;
-      if (!studentPendidikan) return false;
-      return m.kelas === studentPendidikan;
-    });
+    // Determine possible materials based on the selected class's jenjangUsia
+    const classJenjangUsia = selectedClass?.jenjangUsia;
+    const possibleMaterials = materials.filter(m => 
+      classJenjangUsia && getJenjangUsia(m.kelas) === classJenjangUsia
+    );
+    const totalPossibleCount = possibleMaterials.length;
 
     return studentsInClass.map(student => {
       const studentGrades = grades.filter(g => {
@@ -75,7 +76,6 @@ export default function RekapNilaiSection({
       });
 
       const achievedCount = studentGrades.filter(g => g.grade === 'Tercapai').length;
-      const totalPossibleCount = possibleMaterials.length;
       
       const percentage = totalPossibleCount > 0 ? Math.round((achievedCount / totalPossibleCount) * 100) : 0;
 
@@ -86,14 +86,21 @@ export default function RekapNilaiSection({
         totalPossibleCount
       };
     });
-  }, [grades, studentsInClass, materials, startMonth, startYear, endMonth, endYear]);
+  }, [grades, studentsInClass, materials, startMonth, startYear, endMonth, endYear, selectedClass]);
 
   const studentDetailData = useMemo(() => {
     if (!selectedStudent) return [];
     const startDateNum = parseInt(startYear + startMonth, 10);
     const endDateNum = parseInt(endYear + endMonth, 10);
 
-    const possibleMaterials = materials.filter(m => m.kelas === selectedStudent.pendidikan);
+    // Determine the student's jenjangUsia
+    const studentJenjangUsia = getJenjangUsia(selectedStudent.pendidikan);
+
+    // Filter materials based on matching jenjangUsia
+    const possibleMaterials = materials.filter(m => 
+        getJenjangUsia(m.kelas) === studentJenjangUsia
+    );
+
     const studentGrades = grades.filter(g => {
       const recordMonthNum = parseInt(g.year + (monthMap[g.month] || '00'), 10);
       return g.studentId === selectedStudent.id && recordMonthNum >= startDateNum && recordMonthNum <= endDateNum;
