@@ -122,12 +122,14 @@ export default function RekapNilaiSection({
     doc.text("Laporan Nilai Generus", 14, 22);
     doc.setFontSize(11);
     doc.setTextColor(100);
-    doc.text(`Kelas: ${selectedClass.namaKelas}`, 14, 32);
-    doc.text(`Guru: ${currentUser?.name || 'N/A'}`, 14, 38);
-    doc.text(`Periode: ${startMonthLabel} ${startYear} - ${endMonthLabel} ${endYear}`, 14, 44);
+    doc.text(`Desa: ${selectedClass.desa}`, 14, 32);
+    doc.text(`Kelompok: ${selectedClass.kelompok}`, 14, 38);
+    doc.text(`Kelas: ${selectedClass.namaKelas}`, 14, 44);
+    doc.text(`Guru: ${currentUser?.name || 'N/A'}`, 14, 50);
+    doc.text(`Periode: ${startMonthLabel} ${startYear} - ${endMonthLabel} ${endYear}`, 14, 56);
 
     autoTable(doc, {
-      startY: 50,
+      startY: 62,
       head: [['No', 'Nama Siswa', 'Pendidikan', 'Persentase Tercapai']],
       body: studentRecap.map((recap, index) => [
         index + 1,
