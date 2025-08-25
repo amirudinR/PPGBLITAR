@@ -16,17 +16,31 @@ export function useAnnouncements(currentUser: User | null) {
     setLoading(true);
     try {
       let announcementsQuery;
+      let sortClientSide = false;
+
       if (currentUser.role === 'adminsuper' || currentUser.role === 'admin') {
         announcementsQuery = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
       } else {
+        // Melakukan query tanpa pengurutan untuk menghindari error indeks
         announcementsQuery = query(
             collection(db, "announcements"), 
-            where("targetRoles", "array-contains", currentUser.role),
-            orderBy("createdAt", "desc")
+            where("targetRoles", "array-contains", currentUser.role)
         );
+        sortClientSide = true;
       }
       const announcementsSnap = await getDocs(announcementsQuery);
-      const announcementsData = announcementsSnap.docs.map(doc => Object.assign({ id: doc.id }, doc.data())) as Announcement[];
+      let announcementsData = announcementsSnap.docs.map(doc => Object.assign({ id: doc.id }, doc.data())) as Announcement[];
+
+      // Jika perlu, lakukan pengurutan di sisi klien
+      if (sortClientSide) {
+        announcementsData.sort((a, b) => {
+          if (a.createdAt && b.createdAt) {
+            return b.createdAt.toMillis() - a.createdAt.toMillis();
+          }
+          return 0;
+        });
+      }
+
       setAnnouncements(announcementsData);
     } catch (error) {
       console.error("Error fetching announcements: ", error);
