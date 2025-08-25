@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { M5U, User } from '@/types/admin';
+import { M5U } from '@/types/admin';
 import { Plus, Edit, Trash2, Search, CheckCircle, Clock, XCircle, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -34,11 +34,7 @@ const filterOptions = [
     { value: 'statusHasil', label: 'Status Hasil' },
 ];
 
-interface M5USectionProps {
-  currentUser: User | null;
-}
-
-export default function M5USection({ currentUser }: M5USectionProps) {
+export default function M5USection() {
   const [m5uItems, setM5uItems] = useState<M5U[]>(initialData);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -48,8 +44,6 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('agenda');
-
-  const canEdit = currentUser?.role !== 'guru';
 
   const dropdownCategories = ['bulan', 'tahun', 'statusHasil'];
 
@@ -185,12 +179,10 @@ export default function M5USection({ currentUser }: M5USectionProps) {
                     ))}
                 </SelectContent>
             </Select>
-            {canEdit && (
-              <Button onClick={() => openDialog()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Tambah Agenda
-              </Button>
-            )}
+            <Button onClick={() => openDialog()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Tambah Agenda
+            </Button>
         </div>
       </div>
       <div className="bg-white rounded-lg shadow overflow-auto">
@@ -204,7 +196,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
               <TableHead>PJ</TableHead>
               <TableHead>Waktu Pelaksanaan</TableHead>
               <TableHead>Status Hasil</TableHead>
-              {canEdit && <TableHead className="text-center">Aksi</TableHead>}
+              <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -217,30 +209,28 @@ export default function M5USection({ currentUser }: M5USectionProps) {
                 <TableCell>{item.pj}</TableCell>
                 <TableCell>{item.waktuPelaksanaan}</TableCell>
                 <TableCell>{item.statusHasil}</TableCell>
-                {canEdit && (
-                  <TableCell className="text-center space-x-2">
-                    <Button variant="ghost" size="icon" onClick={() => openDialog(item)}>
-                      <Edit className="w-4 h-4 text-blue-600" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                          <AlertDialogDescription>Tindakan ini akan menghapus agenda M5U secara permanen.</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                )}
+                <TableCell className="text-center space-x-2">
+                  <Button variant="ghost" size="icon" onClick={() => openDialog(item)}>
+                    <Edit className="w-4 h-4 text-blue-600" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>Tindakan ini akan menghapus agenda M5U secara permanen.</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

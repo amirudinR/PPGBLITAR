@@ -80,6 +80,12 @@ export default function LoginPage() {
                 <Link to="/forgot-password" className="text-sm text-indigo-200 hover:underline">
                   Lupa Password?
                 </Link>
+                <p className="text-sm text-indigo-200">
+                  Belum punya akun?{' '}
+                  <Link to="/register" className="font-semibold underline hover:text-white">
+                    Daftar di sini
+                  </Link>
+                </p>
               </div>
           </div>
         </div>

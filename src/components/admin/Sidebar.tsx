@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, CheckSquare } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -25,23 +25,13 @@ const menuItems = [
     id: 'kehadiran', 
     label: 'Kehadiran', 
     icon: Calendar, 
-    roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'],
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok'],
     children: [
-      { id: 'kehadiran-guru', label: 'Input Kehadiran', icon: Calendar, roles: ['guru'] },
-      { id: 'rekap-kelas', label: 'Rekap Per Kelas', icon: School, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
-      { id: 'rekap-siswa', label: 'Rekap Per Siswa', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
+      { id: 'rekap-kelas', label: 'Rekap Per Kelas', icon: School, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
+      { id: 'rekap-siswa', label: 'Rekap Per Siswa', icon: Users, roles: ['adminsuper', 'admin', 'desa', 'kelompok'] },
     ]
   },
-  { 
-    id: 'nilai', 
-    label: 'Nilai Generus', 
-    icon: ClipboardCheck, 
-    roles: ['guru'],
-    children: [
-      { id: 'input-nilai', label: 'Input Nilai', icon: Edit, roles: ['guru'] },
-      { id: 'rekap-nilai', label: 'Rekap Nilai', icon: BookOpen, roles: ['guru'] },
-    ]
-  },
+  { id: 'kehadiran-guru', label: 'Kehadiran Generus', icon: CheckSquare, roles: ['guru'] },
   { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
   { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
 ];
@@ -86,18 +76,15 @@ export default function Sidebar({
 
   const panelTitle = getPanelTitle();
 
-  const visibleMenuItems = menuItems.map(item => {
-    if (!item.roles.includes(userRole)) return null;
+  const visibleMenuItems = menuItems.filter(item => item.roles.includes(userRole)).map(item => {
     if (item.children) {
       const visibleChildren = item.children.filter(child => child.roles.includes(userRole));
       if (visibleChildren.length > 0) {
         return { ...item, children: visibleChildren };
       }
-      // If parent is visible but no children are, don't render the parent if it's just a container
-      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai') return null;
     }
     return item;
-  }).filter(Boolean) as (typeof menuItems[number])[];
+  }).filter(item => item.children ? item.children.length > 0 : true);
 
   const parentOfActive = visibleMenuItems.find(item => item.children?.some(child => child.id === activeSection))?.id;
 

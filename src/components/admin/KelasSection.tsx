@@ -103,23 +103,14 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
     setManageStudentsDialogOpen(true);
   };
 
-  const allEnrolledStudentIds = useMemo(() => {
-    const studentIdSet = new Set<string>();
-    kelas.forEach(k => {
-      if (k.studentIds) {
-        k.studentIds.forEach(id => studentIdSet.add(id));
-      }
-    });
-    return studentIdSet;
-  }, [kelas]);
-
   const availableStudents = useMemo(() => {
     if (!selectedClass) return [];
+    const classStudentIds = selectedClass.studentIds || [];
     return generus.filter(g => {
         const generusJenjang = getJenjangUsia(g.pendidikan);
-        return generusJenjang === selectedClass.jenjangUsia && !allEnrolledStudentIds.has(g.id);
+        return generusJenjang === selectedClass.jenjangUsia && !classStudentIds.includes(g.id);
     });
-  }, [generus, selectedClass, allEnrolledStudentIds]);
+  }, [generus, selectedClass]);
 
   const enrolledStudents = useMemo(() => {
     if (!selectedClass) return [];

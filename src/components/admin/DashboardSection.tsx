@@ -3,7 +3,7 @@ import DashboardStatCard from './DashboardStatCard';
 import GenderChart from './GenderChart';
 import FilteredGenerusTable from './FilteredGenerusTable';
 import AttendanceChart from './AttendanceChart';
-import { GraduationCap, Home, Users2, Users, Contact, School } from 'lucide-react';
+import { GraduationCap, Home, Users2, Users, Contact } from 'lucide-react';
 import { Generus, Pendidikan, User, MonthlyAttendance, Kelas } from '@/types/admin';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,7 +18,6 @@ interface DashboardSectionProps {
     kelompok: number;
     users: number;
     gurus: number;
-    kelas: number;
   };
   generusData: Generus[];
   dashboardFilterCategory: string;
@@ -84,7 +83,7 @@ export default function DashboardSection({
 }: DashboardSectionProps) {
 
   const filterCategories = useMemo(() => {
-    if (currentUser?.role === 'kelompok' || currentUser?.role === 'desa' || currentUser?.role === 'guru') {
+    if (currentUser?.role === 'kelompok' || currentUser?.role === 'desa') {
       return allFilterCategories.filter(cat => cat.value !== 'desa' && cat.value !== 'kelompok');
     }
     return allFilterCategories;
@@ -136,31 +135,22 @@ export default function DashboardSection({
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        {currentUser?.role === 'guru' ? (
+        <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
+        {currentUser?.role === 'kelompok' ? (
           <>
-            <DashboardStatCard title="Total Generus yang Diajar" value={stats.generus} icon={GraduationCap} />
-            <DashboardStatCard title="Total Kelas yang Diajar" value={stats.kelas} icon={School} />
+            <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
+            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+          </>
+        ) : currentUser?.role === 'desa' ? (
+          <>
+            <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
+            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
           </>
         ) : (
           <>
-            <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
-            {currentUser?.role === 'kelompok' ? (
-              <>
-                <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
-                <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
-              </>
-            ) : currentUser?.role === 'desa' ? (
-              <>
-                <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
-                <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
-              </>
-            ) : (
-              <>
-                <DashboardStatCard title="Total Desa" value={stats.desa} icon={Home} />
-                <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
-                <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
-              </>
-            )}
+            <DashboardStatCard title="Total Desa" value={stats.desa} icon={Home} />
+            <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
+            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
           </>
         )}
       </div>

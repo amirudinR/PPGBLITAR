@@ -26,9 +26,11 @@ service cloud.firestore {
     // === Aturan untuk Koleksi 'users' ===
     match /users/{userId} {
       allow read: if isAuthenticated();
-      // Membatasi pembuatan dokumen hanya untuk pengguna yang sudah terotentikasi
-      allow create: if isAuthenticated();
+      
+      allow create: if true;
+                       
       allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      
       allow delete: if hasRole('adminsuper') ||
                      (hasRole('admin') && resource.data.role != 'adminsuper') ||
                      (hasRole('desa') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa) ||
@@ -48,73 +50,41 @@ service cloud.firestore {
 
     // === Aturan untuk Data Operasional ===
     match /generus/{generusId} {
-      // Pengguna hanya bisa membaca data generus dalam lingkup mereka (desa/kelompok)
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAuthenticated();
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /gurus/{guruId} {
-      // Pengguna hanya bisa membaca data guru dalam lingkup mereka
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.userId == request.auth.uid);
+      allow read: if isAuthenticated();
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /kelas/{kelasId} {
-      // Pengguna hanya bisa membaca data kelas dalam lingkup mereka
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAuthenticated();
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
 
-    // Aturan untuk koleksi 'attendance' yang lama (jika masih digunakan)
     match /attendance/{attendanceId} {
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAuthenticated();
       allow write: if isAdmin() || 
-                   (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+                         (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                         (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
     }
     
     match /monthlyAttendance/{attendanceId} {
-      // Admin, PJP Desa, dan PJP Kelompok dapat membaca data kehadiran dalam lingkup mereka.
-      // Guru hanya dapat membaca data kehadiran yang mereka buat.
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.guruId == request.auth.uid);
-      // Hanya guru yang bisa menulis data kehadiran, dan harus sesuai dengan ID mereka. Admin juga bisa menulis.
-      allow write: if isAdmin() || (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
+      allow read: if isAuthenticated();
+      allow write: if hasRole('guru') && request.auth.uid == request.resource.data.guruId;
     }
     
     match /materials/{materialId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin() || hasRole('kelompok');
-    }
-
-    match /grades/{gradeId} {
-      // Admin, PJP Desa, dan PJP Kelompok dapat membaca data nilai dalam lingkup mereka.
-      // Guru hanya dapat membaca data nilai yang mereka buat.
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.guruId == request.auth.uid);
-      // Hanya guru yang bertanggung jawab yang dapat membuat/memperbarui nilai.
-      allow write: if hasRole('guru') && request.resource.data.guruId == request.auth.uid;
     }
   }
 }
