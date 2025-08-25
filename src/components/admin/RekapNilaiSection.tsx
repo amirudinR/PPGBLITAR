@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGrades } from '@/hooks/useGrades';
-import { Check, Eye } from 'lucide-react';
+import { Check, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface RekapNilaiSectionProps {
   currentUser: User | null;
@@ -109,6 +111,41 @@ export default function RekapNilaiSection({
     setIsDetailOpen(true);
   };
 
+  const handleExportPDF = () => {
+    if (!selectedClass || studentRecap.length === 0) return;
+
+    const doc = new jsPDF();
+    const startMonthLabel = months.find(m => m.value === startMonth)?.label;
+    const endMonthLabel = months.find(m => m.value === endMonth)?.label;
+
+    doc.setFontSize(18);
+    doc.text("Laporan Nilai Generus", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Kelas: ${selectedClass.namaKelas}`, 14, 32);
+    doc.text(`Guru: ${currentUser?.name || 'N/A'}`, 14, 38);
+    doc.text(`Periode: ${startMonthLabel} ${startYear} - ${endMonthLabel} ${endYear}`, 14, 44);
+
+    autoTable(doc, {
+      startY: 50,
+      head: [['No', 'Nama Siswa', 'Pendidikan', 'Persentase Tercapai']],
+      body: studentRecap.map((recap, index) => [
+        index + 1,
+        recap.student.name,
+        recap.student.pendidikan,
+        `${recap.percentage}%`
+      ]),
+      headStyles: { fillColor: [79, 70, 229] }, // Indigo color
+      didDrawPage: (data) => {
+        const pageCount = doc.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.text(`Halaman ${data.pageNumber} dari ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+      }
+    });
+
+    doc.save(`laporan_nilai_${selectedClass.namaKelas}.pdf`);
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold tracking-tight mb-6">Rekap Nilai Generus</h2>
@@ -138,7 +175,13 @@ export default function RekapNilaiSection({
 
       {selectedClassId && (
         <Card>
-          <CardHeader><CardTitle>Rekapitulasi Nilai Kelas: {selectedClass?.namaKelas}</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Rekapitulasi Nilai Kelas: {selectedClass?.namaKelas}</CardTitle>
+            <Button onClick={handleExportPDF} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export PDF
+            </Button>
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
