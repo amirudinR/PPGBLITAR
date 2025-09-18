@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
-import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement } from '@/types/admin';
+import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, getJenjangUsia } from '@/types/admin';
 import { GraduationCap, Home, Users2, Users, Contact, School } from 'lucide-react';
 import DashboardStatCard from './DashboardStatCard';
 import AnnouncementCard from './AnnouncementCard';
 import KelasProgressCard from './KelasProgressCard';
 import PrioritasGenerusCard from './PrioritasGenerusCard';
+import GenderChart from './GenderChart';
+import GenerusChart from './GenerusChart';
 
 interface DashboardSectionProps {
   stats: {
@@ -42,7 +44,7 @@ export default function DashboardSection({
     if (currentUser.role === 'adminsuper' || currentUser.role === 'admin') {
       return announcements;
     }
-    return announcements.filter(ann => 
+    return announcements.filter(ann =>
       ann.targetRoles && ann.targetRoles.includes(currentUser.role)
     );
   }, [announcements, currentUser]);
@@ -116,6 +118,36 @@ export default function DashboardSection({
     return { kelasProgress, lowAttendanceStudents, behindTargetStudents };
   }, [currentUser, kelas, generusData, materials, grades, attendance]);
 
+  // Statistics for kelompok role
+  const kelompokStats = useMemo(() => {
+    if (currentUser?.role !== 'kelompok') return null;
+
+    // Gender distribution
+    const genderData = [
+      { name: 'Laki-laki', value: generusData.filter(g => g.jenisKelamin === 'Laki-laki').length },
+      { name: 'Perempuan', value: generusData.filter(g => g.jenisKelamin === 'Perempuan').length }
+    ];
+
+    // Age group distribution
+    const ageGroupSummary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
+    const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
+    
+    jenjangOptions.forEach(j => {
+      ageGroupSummary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
+    });
+
+    generusData.forEach(g => {
+      const jenjang = getJenjangUsia(g.pendidikan);
+      if (ageGroupSummary[jenjang]) {
+        ageGroupSummary[jenjang][g.jenisKelamin]++;
+      }
+    });
+    
+    const ageGroupData = Object.values(ageGroupSummary);
+
+    return { genderData, ageGroupData };
+  }, [currentUser, generusData]);
+
   if (currentUser?.role === 'guru' && guruDashboardData) {
     return (
       <div>
@@ -142,6 +174,29 @@ export default function DashboardSection({
               />
             ))}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser?.role === 'kelompok' && kelompokStats) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser.name}</h2>
+          <p className="text-muted-foreground">Selamat datang di dasbor Kelompok {currentUser.kelompok}.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+          <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
+          <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
+          <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+        </div>
+        <div className="mb-6">
+          <AnnouncementCard announcements={visibleAnnouncements} />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 mb-6">
+          <GenderChart data={kelompokStats.genderData} />
+          <GenerusChart data={kelompokStats.ageGroupData} />
         </div>
       </div>
     );
