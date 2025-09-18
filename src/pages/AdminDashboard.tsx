@@ -19,6 +19,7 @@ import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceR
 import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
 import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 import AnnouncementsSection from '@/components/admin/AnnouncementsSection';
+import GuruDashboardStats from '@/components/admin/GuruDashboardStats'; // New import
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -143,6 +144,25 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
+        // Special handling for guru dashboard
+        if (currentUser?.role === 'guru') {
+          return (
+            <div>
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser.name}</h2>
+                <p className="text-muted-foreground">Selamat datang di dasbor Anda sebagai Guru.</p>
+              </div>
+              <GuruDashboardStats 
+                kelas={kelas}
+                generusData={generus}
+                attendance={attendance}
+                materials={materials}
+                grades={grades}
+              />
+            </div>
+          );
+        }
+        // Default dashboard for other roles
         return <DashboardSection 
           stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length, kelas: kelas.length }} 
           generusData={generus}
