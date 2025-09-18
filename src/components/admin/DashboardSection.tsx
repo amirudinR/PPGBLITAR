@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, getJenjangUsia } from '@/types/admin';
+import React, { useMemo, useState } from 'react';
+import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, getJenjangUsia, JENJANG_USIA_LIST } from '@/types/admin';
 import { GraduationCap, Home, Users2, Users, Contact, School } from 'lucide-react';
 import DashboardStatCard from './DashboardStatCard';
 import AnnouncementCard from './AnnouncementCard';
@@ -7,6 +7,9 @@ import KelasProgressCard from './KelasProgressCard';
 import PrioritasGenerusCard from './PrioritasGenerusCard';
 import GenderChart from './GenderChart';
 import GenerusChart from './GenerusChart';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface DashboardSectionProps {
   stats: {
@@ -148,6 +151,31 @@ export default function DashboardSection({
     return { genderData, ageGroupData };
   }, [currentUser, generusData]);
 
+  // New state for kelompok dashboard filters
+  const [selectedAgeGroups, setSelectedAgeGroups] = useState<string[]>([...JENJANG_USIA_LIST]);
+  
+  const toggleAgeGroup = (group: string) => {
+    setSelectedAgeGroups(prev => 
+      prev.includes(group) 
+        ? prev.filter(g => g !== group) 
+        : [...prev, group]
+    );
+  };
+
+  const filteredGenderData = useMemo(() => {
+    if (currentUser?.role !== 'kelompok') return [];
+    
+    const filteredGenerus = generusData.filter(g => {
+      const jenjang = getJenjangUsia(g.pendidikan);
+      return selectedAgeGroups.includes(jenjang);
+    });
+
+    return [
+      { name: 'Laki-laki', value: filteredGenerus.filter(g => g.jenisKelamin === 'Laki-laki').length },
+      { name: 'Perempuan', value: filteredGenerus.filter(g => g.jenisKelamin === 'Perempuan').length }
+    ];
+  }, [currentUser, generusData, selectedAgeGroups]);
+
   if (currentUser?.role === 'guru' && guruDashboardData) {
     return (
       <div>
@@ -179,7 +207,7 @@ export default function DashboardSection({
     );
   }
 
-  if (currentUser?.role === 'kelompok' && kelompokStats) {
+  if (currentUser?.role === 'kelompok') {
     return (
       <div>
         <div className="mb-6">
@@ -195,8 +223,32 @@ export default function DashboardSection({
           <AnnouncementCard announcements={visibleAnnouncements} />
         </div>
         <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <GenderChart data={kelompokStats.genderData} />
-          <GenerusChart data={kelompokStats.ageGroupData} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Statistik Jumlah Generus</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <Label className="text-sm font-medium mb-2 block">Filter Jenjang Usia:</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {JENJANG_USIA_LIST.map((group) => (
+                    <div key={group} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`age-group-${group}`}
+                        checked={selectedAgeGroups.includes(group)}
+                        onCheckedChange={() => toggleAgeGroup(group)}
+                      />
+                      <Label htmlFor={`age-group-${group}`} className="text-sm font-normal">
+                        {group}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <GenderChart data={filteredGenderData} />
+            </CardContent>
+          </Card>
+          <GenerusChart data={kelompokStats?.ageGroupData || []} />
         </div>
       </div>
     );
@@ -210,7 +262,7 @@ export default function DashboardSection({
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
-        {currentUser?.role === 'kelompok' ? (
+        {currentUser?.role === ('kelompok' as any) ? (
           <>
             <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
             <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
@@ -228,7 +280,7 @@ export default function DashboardSection({
           </>
         )}
       </div>
-      { (currentUser?.role === 'desa' || currentUser?.role === 'kelompok') &&
+      { (currentUser?.role === 'desa' || currentUser?.role === ('kelompok' as any)) &&
         <div className="mb-6">
           <AnnouncementCard announcements={visibleAnnouncements} />
         </div>
