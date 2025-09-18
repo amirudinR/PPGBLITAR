@@ -12,12 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import M5UStatusChart from './M5UStatusChart';
 import DashboardStatCard from './DashboardStatCard';
 
-const initialData: M5U[] = [
-  { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
-  { id: '2', bulan: 'Februari', tahun: 2024, agenda: 'Perencanaan Program Semester Genap', hasil: 'Program telah disusun', pj: 'Admin', waktuPelaksanaan: '2024-02-10', statusHasil: 'Terlaksana' },
-  { id: '3', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: '-', pj: 'PJP Desa', waktuPelaksanaan: '2024-03-20', statusHasil: 'Dalam Proses' },
-];
-
 const months = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -39,7 +33,7 @@ interface M5USectionProps {
 }
 
 export default function M5USection({ currentUser }: M5USectionProps) {
-  const [m5uItems, setM5uItems] = useState<M5U[]>(initialData);
+  const [m5uItems, setM5uItems] = useState<M5U[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItem, setCurrentItem] = useState<Omit<M5U, 'id'>>({
@@ -47,7 +41,46 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('agenda');
+  const [filterCategory, setFilterCategory] = useState('bulan');
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<M5U | null>(null);
+
+  // Filter M5U items based on user role
+  const filteredM5uItems = useMemo(() => {
+    let items = m5uItems;
+    
+    // Filter by user's kelompok
+    if (currentUser?.kelompok) {
+      items = items.filter(item => 
+        item.pj.includes(currentUser.kelompok) || 
+        item.agenda.includes(currentUser.kelompok)
+      );
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      items = items.filter(item => {
+        const value = item[filterCategory as keyof M5U];
+        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+      });
+    }
+    
+    return items;
+  }, [m5uItems, currentUser, searchTerm, filterCategory]);
+
+  // Group items by month for the main view
+  const groupedByMonth = useMemo(() => {
+    const groups: Record<string, M5U[]> = {};
+    filteredM5uItems.forEach(item => {
+      const key = `${item.bulan} ${item.tahun}`;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+    });
+    return groups;
+  }, [filteredM5uItems]);
 
   const canEdit = currentUser?.role !== 'guru';
 
@@ -60,19 +93,6 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     if (filterCategory === 'statusHasil') return ['Terlaksana', 'Dalam Proses', 'Belum Terlaksana', 'Mansuh'];
     return [];
   }, [filterCategory]);
-
-  const filteredM5uItems = useMemo(() => {
-    if (!searchTerm) {
-      return m5uItems;
-    }
-    return m5uItems.filter(item => {
-      const value = item[filterCategory as keyof M5U];
-      if (dropdownCategories.includes(filterCategory)) {
-        return String(value) === searchTerm;
-      }
-      return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-    });
-  }, [m5uItems, searchTerm, filterCategory]);
 
   const chartData = useMemo(() => {
     const statusCounts = {
@@ -110,6 +130,11 @@ export default function M5USection({ currentUser }: M5USectionProps) {
       setEditingId(null);
     }
     setIsDialogOpen(true);
+  };
+
+  const openDetailDialog = (item: M5U) => {
+    setSelectedItem(item);
+    setIsDetailDialogOpen(true);
   };
 
   const handleSave = () => {
@@ -157,6 +182,22 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     );
   };
 
+  // Get status icon and color
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'Terlaksana':
+        return { icon: CheckCircle, color: 'text-green-500' };
+      case 'Dalam Proses':
+        return { icon: Clock, color: 'text-blue-500' };
+      case 'Belum Terlaksana':
+        return { icon: XCircle, color: 'text-red-500' };
+      case 'Mansuh':
+        return { icon: Archive, color: 'text-gray-500' };
+      default:
+        return { icon: Clock, color: 'text-gray-500' };
+    }
+  };
+
   return (
     <div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -193,60 +234,101 @@ export default function M5USection({ currentUser }: M5USectionProps) {
             )}
         </div>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Bulan</TableHead>
-              <TableHead>Tahun</TableHead>
-              <TableHead>Agenda</TableHead>
-              <TableHead>Hasil</TableHead>
-              <TableHead>PJ</TableHead>
-              <TableHead>Waktu Pelaksanaan</TableHead>
-              <TableHead>Status Hasil</TableHead>
-              {canEdit && <TableHead className="text-center">Aksi</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredM5uItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.bulan}</TableCell>
-                <TableCell>{item.tahun}</TableCell>
-                <TableCell>{item.agenda}</TableCell>
-                <TableCell>{item.hasil}</TableCell>
-                <TableCell>{item.pj}</TableCell>
-                <TableCell>{item.waktuPelaksanaan}</TableCell>
-                <TableCell>{item.statusHasil}</TableCell>
-                {canEdit && (
-                  <TableCell className="text-center space-x-2">
-                    <Button variant="ghost" size="icon" onClick={() => openDialog(item)}>
-                      <Edit className="w-4 h-4 text-blue-600" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                          <AlertDialogDescription>Tindakan ini akan menghapus agenda M5U secara permanen.</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      
+      {/* Main view grouped by month */}
+      <div className="space-y-6">
+        {Object.entries(groupedByMonth).map(([monthYear, items]) => {
+          const [bulan, tahun] = monthYear.split(' ');
+          return (
+            <div key={monthYear} className="bg-white rounded-lg shadow overflow-hidden">
+              <div 
+                className="px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
+                onClick={() => setSelectedMonth(selectedMonth === monthYear ? null : monthYear)}
+              >
+                <h3 className="text-lg font-semibold">{bulan} {tahun}</h3>
+                <span className="text-sm text-gray-500">
+                  {items.length} agenda
+                </span>
+              </div>
+              
+              {selectedMonth === monthYear && (
+                <div className="p-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Agenda</TableHead>
+                        <TableHead>PJ</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-center">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item) => {
+                        const statusInfo = getStatusInfo(item.statusHasil);
+                        const StatusIcon = statusInfo.icon;
+                        
+                        return (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.agenda}</TableCell>
+                            <TableCell>{item.pj}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <StatusIcon className={`w-4 h-4 mr-2 ${statusInfo.color}`} />
+                                <span>{item.statusHasil}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => openDetailDialog(item)}
+                                className="mr-2"
+                              >
+                                Detail
+                              </Button>
+                              {canEdit && (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => openDialog(item)}
+                                    className="mr-1"
+                                  >
+                                    <Edit className="w-4 h-4 text-blue-600" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon">
+                                        <Trash2 className="w-4 h-4 text-red-600" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                        <AlertDialogDescription>Tindakan ini akan menghapus agenda M5U secara permanen.</AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
+      {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -255,33 +337,83 @@ export default function M5USection({ currentUser }: M5USectionProps) {
           <div className="py-4 grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="bulan">Bulan</Label>
-              <Input id="bulan" value={currentItem.bulan} disabled className="mt-1" />
+              <Select 
+                value={currentItem.bulan} 
+                onValueChange={(value) => setCurrentItem(prev => ({ ...prev, bulan: value }))}
+              >
+                <SelectTrigger id="bulan" className="mt-1">
+                  <SelectValue placeholder="Pilih Bulan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map(month => (
+                    <SelectItem key={month} value={month}>{month}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="tahun">Tahun</Label>
-              <Input id="tahun" value={String(currentItem.tahun)} disabled className="mt-1" />
+              <Select 
+                value={String(currentItem.tahun)} 
+                onValueChange={(value) => setCurrentItem(prev => ({ ...prev, tahun: Number(value) }))}
+              >
+                <SelectTrigger id="tahun" className="mt-1">
+                  <SelectValue placeholder="Pilih Tahun" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map(year => (
+                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="col-span-2">
               <Label htmlFor="agenda">Agenda</Label>
-              <Textarea id="agenda" value={currentItem.agenda} onChange={(e) => setCurrentItem(prev => ({ ...prev, agenda: e.target.value }))} className="mt-1" />
+              <Textarea 
+                id="agenda" 
+                value={currentItem.agenda} 
+                onChange={(e) => setCurrentItem(prev => ({ ...prev, agenda: e.target.value }))} 
+                className="mt-1" 
+              />
             </div>
             <div className="col-span-2">
               <Label htmlFor="hasil">Hasil</Label>
-              <Textarea id="hasil" value={currentItem.hasil} onChange={(e) => setCurrentItem(prev => ({ ...prev, hasil: e.target.value }))} className="mt-1" />
+              <Textarea 
+                id="hasil" 
+                value={currentItem.hasil} 
+                onChange={(e) => setCurrentItem(prev => ({ ...prev, hasil: e.target.value }))} 
+                className="mt-1" 
+              />
             </div>
             <div>
               <Label htmlFor="pj">Penanggung Jawab (PJ)</Label>
-              <Input id="pj" value={currentItem.pj} onChange={(e) => setCurrentItem(prev => ({ ...prev, pj: e.target.value }))} className="mt-1" />
+              <Input 
+                id="pj" 
+                value={currentItem.pj} 
+                onChange={(e) => setCurrentItem(prev => ({ ...prev, pj: e.target.value }))} 
+                className="mt-1" 
+              />
             </div>
             <div>
               <Label htmlFor="waktuPelaksanaan">Waktu Pelaksanaan</Label>
-              <Input id="waktuPelaksanaan" type="date" value={currentItem.waktuPelaksanaan} onChange={(e) => setCurrentItem(prev => ({ ...prev, waktuPelaksanaan: e.target.value }))} className="mt-1" />
+              <Input 
+                id="waktuPelaksanaan" 
+                type="date" 
+                value={currentItem.waktuPelaksanaan} 
+                onChange={(e) => setCurrentItem(prev => ({ ...prev, waktuPelaksanaan: e.target.value }))} 
+                className="mt-1" 
+              />
             </div>
             {isEditMode && (
               <div className="col-span-2">
                 <Label htmlFor="statusHasil">Status Hasil</Label>
-                <Select value={currentItem.statusHasil} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, statusHasil: value as M5U['statusHasil'] }))}>
-                  <SelectTrigger id="statusHasil" className="mt-1"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                <Select 
+                  value={currentItem.statusHasil} 
+                  onValueChange={(value) => setCurrentItem(prev => ({ ...prev, statusHasil: value as M5U['statusHasil'] }))}
+                >
+                  <SelectTrigger id="statusHasil" className="mt-1">
+                    <SelectValue placeholder="Pilih Status" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Terlaksana">Terlaksana</SelectItem>
                     <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
@@ -295,6 +427,67 @@ export default function M5USection({ currentUser }: M5USectionProps) {
           <DialogFooter>
             <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
             <Button onClick={handleSave}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Detail Agenda M5U</DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="py-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Bulan</Label>
+                  <p className="mt-1 text-sm">{selectedItem.bulan}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Tahun</Label>
+                  <p className="mt-1 text-sm">{selectedItem.tahun}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Agenda</Label>
+                <p className="mt-1 text-sm">{selectedItem.agenda}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Hasil</Label>
+                <p className="mt-1 text-sm whitespace-pre-wrap">{selectedItem.hasil || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Penanggung Jawab</Label>
+                <p className="mt-1 text-sm">{selectedItem.pj}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Waktu Pelaksanaan</Label>
+                <p className="mt-1 text-sm">
+                  {selectedItem.waktuPelaksanaan 
+                    ? new Date(selectedItem.waktuPelaksanaan).toLocaleDateString('id-ID') 
+                    : '-'}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <div className="mt-1 flex items-center">
+                  {(() => {
+                    const statusInfo = getStatusInfo(selectedItem.statusHasil);
+                    const StatusIcon = statusInfo.icon;
+                    return (
+                      <>
+                        <StatusIcon className={`w-4 h-4 mr-2 ${statusInfo.color}`} />
+                        <span>{selectedItem.statusHasil || '-'}</span>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsDetailDialogOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
