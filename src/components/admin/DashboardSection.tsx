@@ -208,6 +208,9 @@ export default function DashboardSection({
   }
 
   if (currentUser?.role === 'kelompok') {
+    // Filter kelas berdasarkan kelompok pengguna
+    const userKelas = kelas.filter(k => k.kelompok === currentUser.kelompok);
+    
     return (
       <div>
         <div className="mb-6">
@@ -216,6 +219,7 @@ export default function DashboardSection({
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
+          <DashboardStatCard title="Total Kelas" value={userKelas.length} icon={School} />
           <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
           <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
         </div>
