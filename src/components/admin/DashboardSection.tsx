@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, getJenjangUsia, JENJANG_USIA_LIST } from '@/types/admin';
-import { GraduationCap, Home, Users2, Users, Contact, School } from 'lucide-react';
+import { GraduationCap, Home, Users2, Users, Contact, School, BookOpen, Calendar, TrendingUp } from 'lucide-react';
 import DashboardStatCard from './DashboardStatCard';
 import AnnouncementCard from './AnnouncementCard';
 import KelasProgressCard from './KelasProgressCard';
@@ -10,6 +10,7 @@ import GenerusChart from './GenerusChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 
 interface DashboardSectionProps {
   stats: {
@@ -176,22 +177,108 @@ export default function DashboardSection({
     ];
   }, [currentUser, generusData, selectedAgeGroups]);
 
+  // Calculate overall statistics for all roles
+  const overallStats = useMemo(() => {
+    const currentMonthIndex = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonth = months[currentMonthIndex];
+
+    // Overall attendance rate
+    const allStudentAttendance = attendance.filter(a => 
+      a.year === currentYear && 
+      months.indexOf(a.month) === currentMonthIndex
+    );
+    
+    const totalAttended = allStudentAttendance.reduce((sum, a) => sum + a.meetingsAttended, 0);
+    const totalHeld = allStudentAttendance.reduce((sum, a) => sum + a.meetingsHeld, 0);
+    const overallAttendanceRate = totalHeld > 0 ? Math.round((totalAttended / totalHeld) * 100) : 0;
+
+    // Overall material achievement rate
+    const allMonthsSoFar = months.slice(0, currentMonthIndex + 1);
+    const cumulativeTargetMaterials = materials.filter(m => 
+      generusData.some(s => s.pendidikan === m.kelas) && 
+      m.targetBulan.some(b => allMonthsSoFar.includes(b))
+    );
+    
+    const allAchievedGrades = grades.filter(g => 
+      g.year === currentYear && 
+      months.indexOf(g.month) <= currentMonthIndex && 
+      g.grade === 'Tercapai'
+    );
+    
+    const totalPossibleCount = generusData.length * cumulativeTargetMaterials.length;
+    const overallAchievementRate = totalPossibleCount > 0 ? Math.round((allAchievedGrades.length / totalPossibleCount) * 100) : 0;
+
+    return {
+      overallAttendanceRate,
+      overallAchievementRate
+    };
+  }, [attendance, materials, grades, generusData]);
+
   if (currentUser?.role === 'guru' && guruDashboardData) {
     return (
-      <div>
-        <div className="mb-6">
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
           <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser.name}</h2>
-          <p className="text-muted-foreground">Selamat datang di dasbor Kelompok {currentUser.kelompok}.</p>
+          <p className="text-indigo-100">Selamat datang di dasbor Anda sebagai Guru.</p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-800">Kehadiran Bulan Ini</CardTitle>
+              <Calendar className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900">{overallStats.overallAttendanceRate}%</div>
+              <Progress value={overallStats.overallAttendanceRate} className="mt-2" />
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-800">Pencapaian Materi</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-900">{overallStats.overallAchievementRate}%</div>
+              <Progress value={overallStats.overallAchievementRate} className="mt-2" />
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-amber-800">Total Kelas</CardTitle>
+              <School className="h-4 w-4 text-amber-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-900">{kelas.length}</div>
+              <p className="text-xs text-amber-700 mt-1">kelas yang diajar</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-rose-800">Total Generus</CardTitle>
+              <GraduationCap className="h-4 w-4 text-rose-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-rose-900">{generusData.length}</div>
+              <p className="text-xs text-rose-700 mt-1">siswa binaan</p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
           <AnnouncementCard announcements={visibleAnnouncements} />
           <PrioritasGenerusCard 
             lowAttendanceStudents={guruDashboardData.lowAttendanceStudents}
             behindTargetStudents={guruDashboardData.behindTargetStudents}
           />
         </div>
+        
         <div>
-          <h3 className="text-2xl font-bold tracking-tight mb-4">Kelas yang Diajar</h3>
+          <h3 className="text-2xl font-bold tracking-tight mb-4 text-gray-800">Progress Kelas Bulan {months[new Date().getMonth()]}</h3>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {guruDashboardData.kelasProgress.map(k => (
               <KelasProgressCard 
@@ -212,28 +299,31 @@ export default function DashboardSection({
     const userKelas = kelas.filter(k => k.kelompok === currentUser.kelompok);
     
     return (
-      <div>
-        <div className="mb-6">
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl p-6 text-white shadow-lg">
           <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser.name}</h2>
-          <p className="text-muted-foreground">Selamat datang di dasbor Kelompok {currentUser.kelompok}.</p>
+          <p className="text-teal-100">Selamat datang di dasbor Kelompok {currentUser.kelompok}.</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
           <DashboardStatCard title="Total Kelas" value={userKelas.length} icon={School} />
           <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
           <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
         </div>
+        
         <div className="mb-6">
           <AnnouncementCard announcements={visibleAnnouncements} />
         </div>
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <Card>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="bg-white rounded-xl shadow-md">
             <CardHeader>
-              <CardTitle>Statistik Jumlah Generus</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-800">Statistik Jumlah Generus</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <Label className="text-sm font-medium mb-2 block">Filter Jenjang Usia:</Label>
+                <Label className="text-sm font-medium mb-2 block text-gray-700">Filter Jenjang Usia:</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {JENJANG_USIA_LIST.map((group) => (
                     <div key={group} className="flex items-center space-x-2">
@@ -242,7 +332,7 @@ export default function DashboardSection({
                         checked={selectedAgeGroups.includes(group)}
                         onCheckedChange={() => toggleAgeGroup(group)}
                       />
-                      <Label htmlFor={`age-group-${group}`} className="text-sm font-normal">
+                      <Label htmlFor={`age-group-${group}`} className="text-sm font-normal text-gray-600">
                         {group}
                       </Label>
                     </div>
@@ -252,29 +342,41 @@ export default function DashboardSection({
               <GenderChart data={filteredGenderData} />
             </CardContent>
           </Card>
-          <GenerusChart data={kelompokStats?.ageGroupData || []} />
+          
+          <Card className="bg-white rounded-xl shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-800">Distribusi Generus per Jenjang Usia</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GenerusChart data={kelompokStats?.ageGroupData || []} />
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
-  // Fallback for other roles
+  // Dashboard for other roles (admin, adminsuper, desa)
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+        <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser?.name}</h2>
+        <p className="text-indigo-100">
+          {currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' 
+            ? 'Selamat datang di pusat kendali administrasi.' 
+            : currentUser?.role === 'desa' 
+            ? `Selamat datang di dasbor Desa ${currentUser?.desa}.` 
+            : 'Selamat datang di dashboard.'}
+        </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
-        {currentUser?.role === ('kelompok' as any) ? (
-          <>
-            <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
-            <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
-          </>
-        ) : currentUser?.role === 'desa' ? (
+        {currentUser?.role === 'desa' ? (
           <>
             <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
             <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+            <DashboardStatCard title="Total Guru" value={stats.gurus} icon={Contact} />
           </>
         ) : (
           <>
@@ -284,11 +386,49 @@ export default function DashboardSection({
           </>
         )}
       </div>
-      { (currentUser?.role === 'desa' || currentUser?.role === ('kelompok' as any)) &&
-        <div className="mb-6">
+      
+      {(currentUser?.role === 'desa' || currentUser?.role === 'admin' || currentUser?.role === 'adminsuper') && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="bg-white rounded-xl shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-800">Statistik Umum</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-full">
+                    <School className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="font-medium text-gray-700">Total Kelas</span>
+                </div>
+                <span className="text-2xl font-bold text-blue-600">{stats.kelas}</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 rounded-full">
+                    <BookOpen className="h-5 w-5 text-green-600" />
+                  </div>
+                  <span className="font-medium text-gray-700">Total Materi</span>
+                </div>
+                <span className="text-2xl font-bold text-green-600">{materials.length}</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-amber-100 rounded-full">
+                    <Calendar className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <span className="font-medium text-gray-700">Kehadiran Rata-rata</span>
+                </div>
+                <span className="text-2xl font-bold text-amber-600">{overallStats.overallAttendanceRate}%</span>
+              </div>
+            </CardContent>
+          </Card>
+          
           <AnnouncementCard announcements={visibleAnnouncements} />
         </div>
-      }
+      )}
     </div>
   );
 }

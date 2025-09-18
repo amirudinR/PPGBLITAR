@@ -10,30 +10,45 @@ const COLORS = ['#3b82f6', '#ec4899'];
 
 export default function GenderChart({ data }: GenderChartProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Distribusi Gender</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="border-0 shadow-none">
+      <CardContent className="p-0">
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              labelLine={false}
+              labelLine={true}
               outerRadius={100}
               innerRadius={60}
               fill="#8884d8"
               dataKey="value"
-              paddingAngle={5}
+              nameKey="name"
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              paddingAngle={2}
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]} 
+                  stroke="none"
+                />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip 
+              formatter={(value) => [value, 'Jumlah']}
+              contentStyle={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.5rem',
+                border: '1px solid #e5e7eb'
+              }}
+            />
+            <Legend 
+              layout="horizontal" 
+              verticalAlign="bottom" 
+              align="center"
+              wrapperStyle={{ paddingTop: '20px' }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
