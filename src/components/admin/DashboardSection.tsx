@@ -66,7 +66,9 @@ export default function DashboardSection({
       const studentIds = studentsInClass.map(s => s.id);
       
       const possibleMaterials = materials.filter(m => 
-        studentsInClass.some(s => s.pendidikan === m.kelas) && m.targetBulan.includes(currentMonth)
+        studentsInClass.some(s => s.pendidikan === m.kelas) && 
+        (Array.isArray(m.targetBulan) ? m.targetBulan.includes(currentMonth) : 
+         typeof m.targetBulan === 'string' && m.targetBulan === currentMonth)
       );
       
       const achievedGrades = grades.filter(g => 
@@ -96,7 +98,13 @@ export default function DashboardSection({
 
       // Target Materi Kumulatif
       const allMonthsSoFar = months.slice(0, currentMonthIndex + 1);
-      const cumulativeTargetMaterials = materials.filter(m => m.kelas === student.pendidikan && m.targetBulan.some(b => allMonthsSoFar.includes(b)));
+      const cumulativeTargetMaterials = materials.filter(m => {
+        // Pastikan targetBulan adalah array sebelum menggunakan some()
+        const targetBulan = Array.isArray(m.targetBulan) ? m.targetBulan : 
+                           typeof m.targetBulan === 'string' ? [m.targetBulan] : [];
+        return m.kelas === student.pendidikan && targetBulan.some(b => allMonthsSoFar.includes(b));
+      });
+      
       const studentGrades = grades.filter(g => g.studentId === student.id && g.year === currentYear && months.indexOf(g.month) <= currentMonthIndex && g.grade === 'Tercapai');
       const achievedMaterialIds = new Set(studentGrades.map(g => g.materialId));
       
@@ -195,10 +203,13 @@ export default function DashboardSection({
 
     // Overall material achievement rate
     const allMonthsSoFar = months.slice(0, currentMonthIndex + 1);
-    const cumulativeTargetMaterials = materials.filter(m => 
-      generusData.some(s => s.pendidikan === m.kelas) && 
-      m.targetBulan.some(b => allMonthsSoFar.includes(b))
-    );
+    const cumulativeTargetMaterials = materials.filter(m => {
+      // Pastikan targetBulan adalah array sebelum menggunakan some()
+      const targetBulan = Array.isArray(m.targetBulan) ? m.targetBulan : 
+                         typeof m.targetBulan === 'string' ? [m.targetBulan] : [];
+      return generusData.some(s => s.pendidikan === m.kelas) && 
+             targetBulan.some(b => allMonthsSoFar.includes(b));
+    });
     
     const allAchievedGrades = grades.filter(g => 
       g.year === currentYear && 
