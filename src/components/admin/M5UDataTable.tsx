@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import { M5U } from '@/types/admin';
-import { Eye, Plus, Edit, Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useNavigate } from 'react-router-dom';
 
 interface M5UDataTableProps {
   m5uItems: M5U[];
@@ -13,9 +14,7 @@ interface M5UDataTableProps {
   filterCategory: string;
   canEdit: boolean;
   onOpenDetail: (item: M5U) => void;
-  onOpenEdit: (item?: M5U) => void;
-  onDelete: (id: string) => void;
-  onBulkDelete: (bulan: string, tahun: number) => void;
+  onDelete: (bulan: string, tahun: number) => void;
 }
 
 const months = [
@@ -88,10 +87,9 @@ const M5UDataTable = ({
   filterCategory, 
   canEdit, 
   onOpenDetail, 
-  onOpenEdit, 
-  onDelete,
-  onBulkDelete
+  onDelete
 }: M5UDataTableProps) => {
+  const navigate = useNavigate();
   const dropdownCategories = ['bulan', 'tahun', 'statusHasil'];
 
   const searchOptions = useMemo(() => {
@@ -120,7 +118,18 @@ const M5UDataTable = ({
       aggregation[key].items.push(item);
     });
     
-    return Object.values(aggregation);
+    // Urutkan berdasarkan bulan terakhir input (diasumsikan berdasarkan tahun dan bulan)
+    return Object.values(aggregation).sort((a, b) => {
+      // Urutkan berdasarkan tahun terbaru dulu
+      if (b.tahun !== a.tahun) {
+        return b.tahun - a.tahun;
+      }
+      
+      // Jika tahun sama, urutkan berdasarkan bulan (dengan mapping ke index)
+      const monthIndexA = months.indexOf(a.bulan);
+      const monthIndexB = months.indexOf(b.bulan);
+      return monthIndexB - monthIndexA;
+    });
   }, [m5uItems]);
 
   const filteredAggregatedData = useMemo(() => {
@@ -135,6 +144,10 @@ const M5UDataTable = ({
       return String(value).toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [aggregatedData, searchTerm, filterCategory]);
+
+  const handleDetailClick = (bulan: string, tahun: number) => {
+    navigate(`/admin/m5u/${bulan}/${tahun}`);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow overflow-auto">
@@ -154,45 +167,35 @@ const M5UDataTable = ({
               <TableCell>{item.tahun}</TableCell>
               <TableCell>{item.jumlahAgenda}</TableCell>
               <TableCell className="text-center space-x-2">
-                <Button variant="outline" size="sm" onClick={() => onOpenDetail(item.items[0])}>
+                <Button variant="outline" size="sm" onClick={() => handleDetailClick(item.bulan, item.tahun)}>
                   <Eye className="w-4 h-4 mr-2" />
                   Detail
                 </Button>
                 {canEdit && (
-                  <>
-                    <Button variant="outline" size="sm" onClick={() => onOpenEdit()}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Tambah
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => onOpenEdit(item.items[0])}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="w-4 h-4 mr-2" />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Hapus
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tindakan ini akan menghapus semua agenda dalam periode {item.bulan} {item.tahun}.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => onDelete(item.bulan, item.tahun)}
+                        >
                           Hapus
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tindakan ini akan menghapus semua agenda dalam periode {item.bulan} {item.tahun}.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => onBulkDelete(item.bulan, item.tahun)}
-                          >
-                            Hapus
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </TableCell>
             </TableRow>

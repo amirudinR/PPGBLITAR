@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import M5UDetailPage from "./pages/M5UDetailPage";
 import { useState, useEffect } from "react";
 import { User } from "./types/admin";
 import { auth, db } from "./lib/firebase";
@@ -64,6 +65,10 @@ const App = () => {
                 <Route 
                   path="/admin" 
                   element={<AdminDashboard currentUser={currentUser} handleLogout={handleLogout} />} 
+                />
+                <Route 
+                  path="/admin/m5u/:bulan/:tahun" 
+                  element={<M5UDetailPage />} 
                 />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </>
