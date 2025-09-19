@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, Desa, Kelompok, ROLES, Role } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import PaginationControls from './PaginationControls';
 
 interface AccountsSectionProps {
   users: User[];
@@ -19,6 +20,8 @@ interface AccountsSectionProps {
   onDeleteUser: (id: string) => void;
   currentUser: User | null;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -43,6 +46,45 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
     name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedUsers = useMemo(() => {
+    let sortableItems = [...users];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [users, sortConfig]);
+
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedUsers, currentPage]);
+
+  const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+
+  const requestSort = (key: keyof User) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const getSortIndicator = (key: keyof User) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
 
   useEffect(() => {
     if (currentUser?.role === 'desa') {
@@ -174,18 +216,48 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nama</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Peran</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Desa</TableHead>
-              <TableHead>Kelompok</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('name')}
+              >
+                Nama{getSortIndicator('name')}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('email')}
+              >
+                Email{getSortIndicator('email')}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('role')}
+              >
+                Peran{getSortIndicator('role')}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('status')}
+              >
+                Status{getSortIndicator('status')}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('desa' as keyof User)}
+              >
+                Desa{getSortIndicator('desa' as keyof User)}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('kelompok' as keyof User)}
+              >
+                Kelompok{getSortIndicator('kelompok' as keyof User)}
+              </TableHead>
               <TableHead>Password</TableHead>
               <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {paginatedUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -246,6 +318,13 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={sortedUsers.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

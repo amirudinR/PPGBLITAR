@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import PaginationControls from './PaginationControls';
 
 interface KelasSectionProps {
   kelas: Kelas[];
@@ -23,6 +24,8 @@ interface KelasSectionProps {
   kelompok: Kelompok[];
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpdateKelas, onDeleteKelas, currentUser, desas, kelompok }: KelasSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -33,8 +36,47 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
   const [manageStudentsDialogOpen, setManageStudentsDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Kelas | null>(null);
   const [studentToAdd, setStudentToAdd] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Kelas; direction: 'asc' | 'desc' } | null>(null);
 
   const isAdmin = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin';
+
+  const sortedKelas = useMemo(() => {
+    let sortableItems = [...kelas];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [kelas, sortConfig]);
+
+  const paginatedKelas = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedKelas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedKelas, currentPage]);
+
+  const totalPages = Math.ceil(sortedKelas.length / ITEMS_PER_PAGE);
+
+  const requestSort = (key: keyof Kelas) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const getSortIndicator = (key: keyof Kelas) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
 
   const openDialog = (item?: Kelas) => {
     if (item) {
@@ -167,17 +209,51 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nama Kelas</TableHead>
-              {isAdmin && <TableHead>Desa</TableHead>}
-              {isAdmin && <TableHead>Kelompok</TableHead>}
-              <TableHead>Guru</TableHead>
-              <TableHead>Jenjang Usia</TableHead>
-              <TableHead>Jumlah Siswa</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('namaKelas')}
+              >
+                Nama Kelas{getSortIndicator('namaKelas')}
+              </TableHead>
+              {isAdmin && (
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => requestSort('desa' as keyof Kelas)}
+                >
+                  Desa{getSortIndicator('desa' as keyof Kelas)}
+                </TableHead>
+              )}
+              {isAdmin && (
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => requestSort('kelompok' as keyof Kelas)}
+                >
+                  Kelompok{getSortIndicator('kelompok' as keyof Kelas)}
+                </TableHead>
+              )}
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('guruName' as keyof Kelas)}
+              >
+                Guru{getSortIndicator('guruName' as keyof Kelas)}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('jenjangUsia' as keyof Kelas)}
+              >
+                Jenjang Usia{getSortIndicator('jenjangUsia' as keyof Kelas)}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('studentIds' as keyof Kelas)}
+              >
+                Jumlah Siswa{getSortIndicator('studentIds' as keyof Kelas)}
+              </TableHead>
               <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {kelas.map((item) => (
+            {paginatedKelas.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.namaKelas}</TableCell>
                 {isAdmin && <TableCell>{item.desa}</TableCell>}
@@ -200,6 +276,13 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={sortedKelas.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

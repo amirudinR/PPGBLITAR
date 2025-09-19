@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Desa } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { showSuccess } from '@/utils/toast';
+import PaginationControls from './PaginationControls';
 
 interface DesaSectionProps {
   desas: Desa[];
@@ -16,18 +16,58 @@ interface DesaSectionProps {
   onDeleteDesa: (id: string) => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDesa }: DesaSectionProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newDesaName, setNewDesaName] = useState('');
   const [editingDesa, setEditingDesa] = useState<Desa | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Desa; direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedDesas = useMemo(() => {
+    let sortableItems = [...desas];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [desas, sortConfig]);
+
+  const paginatedDesas = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedDesas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedDesas, currentPage]);
+
+  const totalPages = Math.ceil(sortedDesas.length / ITEMS_PER_PAGE);
+
+  const requestSort = (key: keyof Desa) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const getSortIndicator = (key: keyof Desa) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
 
   const handleAdd = async () => {
     const success = await onAddDesa(newDesaName);
     if (success) {
       setNewDesaName('');
       setIsAddDialogOpen(false);
-      showSuccess("Desa berhasil ditambahkan.");
     }
   };
 
@@ -38,7 +78,6 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
         setEditingDesa(null);
         setNewDesaName('');
         setIsEditDialogOpen(false);
-        showSuccess("Desa berhasil diperbarui.");
       }
     }
   };
@@ -51,7 +90,6 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
 
   const handleDelete = (id: string) => {
     onDeleteDesa(id);
-    showSuccess("Desa berhasil dihapus.");
   };
 
   return (
@@ -91,12 +129,17 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nama Desa</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('name')}
+              >
+                Nama Desa{getSortIndicator('name')}
+              </TableHead>
               <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {desas.map((desa) => (
+            {paginatedDesas.map((desa) => (
               <TableRow key={desa.id}>
                 <TableCell>{desa.name}</TableCell>
                 <TableCell className="text-center space-x-2">
@@ -127,6 +170,13 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={sortedDesas.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Edit Dialog */}

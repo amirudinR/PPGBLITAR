@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Kelompok, Desa } from '@/types/admin';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { showSuccess } from '@/utils/toast';
+import PaginationControls from './PaginationControls';
 
 interface KelompokSectionProps {
   kelompok: Kelompok[];
@@ -18,10 +18,51 @@ interface KelompokSectionProps {
   onDeleteKelompok: (id: string) => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function KelompokSection({ kelompok, desas, onAddKelompok, onUpdateKelompok, onDeleteKelompok }: KelompokSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [kelompokData, setKelompokData] = useState({ id: '', name: '', desaId: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Kelompok; direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedKelompok = useMemo(() => {
+    let sortableItems = [...kelompok];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [kelompok, sortConfig]);
+
+  const paginatedKelompok = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedKelompok.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedKelompok, currentPage]);
+
+  const totalPages = Math.ceil(sortedKelompok.length / ITEMS_PER_PAGE);
+
+  const requestSort = (key: keyof Kelompok) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const getSortIndicator = (key: keyof Kelompok) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
 
   const openDialog = (kelompokToEdit?: Kelompok) => {
     if (kelompokToEdit) {
@@ -44,13 +85,11 @@ export default function KelompokSection({ kelompok, desas, onAddKelompok, onUpda
 
     if (success) {
       setIsDialogOpen(false);
-      showSuccess(`Kelompok berhasil ${isEditMode ? 'diperbarui' : 'ditambahkan'}.`);
     }
   };
 
   const handleDelete = (id: string) => {
     onDeleteKelompok(id);
-    showSuccess("Kelompok berhasil dihapus.");
   };
 
   return (
@@ -66,13 +105,23 @@ export default function KelompokSection({ kelompok, desas, onAddKelompok, onUpda
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nama Kelompok</TableHead>
-              <TableHead>Nama Desa</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('name')}
+              >
+                Nama Kelompok{getSortIndicator('name')}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => requestSort('desaName' as keyof Kelompok)}
+              >
+                Nama Desa{getSortIndicator('desaName' as keyof Kelompok)}
+              </TableHead>
               <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {kelompok.map((item) => (
+            {paginatedKelompok.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.desaName}</TableCell>
@@ -104,6 +153,13 @@ export default function KelompokSection({ kelompok, desas, onAddKelompok, onUpda
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={sortedKelompok.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
