@@ -1,16 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { M5U, User } from '@/types/admin';
-import { Plus, Edit, Trash2, Search, Eye } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import M5UStatsCards from './M5UStatsCards';
+import M5UDataTable from './M5UDataTable';
+import M5UDialog from './M5UDialog';
+import M5UDetailDialog from './M5UDetailDialog';
 
 const initialData: M5U[] = [
   { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
@@ -53,73 +49,6 @@ export default function M5USection({ currentUser }: M5USectionProps) {
 
   const canEdit = currentUser?.role !== 'guru';
 
-  const dropdownCategories = ['bulan', 'tahun', 'statusHasil'];
-
-  const searchOptions = useMemo(() => {
-    if (!dropdownCategories.includes(filterCategory)) return [];
-    if (filterCategory === 'bulan') return months;
-    if (filterCategory === 'tahun') return years.map(String);
-    if (filterCategory === 'statusHasil') return ['Terlaksana', 'Dalam Proses', 'Belum Terlaksana', 'Mansuh'];
-    return [];
-  }, [filterCategory]);
-
-  // Aggregate data by month and year
-  const aggregatedData = useMemo(() => {
-    const aggregation: Record<string, { bulan: string; tahun: number; jumlahAgenda: number; items: M5U[] }> = {};
-    
-    m5uItems.forEach(item => {
-      const key = `${item.bulan}-${item.tahun}`;
-      if (!aggregation[key]) {
-        aggregation[key] = {
-          bulan: item.bulan,
-          tahun: item.tahun,
-          jumlahAgenda: 0,
-          items: []
-        };
-      }
-      aggregation[key].jumlahAgenda += 1;
-      aggregation[key].items.push(item);
-    });
-    
-    return Object.values(aggregation);
-  }, [m5uItems]);
-
-  const filteredAggregatedData = useMemo(() => {
-    if (!searchTerm) {
-      return aggregatedData;
-    }
-    return aggregatedData.filter(item => {
-      const value = item[filterCategory as keyof typeof item];
-      if (dropdownCategories.includes(filterCategory)) {
-        return String(value) === searchTerm;
-      }
-      return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-    });
-  }, [aggregatedData, searchTerm, filterCategory]);
-
-  // Calculate statistics for progress cards
-  const stats = useMemo(() => {
-    const statusCounts = {
-      'Terlaksana': 0,
-      'Dalam Proses': 0,
-      'Belum Terlaksana': 0,
-      'Mansuh': 0,
-    };
-
-    m5uItems.forEach(item => {
-      if (item.statusHasil && statusCounts.hasOwnProperty(item.statusHasil)) {
-        statusCounts[item.statusHasil as keyof typeof statusCounts]++;
-      }
-    });
-
-    const total = m5uItems.length;
-    return Object.entries(statusCounts).map(([name, count]) => ({
-      name,
-      count,
-      percentage: total > 0 ? Math.round((count / total) * 100) : 0
-    }));
-  }, [m5uItems]);
-
   const openDialog = (item?: M5U) => {
     if (item) {
       setIsEditMode(true);
@@ -145,11 +74,11 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     setDetailItem(null);
   };
 
-  const handleSave = () => {
-    if (isEditMode && editingId) {
-      setM5uItems(m5uItems.map(item => item.id === editingId ? { ...currentItem, id: editingId } : item));
+  const handleSave = (item: Omit<M5U, 'id'>, id: string | null, isEdit: boolean) => {
+    if (isEdit && id) {
+      setM5uItems(m5uItems.map(m => m.id === id ? { ...item, id } : m));
     } else {
-      setM5uItems([...m5uItems, { ...currentItem, id: new Date().toISOString() }]);
+      setM5uItems([...m5uItems, { ...item, id: new Date().toISOString() }]);
     }
     setIsDialogOpen(false);
   };
@@ -158,383 +87,81 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     setM5uItems(m5uItems.filter(item => item.id !== id));
   };
 
-  const renderSearchInput = () => {
-    if (dropdownCategories.includes(filterCategory)) {
-      return (
-        <Select 
-          value={searchTerm} 
-          onValueChange={(value) => setSearchTerm(value === '--all--' ? '' : value || '')}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder={`Pilih ${filterOptions.find(f => f.value === filterCategory)?.label}...`} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="--all--">Semua</SelectItem>
-            {searchOptions.map(option => (
-              <SelectItem key={option} value={option}>{option}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      );
-    }
-    return (
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-        <Input 
-          placeholder="Cari..." 
-          className="pl-10" 
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
-        />
-      </div>
-    );
+  const handleBulkDelete = (bulan: string, tahun: number) => {
+    setM5uItems(m5uItems.filter(item => !(item.bulan === bulan && item.tahun === tahun)));
   };
 
   return (
     <div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Terlaksana</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Terlaksana')?.count || 0}</div>
-            <Progress value={stats.find(s => s.name === 'Terlaksana')?.percentage || 0} className="mt-2 bg-green-300" />
-            <div className="text-xs mt-1">{stats.find(s => s.name === 'Terlaksana')?.percentage || 0}%</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dalam Proses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Dalam Proses')?.count || 0}</div>
-            <Progress value={stats.find(s => s.name === 'Dalam Proses')?.percentage || 0} className="mt-2 bg-blue-300" />
-            <div className="text-xs mt-1">{stats.find(s => s.name === 'Dalam Proses')?.percentage || 0}%</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Belum Terlaksana</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Belum Terlaksana')?.count || 0}</div>
-            <Progress value={stats.find(s => s.name === 'Belum Terlaksana')?.percentage || 0} className="mt-2 bg-amber-300" />
-            <div className="text-xs mt-1">{stats.find(s => s.name === 'Belum Terlaksana')?.percentage || 0}%</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-rose-500 to-pink-600 text-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mansuh</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Mansuh')?.count || 0}</div>
-            <Progress value={stats.find(s => s.name === 'Mansuh')?.percentage || 0} className="mt-2 bg-rose-300" />
-            <div className="text-xs mt-1">{stats.find(s => s.name === 'Mansuh')?.percentage || 0}%</div>
-          </CardContent>
-        </Card>
-      </div>
+      <h2 className="text-2xl font-bold mb-6">Agenda M5U</h2>
+      
+      <M5UStatsCards m5uItems={m5uItems} />
       
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Agenda M5U</h2>
         <div className="flex items-center gap-2">
-            {renderSearchInput()}
-            <Select value={filterCategory} onValueChange={(value) => {
-                setFilterCategory(value);
-                setSearchTerm('');
-            }}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    {filterOptions.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            {canEdit && (
-              <Button onClick={() => openDialog()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Tambah Agenda
-              </Button>
-            )}
+          <M5UDataTable.SearchInput 
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterCategory={filterCategory}
+            dropdownCategories={['bulan', 'tahun', 'statusHasil']}
+            searchOptions={
+              filterCategory === 'bulan' ? months :
+              filterCategory === 'tahun' ? years.map(String) :
+              filterCategory === 'statusHasil' ? ['Terlaksana', 'Dalam Proses', 'Belum Terlaksana', 'Mansuh'] :
+              []
+            }
+          />
+          <Select value={filterCategory} onValueChange={(value) => {
+              setFilterCategory(value);
+              setSearchTerm('');
+          }}>
+              <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                  {filterOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+              </SelectContent>
+          </Select>
         </div>
+        {canEdit && (
+          <Button onClick={() => openDialog()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Agenda
+          </Button>
+        )}
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Bulan</TableHead>
-              <TableHead>Tahun</TableHead>
-              <TableHead>Jumlah Agenda</TableHead>
-              <TableHead className="text-center">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAggregatedData.map((item) => (
-              <TableRow key={`${item.bulan}-${item.tahun}`}>
-                <TableCell>{item.bulan}</TableCell>
-                <TableCell>{item.tahun}</TableCell>
-                <TableCell>{item.jumlahAgenda}</TableCell>
-                <TableCell className="text-center space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => openDetailDialog(item.items[0])}>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Detail
-                  </Button>
-                  {canEdit && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={() => openDialog()}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Tambah
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => openDialog(item.items[0])}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Hapus
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tindakan ini akan menghapus semua agenda dalam periode {item.bulan} {item.tahun}.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => {
-                                const idsToDelete = item.items.map(i => i.id);
-                                setM5uItems(m5uItems.filter(m => !idsToDelete.includes(m.id)));
-                              }}
-                            >
-                              Hapus
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Detail Dialog */}
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Detail Agenda M5U</DialogTitle>
-          </DialogHeader>
-          {detailItem && (
-            <div className="py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="font-semibold">Bulan</Label>
-                  <p>{detailItem.bulan}</p>
-                </div>
-                <div>
-                  <Label className="font-semibold">Tahun</Label>
-                  <p>{detailItem.tahun}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <Label className="font-semibold">Agenda</Label>
-                  <p>{detailItem.agenda}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <Label className="font-semibold">Hasil</Label>
-                  <p>{detailItem.hasil || '-'}</p>
-                </div>
-                <div>
-                  <Label className="font-semibold">Penanggung Jawab</Label>
-                  <p>{detailItem.pj}</p>
-                </div>
-                <div>
-                  <Label className="font-semibold">Waktu Pelaksanaan</Label>
-                  <p>{detailItem.waktuPelaksanaan || '-'}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <Label className="font-semibold">Status Hasil</Label>
-                  <p>{detailItem.statusHasil || '-'}</p>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-3">Semua Agenda di {detailItem.bulan} {detailItem.tahun}</h3>
-                <div className="max-h-60 overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Agenda</TableHead>
-                        <TableHead>PJ</TableHead>
-                        <TableHead>Status</TableHead>
-                        {canEdit && <TableHead className="text-center">Aksi</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {aggregatedData
-                        .find(d => d.bulan === detailItem.bulan && d.tahun === detailItem.tahun)
-                        ?.items.map((item, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{item.agenda}</TableCell>
-                            <TableCell>{item.pj}</TableCell>
-                            <TableCell>{item.statusHasil}</TableCell>
-                            {canEdit && (
-                              <TableCell className="text-center space-x-1">
-                                <Button variant="ghost" size="sm" onClick={() => openDialog(item)}>
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Tindakan ini akan menghapus agenda ini secara permanen.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Batal</AlertDialogCancel>
-                                      <AlertDialogAction 
-                                        onClick={() => handleDelete(item.id)}
-                                      >
-                                        Hapus
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="secondary" onClick={closeDetailDialog}>Tutup</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{isEditMode ? 'Edit Agenda M5U' : 'Tambah Agenda M5U Baru'}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="bulan">Bulan</Label>
-              <Select 
-                value={currentItem.bulan} 
-                onValueChange={(value) => setCurrentItem(prev => ({ ...prev, bulan: value }))}
-              >
-                <SelectTrigger id="bulan" className="mt-1">
-                  <SelectValue placeholder="Pilih Bulan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map(month => (
-                    <SelectItem key={month} value={month}>{month}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="tahun">Tahun</Label>
-              <Select 
-                value={String(currentItem.tahun)} 
-                onValueChange={(value) => setCurrentItem(prev => ({ ...prev, tahun: Number(value) }))}
-              >
-                <SelectTrigger id="tahun" className="mt-1">
-                  <SelectValue placeholder="Pilih Tahun" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map(year => (
-                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2">
-              <Label htmlFor="agenda">Agenda</Label>
-              <Textarea 
-                id="agenda" 
-                value={currentItem.agenda} 
-                onChange={(e) => setCurrentItem(prev => ({ ...prev, agenda: e.target.value }))} 
-                className="mt-1" 
-              />
-            </div>
-            <div className="col-span-2">
-              <Label htmlFor="hasil">Hasil</Label>
-              <Textarea 
-                id="hasil" 
-                value={currentItem.hasil} 
-                onChange={(e) => setCurrentItem(prev => ({ ...prev, hasil: e.target.value }))} 
-                className="mt-1" 
-              />
-            </div>
-            <div>
-              <Label htmlFor="pj">Penanggung Jawab (PJ)</Label>
-              <Input 
-                id="pj" 
-                value={currentItem.pj} 
-                onChange={(e) => setCurrentItem(prev => ({ ...prev, pj: e.target.value }))} 
-                className="mt-1" 
-              />
-            </div>
-            <div>
-              <Label htmlFor="waktuPelaksanaan">Waktu Pelaksanaan</Label>
-              <Input 
-                id="waktuPelaksanaan" 
-                type="date" 
-                value={currentItem.waktuPelaksanaan} 
-                onChange={(e) => setCurrentItem(prev => ({ ...prev, waktuPelaksanaan: e.target.value }))} 
-                className="mt-1" 
-              />
-            </div>
-            {isEditMode && (
-              <div className="col-span-2">
-                <Label htmlFor="statusHasil">Status Hasil</Label>
-                <Select 
-                  value={currentItem.statusHasil} 
-                  onValueChange={(value) => setCurrentItem(prev => ({ ...prev, statusHasil: value as M5U['statusHasil'] }))}
-                >
-                  <SelectTrigger id="statusHasil" className="mt-1">
-                    <SelectValue placeholder="Pilih Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
-                    <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
-                    <SelectItem value="Mansuh">Mansuh</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-            <Button onClick={handleSave}>Simpan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      
+      <M5UDataTable 
+        m5uItems={m5uItems}
+        searchTerm={searchTerm}
+        filterCategory={filterCategory}
+        canEdit={canEdit}
+        onOpenDetail={openDetailDialog}
+        onOpenEdit={openDialog}
+        onDelete={handleDelete}
+        onBulkDelete={handleBulkDelete}
+      />
+      
+      <M5UDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSave={handleSave}
+        isEditMode={isEditMode}
+        currentItem={currentItem}
+        editingId={editingId}
+      />
+      
+      <M5UDetailDialog
+        isOpen={isDetailDialogOpen}
+        onClose={closeDetailDialog}
+        item={detailItem}
+        m5uItems={m5uItems}
+        canEdit={canEdit}
+        onEdit={openDialog}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
