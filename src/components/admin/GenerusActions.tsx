@@ -15,7 +15,7 @@ interface GenerusActionsProps {
   desas: Desa[];
   kelompok: Kelompok[];
   onAddGenerus: () => Promise<boolean>;
-  allGenerus: Generus[]; // Tambahkan properti ini
+  allGenerus: Generus[];
 }
 
 export default function GenerusActions({
@@ -25,7 +25,7 @@ export default function GenerusActions({
   desas,
   kelompok,
   onAddGenerus,
-  allGenerus // Tambahkan parameter ini
+  allGenerus
 }: GenerusActionsProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -56,18 +56,18 @@ export default function GenerusActions({
   // Fungsi untuk mengekspor data ke Excel
   const handleExport = () => {
     // Siapkan data untuk diekspor
-    const exportData = allGenerus.map(generus => ({
-      "Nama Generus": genus.name,
-      "Jenis Kelamin": genus.jenisKelamin,
-      "Tahun Lahir": genus.tahunLahir,
-      "Pendidikan": genus.pendidikan,
-      "Status Mondok": genus.statusMondok,
-      "Nama Ayah": genus.namaAyah,
-      "Status Ayah": genus.statusAyah,
-      "Nama Ibu": genus.namaIbu,
-      "Status Ibu": genus.statusIbu,
-      "Desa": genus.desa,
-      "Kelompok": genus.kelompok
+    const exportData = allGenerus.map(item => ({
+      "Nama Generus": item.name,
+      "Jenis Kelamin": item.jenisKelamin,
+      "Tahun Lahir": item.tahunLahir,
+      "Pendidikan": item.pendidikan,
+      "Status Mondok": item.statusMondok,
+      "Nama Ayah": item.namaAyah,
+      "Status Ayah": item.statusAyah,
+      "Nama Ibu": item.namaIbu,
+      "Status Ibu": item.statusIbu,
+      "Desa": item.desa,
+      "Kelompok": item.kelompok
     }));
 
     // Buat worksheet
