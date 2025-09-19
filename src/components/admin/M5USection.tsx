@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { M5U, User } from '@/types/admin';
-import { Plus, Edit, Trash2, Search, CheckCircle, Clock, XCircle, Archive, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import M5UStatusChart from './M5UStatusChart';
-import DashboardStatCard from './DashboardStatCard';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 const initialData: M5U[] = [
   { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
@@ -97,7 +97,8 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     });
   }, [aggregatedData, searchTerm, filterCategory]);
 
-  const chartData = useMemo(() => {
+  // Calculate statistics for progress cards
+  const stats = useMemo(() => {
     const statusCounts = {
       'Terlaksana': 0,
       'Dalam Proses': 0,
@@ -111,14 +112,13 @@ export default function M5USection({ currentUser }: M5USectionProps) {
       }
     });
 
-    return Object.entries(statusCounts)
-      .map(([name, value]) => ({ name, value }));
+    const total = m5uItems.length;
+    return Object.entries(statusCounts).map(([name, count]) => ({
+      name,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 100) : 0
+    }));
   }, [m5uItems]);
-
-  const totalTerlaksana = useMemo(() => chartData.find(d => d.name === 'Terlaksana')?.value || 0, [chartData]);
-  const totalDalamProses = useMemo(() => chartData.find(d => d.name === 'Dalam Proses')?.value || 0, [chartData]);
-  const totalBelumTerlaksana = useMemo(() => chartData.find(d => d.name === 'Belum Terlaksana')?.value || 0, [chartData]);
-  const totalMansuh = useMemo(() => chartData.find(d => d.name === 'Mansuh')?.value || 0, [chartData]);
 
   const openDialog = (item?: M5U) => {
     if (item) {
@@ -193,14 +193,51 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   return (
     <div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <DashboardStatCard title="Terlaksana" value={totalTerlaksana} icon={CheckCircle} />
-        <DashboardStatCard title="Dalam Proses" value={totalDalamProses} icon={Clock} />
-        <DashboardStatCard title="Belum Terlaksana" value={totalBelumTerlaksana} icon={XCircle} />
-        <DashboardStatCard title="Mansuh" value={totalMansuh} icon={Archive} />
+        <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Terlaksana</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Terlaksana')?.count || 0}</div>
+            <Progress value={stats.find(s => s.name === 'Terlaksana')?.percentage || 0} className="mt-2 bg-green-300" />
+            <div className="text-xs mt-1">{stats.find(s => s.name === 'Terlaksana')?.percentage || 0}%</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Dalam Proses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Dalam Proses')?.count || 0}</div>
+            <Progress value={stats.find(s => s.name === 'Dalam Proses')?.percentage || 0} className="mt-2 bg-blue-300" />
+            <div className="text-xs mt-1">{stats.find(s => s.name === 'Dalam Proses')?.percentage || 0}%</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Belum Terlaksana</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Belum Terlaksana')?.count || 0}</div>
+            <Progress value={stats.find(s => s.name === 'Belum Terlaksana')?.percentage || 0} className="mt-2 bg-amber-300" />
+            <div className="text-xs mt-1">{stats.find(s => s.name === 'Belum Terlaksana')?.percentage || 0}%</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-rose-500 to-pink-600 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Mansuh</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.find(s => s.name === 'Mansuh')?.count || 0}</div>
+            <Progress value={stats.find(s => s.name === 'Mansuh')?.percentage || 0} className="mt-2 bg-rose-300" />
+            <div className="text-xs mt-1">{stats.find(s => s.name === 'Mansuh')?.percentage || 0}%</div>
+          </CardContent>
+        </Card>
       </div>
-      <div className="mb-6">
-        <M5UStatusChart data={chartData.filter(d => d.value > 0)} />
-      </div>
+      
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Agenda M5U</h2>
         <div className="flex items-center gap-2">
@@ -257,6 +294,33 @@ export default function M5USection({ currentUser }: M5USectionProps) {
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Hapus
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tindakan ini akan menghapus semua agenda dalam periode {item.bulan} {item.tahun}.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => {
+                                const idsToDelete = item.items.map(i => i.id);
+                                setM5uItems(m5uItems.filter(m => !idsToDelete.includes(m.id)));
+                              }}
+                            >
+                              Hapus
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </>
                   )}
                 </TableCell>
@@ -314,6 +378,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
                         <TableHead>Agenda</TableHead>
                         <TableHead>PJ</TableHead>
                         <TableHead>Status</TableHead>
+                        {canEdit && <TableHead className="text-center">Aksi</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -324,6 +389,36 @@ export default function M5USection({ currentUser }: M5USectionProps) {
                             <TableCell>{item.agenda}</TableCell>
                             <TableCell>{item.pj}</TableCell>
                             <TableCell>{item.statusHasil}</TableCell>
+                            {canEdit && (
+                              <TableCell className="text-center space-x-1">
+                                <Button variant="ghost" size="sm" onClick={() => openDialog(item)}>
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Tindakan ini akan menghapus agenda ini secara permanen.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Batal</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => handleDelete(item.id)}
+                                      >
+                                        Hapus
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </TableCell>
+                            )}
                           </TableRow>
                         ))}
                     </TableBody>
