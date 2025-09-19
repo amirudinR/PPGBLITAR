@@ -1,24 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { Generus, PENDIDIKAN_LIST, Pendidikan, STATUS_MONDOK_LIST, GENERUS_FILTER_FIELDS, getJenjangUsia, Desa, Kelompok, User, JENJANG_USIA_LIST } from '@/types/admin';
-import { Edit, Trash2, Plus, Search, Download } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React, { useState } from 'react';
+import { Generus, Desa, Kelompok, User } from '@/types/admin';
 import GenerusChart from './GenerusChart';
-import PaginationControls from './PaginationControls';
-import * as XLSX from 'xlsx';
+import GenerusTable from './GenerusTable';
+import GenerusFilters from './GenerusFilters';
+import GenerusActions from './GenerusActions';
 
 interface GenerusSectionProps {
   allGenerus: Generus[];
@@ -36,9 +21,6 @@ interface GenerusSectionProps {
   currentUser: User | null;
 }
 
-const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok', 'jenjangUsia'];
-const ITEMS_PER_PAGE = 10;
-
 export default function GenerusSection({ 
   allGenerus,
   desas,
@@ -54,71 +36,15 @@ export default function GenerusSection({
   onFilterCategoryChange,
   currentUser
 }: GenerusSectionProps) {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Generus | 'jenjangUsia'; direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
-  const searchOptions = useMemo(() => {
-    if (!dropdownCategories.includes(filterCategory)) return [];
-    if (filterCategory === 'jenjangUsia') return [...JENJANG_USIA_LIST];
-    const uniqueValues = [...new Set(allGenerus.map(item => item[filterCategory as keyof Generus]))];
-    return uniqueValues.map(String).sort();
-  }, [filterCategory, allGenerus]);
+  // Reset pagination when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory]);
 
-  const filteredGenerus = useMemo(() => {
-    setCurrentPage(1); // Reset to first page on filter change
-    if (!searchTerm) return allGenerus;
-    return allGenerus.filter(g => {
-      if (filterCategory === 'jenjangUsia') {
-        return getJenjangUsia(g.pendidikan) === searchTerm;
-      }
-      const value = g[filterCategory as keyof Generus];
-      if (dropdownCategories.includes(filterCategory)) {
-        return String(value) === searchTerm;
-      }
-      return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-    });
-  }, [allGenerus, searchTerm, filterCategory]);
-
-  const sortedGenerus = useMemo(() => {
-    let sortableItems = [...filteredGenerus];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        if (sortConfig.key === 'jenjangUsia') {
-          const jenjangA = getJenjangUsia(a.pendidikan);
-          const jenjangB = getJenjangUsia(b.pendidikan);
-          if (jenjangA < jenjangB) {
-            return sortConfig.direction === 'asc' ? -1 : 1;
-          }
-          if (jenjangA > jenjangB) {
-            return sortConfig.direction === 'asc' ? 1 : -1;
-          }
-          return 0;
-        } else {
-          const key = sortConfig.key as keyof Generus;
-          if (a[key] < b[key]) {
-            return sortConfig.direction === 'asc' ? -1 : 1;
-          }
-          if (a[key] > b[key]) {
-            return sortConfig.direction === 'asc' ? 1 : -1;
-          }
-          return 0;
-        }
-      });
-    }
-    return sortableItems;
-  }, [filteredGenerus, sortConfig]);
-
-  const paginatedGenerus = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return sortedGenerus.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [sortedGenerus, currentPage]);
-
-  const totalPages = Math.ceil(sortedGenerus.length / ITEMS_PER_PAGE);
-
-  const chartData = useMemo(() => {
+  const chartData = React.useMemo(() => {
     const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
     const jenjangOptions = ['Caberawit', 'Pra Remaja', 'Remaja', 'Pra Nikah'];
     
@@ -126,389 +52,51 @@ export default function GenerusSection({
       summary[j] = { name: j, 'Laki-laki': 0, 'Perempuan': 0 };
     });
 
-    filteredGenerus.forEach(g => {
-      const jenjang = getJenjangUsia(g.pendidikan);
+    allGenerus.forEach(g => {
+      const jenjang = g.pendidikan === 'Belum sekolah' || g.pendidikan === 'Paud/TK' || 
+                      g.pendidikan.startsWith('SD') ? 'Caberawit' :
+                      g.pendidikan.startsWith('SMP') ? 'Pra Remaja' :
+                      g.pendidikan.startsWith('SMA') ? 'Remaja' : 'Pra Nikah';
+                      
       if (summary[jenjang]) {
         summary[jenjang][g.jenisKelamin]++;
       }
     });
     return Object.values(summary);
-  }, [filteredGenerus]);
-
-  const handleSave = async () => {
-    const success = await onAddGenerus();
-    if (success) {
-      setIsAddDialogOpen(false);
-    }
-  };
-
-  const handleUpdate = async () => {
-    if (!editingGenerus) return;
-    const { id, ...data } = editingGenerus;
-    const success = await onUpdateGenerus(id, data);
-    if (success) {
-      setIsEditDialogOpen(false);
-      setEditingGenerus(null);
-    }
-  };
-
-  const openEditDialog = (generus: Generus) => {
-    setEditingGenerus(generus);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleEditInputChange = (field: keyof Omit<Generus, 'id'>, value: string | number) => {
-    setEditingGenerus(prev => prev ? { ...prev, [field]: value } : null);
-  };
-
-  const handleEditSelectChange = (field: keyof Omit<Generus, 'id'>, value: string) => {
-    setEditingGenerus(prev => prev ? { ...prev, [field]: value as any } : null);
-  };
-  
-  const handleNewInputChange = (field: keyof typeof newGenerus, value: string | number) => {
-    setNewGenerus(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleNewSelectChange = (field: keyof typeof newGenerus, value: string) => {
-    setNewGenerus(prev => ({ ...prev, [field]: value as any }));
-  };
-
-  const handleNewDesaChange = (desaName: string) => {
-    setNewGenerus(prev => ({ ...prev, desa: desaName, kelompok: '' }));
-  };
-
-  const filteredKelompokForNew = useMemo(() => {
-    if (!newGenerus.desa) return [];
-    return kelompok.filter(k => k.desaName === newGenerus.desa);
-  }, [newGenerus.desa, kelompok]);
-
-  const handleExport = () => {
-    const dataToExport = filteredGenerus.map(g => ({
-      'Nama Generus': g.name,
-      'Jenis Kelamin': g.jenisKelamin,
-      'Tahun Lahir': g.tahunLahir,
-      'Pendidikan': g.pendidikan,
-      'Jenjang Usia': getJenjangUsia(g.pendidikan),
-      'Status Mondok': g.statusMondok,
-      'Desa': g.desa,
-      'Kelompok': g.kelompok,
-      'Nama Ayah': g.namaAyah,
-      'Status Ayah': g.statusAyah.toUpperCase(),
-      'Nama Ibu': g.namaIbu,
-      'Status Ibu': g.statusIbu.toUpperCase(),
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Data Generus");
-    XLSX.writeFile(wb, `data_generus_${currentUser?.kelompok}.xlsx`);
-  };
-
-  const renderSearchInput = () => {
-    if (dropdownCategories.includes(filterCategory)) {
-      return (
-        <Select 
-          value={searchTerm} 
-          onValueChange={(value) => onSearchChange(value === '--all--' ? '' : value || '')}
-        >
-          <SelectTrigger className="w-full flex-grow md:w-[200px]">
-            <SelectValue placeholder={`Pilih ${GENERUS_FILTER_FIELDS.find(f => f.value === filterCategory)?.label}...`} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="--all--">Semua</SelectItem>
-            {searchOptions.map(option => (
-              <SelectItem key={option} value={option}>{option}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      );
-    }
-    return (
-      <div className="relative flex-grow">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-        <Input 
-          placeholder="Cari..." 
-          className="pl-10"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
-    );
-  };
-
-  const requestSort = (key: keyof Generus | 'jenjangUsia') => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-    setCurrentPage(1); // Reset ke halaman pertama saat sorting berubah
-  };
-
-  const getSortIndicator = (key: keyof Generus | 'jenjangUsia') => {
-    if (!sortConfig || sortConfig.key !== key) return null;
-    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
-  };
+  }, [allGenerus]);
 
   return (
     <div>
+      <h2 className="text-2xl font-bold mb-6">Data Generus</h2>
       <GenerusChart data={chartData} />
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold">Data Generus</h2>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          {renderSearchInput()}
-          <Select value={filterCategory} onValueChange={(value) => {
-            onFilterCategoryChange(value);
-            onSearchChange('');
-          }}>
-            <SelectTrigger className="w-[180px] flex-shrink-0">
-              <SelectValue placeholder="Filter by" />
-            </SelectTrigger>
-            <SelectContent>
-              {GENERUS_FILTER_FIELDS.map(field => (
-                <SelectItem key={field.value} value={field.value}>{field.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {currentUser?.role === 'kelompok' && (
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Excel
-            </Button>
-          )}
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex-shrink-0">
-                <Plus className="w-4 h-4 mr-2" />
-                Tambah
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Tambah Data Generus</DialogTitle>
-                <DialogDescription>
-                  Isi formulir di bawah ini untuk menambahkan data generus baru.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto pr-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                  <div className="space-y-2"><Label>Nama Generus</Label><Input value={newGenerus.name} onChange={(e) => handleNewInputChange('name', e.target.value)} /></div>
-                  <div className="space-y-2"><Label>Jenis Kelamin</Label><Select value={newGenerus.jenisKelamin} onValueChange={(v) => handleNewSelectChange('jenisKelamin', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Laki-laki">Laki-laki</SelectItem><SelectItem value="Perempuan">Perempuan</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-2"><Label>Tahun Lahir</Label><Input type="number" value={newGenerus.tahunLahir} onChange={(e) => handleNewInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} /></div>
-                  <div className="space-y-2"><Label>Pendidikan</Label><Select value={newGenerus.pendidikan} onValueChange={(v) => handleNewSelectChange('pendidikan', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="space-y-2"><Label>Status Mondok</Label><Select value={newGenerus.statusMondok} onValueChange={(v) => handleNewSelectChange('statusMondok', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_MONDOK_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="space-y-2"><Label>Desa</Label><Select value={newGenerus.desa} onValueChange={handleNewDesaChange}><SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger><SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="space-y-2"><Label>Kelompok</Label><Select value={newGenerus.kelompok} onValueChange={(v) => handleNewSelectChange('kelompok', v)}><SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger><SelectContent>{filteredKelompokForNew.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="space-y-2"><Label>Nama Ayah</Label><Input value={newGenerus.namaAyah} onChange={(e) => handleNewInputChange('namaAyah', e.target.value)} /></div>
-                  <div className="space-y-2"><Label>Status Ayah</Label><Select value={newGenerus.statusAyah} onValueChange={(v) => handleNewSelectChange('statusAyah', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-2"><Label>Nama Ibu</Label><Input value={newGenerus.namaIbu} onChange={(e) => handleNewInputChange('namaIbu', e.target.value)} /></div>
-                  <div className="space-y-2"><Label>Status Ibu</Label><Select value={newGenerus.statusIbu} onValueChange={(v) => handleNewSelectChange('statusIbu', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent></Select></div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>Batal</Button>
-                <Button onClick={handleSave}>Simpan</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('name')}
-                >
-                  Nama Generus{getSortIndicator('name')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('tahunLahir')}
-                >
-                  Tahun Lahir{getSortIndicator('tahunLahir')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('pendidikan')}
-                >
-                  Pendidikan{getSortIndicator('pendidikan')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('jenjangUsia')}
-                >
-                  Jenjang Usia{getSortIndicator('jenjangUsia')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('statusMondok')}
-                >
-                  Status Mondok{getSortIndicator('statusMondok')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('desa')}
-                >
-                  Desa{getSortIndicator('desa')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('kelompok')}
-                >
-                  Kelompok{getSortIndicator('kelompok')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('namaAyah')}
-                >
-                  Nama Ayah{getSortIndicator('namaAyah')}
-                </TableHead>
-                <TableHead className="whitespace-nowrap">Status Ayah</TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
-                  onClick={() => requestSort('namaIbu')}
-                >
-                  Nama Ibu{getSortIndicator('namaIbu')}
-                </TableHead>
-                <TableHead className="whitespace-nowrap">Status Ibu</TableHead>
-                <TableHead className="text-center whitespace-nowrap">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedGenerus.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.tahunLahir}</TableCell>
-                  <TableCell>{item.pendidikan}</TableCell>
-                  <TableCell>{getJenjangUsia(item.pendidikan)}</TableCell>
-                  <TableCell>{item.statusMondok}</TableCell>
-                  <TableCell>{item.desa}</TableCell>
-                  <TableCell>{item.kelompok}</TableCell>
-                  <TableCell>{item.namaAyah}</TableCell>
-                  <TableCell className="uppercase">{item.statusAyah}</TableCell>
-                  <TableCell>{item.namaIbu}</TableCell>
-                  <TableCell className="uppercase">{item.statusIbu}</TableCell>
-                  <TableCell className="text-center">
-                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
-                      <Edit className="w-4 h-4 text-blue-600" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data generus secara permanen.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => onDeleteGenerus(item.id)}>Hapus</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={sortedGenerus.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={setCurrentPage}
-        />
-      </div>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Edit Data Generus</DialogTitle>
-          </DialogHeader>
-          {editingGenerus && (
-            <div className="max-h-[60vh] overflow-y-auto pr-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name">Nama Generus</Label>
-                  <Input id="edit-name" value={editingGenerus.name} onChange={(e) => handleEditInputChange('name', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-jenisKelamin">Jenis Kelamin</Label>
-                  <Select value={editingGenerus.jenisKelamin} onValueChange={(value) => handleEditSelectChange('jenisKelamin', value)}>
-                    <SelectTrigger id="edit-jenisKelamin"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                      <SelectItem value="Perempuan">Perempuan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-tahunLahir">Tahun Lahir</Label>
-                  <Input id="edit-tahunLahir" type="number" value={editingGenerus.tahunLahir} onChange={(e) => handleEditInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-pendidikan">Pendidikan</Label>
-                  <Select value={editingGenerus.pendidikan} onValueChange={(value) => handleEditSelectChange('pendidikan', value)}>
-                    <SelectTrigger id="edit-pendidikan"><SelectValue /></SelectTrigger>
-                    <SelectContent>{PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-statusMondok">Status Mondok</Label>
-                  <Select value={editingGenerus.statusMondok} onValueChange={(value) => handleEditSelectChange('statusMondok', value)}>
-                    <SelectTrigger id="edit-statusMondok"><SelectValue /></SelectTrigger>
-                    <SelectContent>{STATUS_MONDOK_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-desa">Desa</Label>
-                  <Input id="edit-desa" value={editingGenerus.desa} onChange={(e) => handleEditInputChange('desa', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-kelompok">Kelompok</Label>
-                  <Input id="edit-kelompok" value={editingGenerus.kelompok} onChange={(e) => handleEditInputChange('kelompok', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-namaAyah">Nama Ayah</Label>
-                  <Input id="edit-namaAyah" value={editingGenerus.namaAyah} onChange={(e) => handleEditInputChange('namaAyah', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-statusAyah">Status Ayah</Label>
-                  <Select value={editingGenerus.statusAyah} onValueChange={(value) => handleEditSelectChange('statusAyah', value)}>
-                    <SelectTrigger id="edit-statusAyah"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-namaIbu">Nama Ibu</Label>
-                  <Input id="edit-namaIbu" value={editingGenerus.namaIbu} onChange={(e) => handleEditInputChange('namaIbu', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-statusIbu">Status Ibu</Label>
-                  <Select value={editingGenerus.statusIbu} onValueChange={(value) => handleEditSelectChange('statusIbu', value)}>
-                    <SelectTrigger id="edit-statusIbu"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsEditDialogOpen(false)}>Batal</Button>
-            <Button onClick={handleUpdate}>Simpan Perubahan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <GenerusFilters
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        filterCategory={filterCategory}
+        onFilterCategoryChange={onFilterCategoryChange}
+        currentUser={currentUser}
+      />
+      <GenerusActions
+        currentUser={currentUser}
+        newGenerus={newGenerus}
+        setNewGenerus={setNewGenerus}
+        desas={desas}
+        kelompok={kelompok}
+        onAddGenerus={onAddGenerus}
+      />
+      <GenerusTable
+        allGenerus={allGenerus}
+        searchTerm={searchTerm}
+        filterCategory={filterCategory}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
+        onUpdateGenerus={onUpdateGenerus}
+        onDeleteGenerus={onDeleteGenerus}
+        desas={desas}
+        kelompok={kelompok}
+      />
     </div>
   );
 }
