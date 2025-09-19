@@ -83,6 +83,7 @@ export default function GenerusSection({
         desas={desas}
         kelompok={kelompok}
         onAddGenerus={onAddGenerus}
+        allGenerus={allGenerus} // Tambahkan properti ini
       />
       <GenerusTable
         allGenerus={allGenerus}

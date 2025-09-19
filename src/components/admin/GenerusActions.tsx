@@ -15,6 +15,7 @@ interface GenerusActionsProps {
   desas: Desa[];
   kelompok: Kelompok[];
   onAddGenerus: () => Promise<boolean>;
+  allGenerus: Generus[]; // Tambahkan properti ini
 }
 
 export default function GenerusActions({
@@ -23,7 +24,8 @@ export default function GenerusActions({
   setNewGenerus,
   desas,
   kelompok,
-  onAddGenerus
+  onAddGenerus,
+  allGenerus // Tambahkan parameter ini
 }: GenerusActionsProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -51,20 +53,109 @@ export default function GenerusActions({
     }
   };
 
+  // Fungsi untuk mengekspor data ke Excel
   const handleExport = () => {
-    // Export functionality would go here
-    console.log("Export functionality triggered");
+    // Siapkan data untuk diekspor
+    const exportData = allGenerus.map(generus => ({
+      "Nama Generus": genus.name,
+      "Jenis Kelamin": genus.jenisKelamin,
+      "Tahun Lahir": genus.tahunLahir,
+      "Pendidikan": genus.pendidikan,
+      "Status Mondok": genus.statusMondok,
+      "Nama Ayah": genus.namaAyah,
+      "Status Ayah": genus.statusAyah,
+      "Nama Ibu": genus.namaIbu,
+      "Status Ibu": genus.statusIbu,
+      "Desa": genus.desa,
+      "Kelompok": genus.kelompok
+    }));
+
+    // Buat worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Atur lebar kolom
+    ws['!cols'] = [
+      { wch: 20 }, // Nama Generus
+      { wch: 12 }, // Jenis Kelamin
+      { wch: 12 }, // Tahun Lahir
+      { wch: 15 }, // Pendidikan
+      { wch: 25 }, // Status Mondok
+      { wch: 15 }, // Nama Ayah
+      { wch: 10 }, // Status Ayah
+      { wch: 15 }, // Nama Ibu
+      { wch: 10 }, // Status Ibu
+      { wch: 15 }, // Desa
+      { wch: 15 }  // Kelompok
+    ];
+
+    // Buat workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data Generus");
+
+    // Ekspor file
+    XLSX.writeFile(wb, "data_generus.xlsx");
+  };
+
+  // Fungsi untuk mengunduh template Excel
+  const handleDownloadTemplate = () => {
+    // Data contoh untuk template
+    const templateData = [
+      {
+        "Nama Generus": "Contoh Nama",
+        "Jenis Kelamin": "Laki-laki",
+        "Tahun Lahir": 2010,
+        "Pendidikan": "SD 3",
+        "Status Mondok": "Tidak Sedang Mondok",
+        "Nama Ayah": "Nama Ayah",
+        "Status Ayah": "jm",
+        "Nama Ibu": "Nama Ibu",
+        "Status Ibu": "hum",
+        "Desa": "Contoh Desa",
+        "Kelompok": "Contoh Kelompok"
+      }
+    ];
+
+    // Buat worksheet dari data contoh
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    
+    // Atur lebar kolom
+    ws['!cols'] = [
+      { wch: 20 }, // Nama Generus
+      { wch: 12 }, // Jenis Kelamin
+      { wch: 12 }, // Tahun Lahir
+      { wch: 15 }, // Pendidikan
+      { wch: 25 }, // Status Mondok
+      { wch: 15 }, // Nama Ayah
+      { wch: 10 }, // Status Ayah
+      { wch: 15 }, // Nama Ibu
+      { wch: 10 }, // Status Ibu
+      { wch: 15 }, // Desa
+      { wch: 15 }  // Kelompok
+    ];
+
+    // Buat workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template Data Generus");
+
+    // Ekspor file template
+    XLSX.writeFile(wb, "template_import_data_generus.xlsx");
   };
 
   return (
     <div className="flex justify-between items-center mb-6">
       <div></div> {/* Spacer for alignment */}
       <div className="flex items-center gap-2">
-        {currentUser?.role === 'kelompok' && (
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            Export Excel
-          </Button>
+        {(currentUser?.role === 'kelompok' || currentUser?.role === 'admin' || currentUser?.role === 'adminsuper') && (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleDownloadTemplate}>
+              <Download className="w-4 h-4 mr-2" />
+              Template
+            </Button>
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Export Excel
+            </Button>
+          </div>
         )}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
