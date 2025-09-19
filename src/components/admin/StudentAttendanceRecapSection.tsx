@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
+import PaginationControls from './PaginationControls';
 
 interface StudentAttendanceRecapSectionProps {
   attendance: MonthlyAttendance[];
@@ -34,6 +35,8 @@ const months = [
 const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
+const ITEMS_PER_PAGE = 10;
+
 export default function StudentAttendanceRecapSection({
   attendance, desas, kelompok, kelas, currentUser,
   startMonth, setStartMonth, startYear, setStartYear,
@@ -46,6 +49,8 @@ export default function StudentAttendanceRecapSection({
   const [selectedKelas, setSelectedKelas] = useState('');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<{ name: string; id: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
   const filteredKelompok = useMemo(() => {
     if (!selectedDesa) return kelompok;
@@ -90,6 +95,56 @@ export default function StudentAttendanceRecapSection({
     }));
   }, [filteredAttendance, kelas]);
 
+  const sortedStudentRecap = useMemo(() => {
+    let sortableItems = [...studentRecap];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (sortConfig.key === 'percentage') {
+          if (a.percentage < b.percentage) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (a.percentage > b.percentage) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+        } else if (sortConfig.key === 'attended') {
+          const attendedA = a.attended;
+          const attendedB = b.attended;
+          if (attendedA < attendedB) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (attendedA > attendedB) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+        } else if (sortConfig.key === 'held') {
+          const heldA = a.held;
+          const heldB = b.held;
+          if (heldA < heldB) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (heldA > heldB) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+        } else {
+          if (a[sortConfig.key as keyof typeof a] < b[sortConfig.key as keyof typeof b]) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (a[sortConfig.key as keyof typeof a] > b[sortConfig.key as keyof typeof b]) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [studentRecap, sortConfig]);
+
+  const paginatedStudentRecap = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedStudentRecap.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedStudentRecap, currentPage]);
+
+  const totalPages = Math.ceil(sortedStudentRecap.length / ITEMS_PER_PAGE);
+
   const studentDetailData = useMemo(() => {
     if (!selectedStudent) return [];
     return filteredAttendance
@@ -104,6 +159,20 @@ export default function StudentAttendanceRecapSection({
   const handleViewDetails = (student: { studentId: string, name: string }) => {
     setSelectedStudent({ id: student.studentId, name: student.name });
     setIsDetailOpen(true);
+  };
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1); // Reset ke halaman pertama saat sorting berubah
+  };
+
+  const getSortIndicator = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
   };
 
   return (
@@ -155,20 +224,45 @@ export default function StudentAttendanceRecapSection({
       </Card>
       <Card>
         <CardHeader><CardTitle>Hasil Rekapitulasi</CardTitle></CardHeader>
-        <CardContent>
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nama Siswa</TableHead>
-                <TableHead>Kelas</TableHead>
-                <TableHead>Guru</TableHead>
-                <TableHead className="text-center">Total Kehadiran</TableHead>
-                <TableHead className="w-48">Persentase</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('name')}
+                >
+                  Nama Siswa{getSortIndicator('name')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('className')}
+                >
+                  Kelas{getSortIndicator('className')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('guruName')}
+                >
+                  Guru{getSortIndicator('guruName')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 text-center whitespace-nowrap"
+                  onClick={() => requestSort('attended')}
+                >
+                  Total Kehadiran{getSortIndicator('attended')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 w-48 whitespace-nowrap"
+                  onClick={() => requestSort('percentage')}
+                >
+                  Persentase{getSortIndicator('percentage')}
+                </TableHead>
+                <TableHead className="text-center whitespace-nowrap">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {studentRecap.map(student => (
+              {paginatedStudentRecap.map(student => (
                 <TableRow key={student.studentId}>
                   <TableCell>{student.name}</TableCell>
                   <TableCell>{student.className}</TableCell>
@@ -185,7 +279,14 @@ export default function StudentAttendanceRecapSection({
               ))}
             </TableBody>
           </Table>
-        </CardContent>
+        </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={sortedStudentRecap.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </Card>
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>

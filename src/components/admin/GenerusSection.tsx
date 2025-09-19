@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import GenerusChart from './GenerusChart';
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import PaginationControls from './PaginationControls';
 import * as XLSX from 'xlsx';
 
 interface GenerusSectionProps {
@@ -58,6 +58,7 @@ export default function GenerusSection({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGenerus, setEditingGenerus] = useState<Generus | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Generus | 'jenjangUsia'; direction: 'asc' | 'desc' } | null>(null);
 
   const searchOptions = useMemo(() => {
     if (!dropdownCategories.includes(filterCategory)) return [];
@@ -81,12 +82,41 @@ export default function GenerusSection({
     });
   }, [allGenerus, searchTerm, filterCategory]);
 
-  const totalPages = Math.ceil(filteredGenerus.length / ITEMS_PER_PAGE);
+  const sortedGenerus = useMemo(() => {
+    let sortableItems = [...filteredGenerus];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (sortConfig.key === 'jenjangUsia') {
+          const jenjangA = getJenjangUsia(a.pendidikan);
+          const jenjangB = getJenjangUsia(b.pendidikan);
+          if (jenjangA < jenjangB) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (jenjangA > jenjangB) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+          return 0;
+        } else {
+          const key = sortConfig.key as keyof Generus;
+          if (a[key] < b[key]) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (a[key] > b[key]) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+          return 0;
+        }
+      });
+    }
+    return sortableItems;
+  }, [filteredGenerus, sortConfig]);
+
   const paginatedGenerus = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredGenerus.slice(startIndex, endIndex);
-  }, [filteredGenerus, currentPage]);
+    return sortedGenerus.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedGenerus, currentPage]);
+
+  const totalPages = Math.ceil(sortedGenerus.length / ITEMS_PER_PAGE);
 
   const chartData = useMemo(() => {
     const summary: { [key: string]: { name: string; 'Laki-laki': number; 'Perempuan': number } } = {};
@@ -206,6 +236,20 @@ export default function GenerusSection({
     );
   };
 
+  const requestSort = (key: keyof Generus | 'jenjangUsia') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1); // Reset ke halaman pertama saat sorting berubah
+  };
+
+  const getSortIndicator = (key: keyof Generus | 'jenjangUsia') => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+
   return (
     <div>
       <GenerusChart data={chartData} />
@@ -269,82 +313,121 @@ export default function GenerusSection({
           </Dialog>
         </div>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Generus</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun Lahir</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendidikan</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenjang Usia</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Mondok</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desa</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelompok</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ayah</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ayah</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ibu</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ibu</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedGenerus.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.tahunLahir}</TableCell>
-                <TableCell>{item.pendidikan}</TableCell>
-                <TableCell>{getJenjangUsia(item.pendidikan)}</TableCell>
-                <TableCell>{item.statusMondok}</TableCell>
-                <TableCell>{item.desa}</TableCell>
-                <TableCell>{item.kelompok}</TableCell>
-                <TableCell>{item.namaAyah}</TableCell>
-                <TableCell className="uppercase">{item.statusAyah}</TableCell>
-                <TableCell>{item.namaIbu}</TableCell>
-                <TableCell className="uppercase">{item.statusIbu}</TableCell>
-                <TableCell className="text-center">
-                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
-                    <Edit className="w-4 h-4 text-blue-600" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data generus secara permanen.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDeleteGenerus(item.id)}>Hapus</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('name')}
+                >
+                  Nama Generus{getSortIndicator('name')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('tahunLahir')}
+                >
+                  Tahun Lahir{getSortIndicator('tahunLahir')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('pendidikan')}
+                >
+                  Pendidikan{getSortIndicator('pendidikan')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('jenjangUsia')}
+                >
+                  Jenjang Usia{getSortIndicator('jenjangUsia')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('statusMondok')}
+                >
+                  Status Mondok{getSortIndicator('statusMondok')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('desa')}
+                >
+                  Desa{getSortIndicator('desa')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('kelompok')}
+                >
+                  Kelompok{getSortIndicator('kelompok')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('namaAyah')}
+                >
+                  Nama Ayah{getSortIndicator('namaAyah')}
+                </TableHead>
+                <TableHead className="whitespace-nowrap">Status Ayah</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  onClick={() => requestSort('namaIbu')}
+                >
+                  Nama Ibu{getSortIndicator('namaIbu')}
+                </TableHead>
+                <TableHead className="whitespace-nowrap">Status Ibu</TableHead>
+                <TableHead className="text-center whitespace-nowrap">Aksi</TableHead>
               </TableRow>
-            ))}
-          </tbody>
-        </table>
+            </TableHeader>
+            <TableBody>
+              {paginatedGenerus.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.tahunLahir}</TableCell>
+                  <TableCell>{item.pendidikan}</TableCell>
+                  <TableCell>{getJenjangUsia(item.pendidikan)}</TableCell>
+                  <TableCell>{item.statusMondok}</TableCell>
+                  <TableCell>{item.desa}</TableCell>
+                  <TableCell>{item.kelompok}</TableCell>
+                  <TableCell>{item.namaAyah}</TableCell>
+                  <TableCell className="uppercase">{item.statusAyah}</TableCell>
+                  <TableCell>{item.namaIbu}</TableCell>
+                  <TableCell className="uppercase">{item.statusIbu}</TableCell>
+                  <TableCell className="text-center">
+                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
+                      <Edit className="w-4 h-4 text-blue-600" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data generus secara permanen.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => onDeleteGenerus(item.id)}>Hapus</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={sortedGenerus.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
-      <Pagination className="mt-4">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.max(p - 1, 1)); }} />
-          </PaginationItem>
-          <PaginationItem>
-            <span className="px-4 py-2 text-sm">
-              Halaman {currentPage} dari {totalPages}
-            </span>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.min(p + 1, totalPages)); }} />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
