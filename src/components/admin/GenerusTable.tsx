@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Generus, Desa, Kelompok, GENERUS_FILTER_FIELDS, getJenjangUsia, JENJANG_USIA_LIST } from '@/types/admin';
+import { Generus, Desa, Kelompok, GENERUS_FILTER_FIELDS, getJenjangUsia, JENJANG_USIA_LIST, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from 'lucide-react';
@@ -285,8 +285,6 @@ function EditDialog({
   handleUpdate,
   kelompok
 }: EditDialogProps) {
-  const { PENDIDIKAN_LIST, STATUS_MONDOK_LIST } = require('@/types/admin');
-
   const filteredKelompok = React.useMemo(() => {
     if (!editingGenerus?.desa) return [];
     return kelompok.filter(k => k.desaName === editingGenerus.desa);
