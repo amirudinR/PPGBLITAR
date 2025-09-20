@@ -27,6 +27,16 @@ const dummyData: M5U[] = [
   { id: '5', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: '-', pj: 'PJP Desa', waktuPelaksanaan: '2024-03-20', statusHasil: 'Dalam Proses' },
 ];
 
+// Fungsi untuk memformat tanggal ke format dd-mm-yyyy
+const formatDate = (dateString: string) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
 export default function M5UDetailPage() {
   const navigate = useNavigate();
   const { bulan, tahun } = useParams<{ bulan: string; tahun: string }>();
@@ -68,6 +78,13 @@ export default function M5UDetailPage() {
 
   const handleChange = (field: keyof Omit<M5U, 'id'>, value: string | number) => {
     setCurrentItem(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Fungsi untuk mengubah status hasil langsung di tabel
+  const handleStatusChange = (id: string, newStatus: M5U['statusHasil']) => {
+    setM5uItems(m5uItems.map(item => 
+      item.id === id ? { ...item, statusHasil: newStatus } : item
+    ));
   };
 
   return (
@@ -117,8 +134,23 @@ export default function M5UDetailPage() {
                   <TableCell>{item.agenda}</TableCell>
                   <TableCell>{item.hasil || '-'}</TableCell>
                   <TableCell>{item.pj}</TableCell>
-                  <TableCell>{item.waktuPelaksanaan || '-'}</TableCell>
-                  <TableCell>{item.statusHasil || '-'}</TableCell>
+                  <TableCell>{formatDate(item.waktuPelaksanaan)}</TableCell>
+                  <TableCell>
+                    <Select 
+                      value={item.statusHasil || ''} 
+                      onValueChange={(value) => handleStatusChange(item.id, value as M5U['statusHasil'])}
+                    >
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Pilih Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Terlaksana">Terlaksana</SelectItem>
+                        <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                        <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
+                        <SelectItem value="Mansuh">Mansuh</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
                   <TableCell className="text-center">
                     <div className="flex justify-center space-x-2">
                       <Button variant="ghost" size="sm" onClick={() => openDialog(item)}>
@@ -197,23 +229,25 @@ export default function M5UDetailPage() {
                 className="mt-1" 
               />
             </div>
-            <div className="col-span-2">
-              <Label htmlFor="statusHasil">Status Hasil</Label>
-              <Select 
-                value={currentItem.statusHasil} 
-                onValueChange={(value) => handleChange('statusHasil', value as M5U['statusHasil'])}
-              >
-                <SelectTrigger id="statusHasil" className="mt-1">
-                  <SelectValue placeholder="Pilih Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                  <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
-                  <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
-                  <SelectItem value="Mansuh">Mansuh</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {isEditMode && (
+              <div className="col-span-2">
+                <Label htmlFor="statusHasil">Status Hasil</Label>
+                <Select 
+                  value={currentItem.statusHasil} 
+                  onValueChange={(value) => handleChange('statusHasil', value as M5U['statusHasil'])}
+                >
+                  <SelectTrigger id="statusHasil" className="mt-1">
+                    <SelectValue placeholder="Pilih Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Terlaksana">Terlaksana</SelectItem>
+                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                    <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
+                    <SelectItem value="Mansuh">Mansuh</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
