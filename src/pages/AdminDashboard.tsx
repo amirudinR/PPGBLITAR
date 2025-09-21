@@ -20,6 +20,7 @@ import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
 import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 import AnnouncementsSection from '@/components/admin/AnnouncementsSection';
 import GuruDashboardStats from '@/components/admin/GuruDashboardStats';
+import M5USearchPage from '@/pages/M5USearchPage';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -77,6 +78,7 @@ const menuItems = [
     label: 'Laporan',
     children: [
       { id: 'm5u', label: 'M5U' },
+      { id: 'cari-hasil-m5u', label: 'Cari Hasil M5U' },
       { id: 'latihan-asad', label: 'Latihan ASAD' },
       { id: 'jariyah-ppg', label: 'Jariyah PPG' },
     ]
@@ -365,6 +367,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'm5u':
         return <M5USection currentUser={currentUser} />;
+      case 'cari-hasil-m5u':
+        return <M5USearchPage />;
       case 'latihan-asad':
         return (
           <div>
