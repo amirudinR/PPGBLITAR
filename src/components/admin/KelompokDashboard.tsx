@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, getJenjangUsia, JENJANG_USIA_LIST } from '@/types/admin';
-import { GraduationCap, Users, Contact, School } from 'lucide-react';
+import { GraduationCap, Users, Contact, School, AlertTriangle } from 'lucide-react';
 import DashboardStatCard from './DashboardStatCard';
 import AnnouncementCard from './AnnouncementCard';
 import PrioritasGenerusCard from './PrioritasGenerusCard';
@@ -9,6 +9,7 @@ import GenerusChart from './GenerusChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface KelompokDashboardProps {
   stats: {
@@ -192,12 +193,36 @@ export default function KelompokDashboard({
     return kelas.filter(k => k.kelompok === currentUser?.kelompok);
   }, [kelas, currentUser]);
 
+  // Check if M5U has been implemented for current month
+  const isM5UNotImplemented = useMemo(() => {
+    // In a real implementation, this would check against actual M5U data
+    // For now, we'll simulate this with a placeholder
+    // Replace this with actual logic to check M5U status
+    const currentMonth = months[new Date().getMonth()];
+    const currentYear = new Date().getFullYear();
+    
+    // Dummy check - in reality, you would check your M5U database
+    // This is just a placeholder to demonstrate the functionality
+    return false; // Change this to actual logic
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl p-6 text-white shadow-lg">
         <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser?.name}</h2>
         <p className="text-teal-100">Selamat datang di dasbor Kelompok {currentUser?.kelompok}.</p>
       </div>
+      
+      {/* Warning for unimplemented M5U */}
+      {isM5UNotImplemented && (
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Peringatan M5U</AlertTitle>
+          <AlertDescription>
+            Agenda M5U untuk bulan ini belum dilaksanakan. Silakan tambahkan agenda M5U di menu Laporan {'>'} M5U.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
