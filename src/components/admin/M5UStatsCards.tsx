@@ -30,51 +30,40 @@ export default function M5UStatsCards({ m5uItems }: M5UStatsCardsProps) {
     }));
   }, [m5uItems]);
 
+  // Filter out "Dalam Proses" card
+  const filteredStats = stats.filter(stat => stat.name !== 'Dalam Proses');
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-      <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Terlaksana</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.find(s => s.name === 'Terlaksana')?.count || 0}</div>
-          <Progress value={stats.find(s => s.name === 'Terlaksana')?.percentage || 0} className="mt-2 bg-green-300" />
-          <div className="text-xs mt-1">{stats.find(s => s.name === 'Terlaksana')?.percentage || 0}%</div>
-        </CardContent>
-      </Card>
-      
-      <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Dalam Proses</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.find(s => s.name === 'Dalam Proses')?.count || 0}</div>
-          <Progress value={stats.find(s => s.name === 'Dalam Proses')?.percentage || 0} className="mt-2 bg-blue-300" />
-          <div className="text-xs mt-1">{stats.find(s => s.name === 'Dalam Proses')?.percentage || 0}%</div>
-        </CardContent>
-      </Card>
-      
-      <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Belum Terlaksana</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.find(s => s.name === 'Belum Terlaksana')?.count || 0}</div>
-          <Progress value={stats.find(s => s.name === 'Belum Terlaksana')?.percentage || 0} className="mt-2 bg-amber-300" />
-          <div className="text-xs mt-1">{stats.find(s => s.name === 'Belum Terlaksana')?.percentage || 0}%</div>
-        </CardContent>
-      </Card>
-      
-      <Card className="bg-gradient-to-br from-rose-500 to-pink-600 text-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Mansuh</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.find(s => s.name === 'Mansuh')?.count || 0}</div>
-          <Progress value={stats.find(s => s.name === 'Mansuh')?.percentage || 0} className="mt-2 bg-rose-300" />
-          <div className="text-xs mt-1">{stats.find(s => s.name === 'Mansuh')?.percentage || 0}%</div>
-        </CardContent>
-      </Card>
+    <div className={`grid gap-4 md:grid-cols-2 lg:grid-cols-${filteredStats.length} mb-6`}>
+      {filteredStats.map((stat) => {
+        let bgColor = '';
+        switch (stat.name) {
+          case 'Terlaksana':
+            bgColor = 'from-green-500 to-emerald-600';
+            break;
+          case 'Belum Terlaksana':
+            bgColor = 'from-amber-500 to-orange-600';
+            break;
+          case 'Mansuh':
+            bgColor = 'from-rose-500 to-pink-600';
+            break;
+          default:
+            bgColor = 'from-blue-500 to-indigo-600';
+        }
+        
+        return (
+          <Card key={stat.name} className={`bg-gradient-to-br ${bgColor} text-white`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.count}</div>
+              <Progress value={stat.percentage} className="mt-2 bg-white/30" />
+              <div className="text-xs mt-1">{stat.percentage}%</div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
