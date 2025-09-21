@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Generus, Desa, Kelompok, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -32,6 +32,17 @@ export default function GenerusActions({
 }: GenerusActionsProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+
+  // Set default desa and kelompok based on currentUser for PJP kelompok
+  useEffect(() => {
+    if (currentUser?.role === 'kelompok' && currentUser.desa && currentUser.kelompok) {
+      setNewGenerus(prev => ({
+        ...prev,
+        desa: currentUser.desa,
+        kelompok: currentUser.kelompok
+      }));
+    }
+  }, [currentUser, setNewGenerus]);
 
   const handleNewInputChange = (field: keyof typeof newGenerus, value: string | number) => {
     setNewGenerus(prev => ({ ...prev, [field]: value }));
@@ -285,12 +296,29 @@ export default function GenerusActions({
                 <div className="space-y-2"><Label>Tahun Lahir</Label><Input type="number" value={newGenerus.tahunLahir} onChange={(e) => handleNewInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} /></div>
                 <div className="space-y-2"><Label>Pendidikan</Label><Select value={newGenerus.pendidikan} onValueChange={(v) => handleNewSelectChange('pendidikan', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PENDIDIKAN_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
                 <div className="space-y-2"><Label>Status Mondok</Label><Select value={newGenerus.statusMondok} onValueChange={(v) => handleNewSelectChange('statusMondok', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_MONDOK_LIST.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
+                
+                {/* Only show desa/kelompok fields for admin roles */}
                 {(currentUser?.role === 'admin' || currentUser?.role === 'adminsuper') && (
                   <>
                     <div className="space-y-2"><Label>Desa</Label><Select value={newGenerus.desa} onValueChange={handleNewDesaChange}><SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger><SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent></Select></div>
                     <div className="space-y-2"><Label>Kelompok</Label><Select value={newGenerus.kelompok} onValueChange={(v) => handleNewSelectChange('kelompok', v)}><SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger><SelectContent>{filteredKelompokForNew.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent></Select></div>
                   </>
                 )}
+                
+                {/* For PJP kelompok, show read-only desa/kelompok info */}
+                {currentUser?.role === 'kelompok' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Desa</Label>
+                      <Input value={currentUser.desa} readOnly />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Kelompok</Label>
+                      <Input value={currentUser.kelompok} readOnly />
+                    </div>
+                  </>
+                )}
+                
                 <div className="space-y-2"><Label>Nama Ayah</Label><Input value={newGenerus.namaAyah} onChange={(e) => handleNewInputChange('namaAyah', e.target.value)} /></div>
                 <div className="space-y-2"><Label>Status Ayah</Label><Select value={newGenerus.statusAyah} onValueChange={(v) => handleNewSelectChange('statusAyah', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="jm">JM</SelectItem><SelectItem value="hum">HUM</SelectItem></SelectContent></Select></div>
                 <div className="space-y-2"><Label>Nama Ibu</Label><Input value={newGenerus.namaIbu} onChange={(e) => handleNewInputChange('namaIbu', e.target.value)} /></div>
