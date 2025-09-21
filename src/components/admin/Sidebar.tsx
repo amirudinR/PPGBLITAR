@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit, Megaphone } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit, Megaphone, FileText, Target, BookMarked } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -42,9 +42,19 @@ const menuItems = [
       { id: 'rekap-nilai', label: 'Rekap Nilai', icon: BookOpen, roles: ['guru'] },
     ]
   },
-  { id: 'materi', label: 'Materi', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
+  { id: 'pencapaian-target-materi', label: 'Pencapaian Target Materi', icon: Target, roles: ['adminsuper', 'admin', 'kelompok'] },
+  { 
+    id: 'laporan', 
+    label: 'Laporan', 
+    icon: FileText, 
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'],
+    children: [
+      { id: 'm5u', label: 'M5U', icon: Megaphone, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
+      { id: 'latihan-asad', label: 'Latihan ASAD', icon: BookMarked, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
+      { id: 'jariyah-ppg', label: 'Jariyah PPG', icon: BookMarked, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'] },
+    ]
+  },
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, roles: ['adminsuper', 'admin'] },
-  { id: 'm5u', label: 'M5U', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'] },
 ];
 
 interface SidebarProps {
@@ -95,7 +105,7 @@ export default function Sidebar({
         return { ...item, children: visibleChildren };
       }
       // If parent is visible but no children are, don't render the parent if it's just a container
-      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai') return null;
+      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai' || item.id === 'laporan') return null;
     }
     return item;
   }).filter(Boolean) as (typeof menuItems[number])[];

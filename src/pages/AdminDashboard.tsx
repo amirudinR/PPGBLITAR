@@ -71,9 +71,17 @@ const menuItems = [
       { id: 'rekap-nilai', label: 'Rekap Nilai' },
     ]
   },
-  { id: 'materi', label: 'Materi' },
+  { id: 'pencapaian-target-materi', label: 'Pencapaian Target Materi' },
+  { 
+    id: 'laporan', 
+    label: 'Laporan',
+    children: [
+      { id: 'm5u', label: 'M5U' },
+      { id: 'latihan-asad', label: 'Latihan ASAD' },
+      { id: 'jariyah-ppg', label: 'Jariyah PPG' },
+    ]
+  },
   { id: 'pengumuman', label: 'Pengumuman' },
-  { id: 'm5u', label: 'M5U' },
 ];
 
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
@@ -267,7 +275,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           desas={desas}
           kelompok={kelompok}
         />;
-      case 'materi':
+      case 'pencapaian-target-materi':
         return (
           <MaterialsSection
             materials={materials}
@@ -357,6 +365,24 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'm5u':
         return <M5USection currentUser={currentUser} />;
+      case 'latihan-asad':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Laporan Latihan ASAD</h2>
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-gray-600">Halaman laporan Latihan ASAD akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        );
+      case 'jariyah-ppg':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Laporan Jariyah PPG</h2>
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-gray-600">Halaman laporan Jariyah PPG akan ditampilkan di sini.</p>
+            </div>
+          </div>
+        );
       case 'profile':
         return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
       default:
