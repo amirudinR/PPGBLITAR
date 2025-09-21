@@ -5,8 +5,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Download } from 'lucide-react';
+import { Plus, Download, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import GenerusImportDialog from './GenerusImportDialog';
 
 interface GenerusActionsProps {
   currentUser: any;
@@ -15,6 +16,7 @@ interface GenerusActionsProps {
   desas: Desa[];
   kelompok: Kelompok[];
   onAddGenerus: () => Promise<boolean>;
+  onImportGenerus: (data: any[]) => Promise<boolean>;
   allGenerus: Generus[];
 }
 
@@ -25,9 +27,11 @@ export default function GenerusActions({
   desas,
   kelompok,
   onAddGenerus,
+  onImportGenerus,
   allGenerus
 }: GenerusActionsProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   const handleNewInputChange = (field: keyof typeof newGenerus, value: string | number) => {
     setNewGenerus(prev => ({ ...prev, [field]: value }));
@@ -151,6 +155,10 @@ export default function GenerusActions({
               <Download className="w-4 h-4 mr-2" />
               Template
             </Button>
+            <Button variant="outline" onClick={() => setIsImportDialogOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import Excel
+            </Button>
             <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export Excel
@@ -192,6 +200,13 @@ export default function GenerusActions({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        <GenerusImportDialog
+          isOpen={isImportDialogOpen}
+          onClose={() => setIsImportDialogOpen(false)}
+          onImport={onImportGenerus}
+          currentUser={currentUser}
+        />
       </div>
     </div>
   );

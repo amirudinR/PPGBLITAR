@@ -19,7 +19,7 @@ import StudentAttendanceRecapSection from '@/components/admin/StudentAttendanceR
 import NilaiGenerusSection from '@/components/admin/NilaiGenerusSection';
 import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 import AnnouncementsSection from '@/components/admin/AnnouncementsSection';
-import GuruDashboardStats from '@/components/admin/GuruDashboardStats'; // New import
+import GuruDashboardStats from '@/components/admin/GuruDashboardStats';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -99,7 +99,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   // Using custom hooks for data management
   const { desas, loading: loadingDesa, fetchDesas, addDesa, updateDesa, deleteDesa } = useDesa();
   const { kelompok, loading: loadingKelompok, fetchKelompok, addKelompok, updateKelompok, deleteKelompok } = useKelompok(desas, currentUser);
-  const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus } = useGenerus(currentUser);
+  const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus, populateGenerus } = useGenerus(currentUser);
   const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, deleteUser } = useUsers(currentUser);
   const { materials, loading: loadingMaterials, fetchMaterials, newMaterial, setNewMaterial, addMaterial, updateMaterial, deleteMaterial, deleteMultipleMaterials, addMultipleMaterials } = useMaterials();
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
@@ -129,6 +129,41 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   }, [desas, fetchKelompok]);
 
   const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus || loadingKelas;
+
+  const handleImportGenerus = async (data: any[]) => {
+    // Implementasi import data generus
+    // Di sini kita akan menggunakan fungsi populateGenerus dari useGenerus hook
+    // Namun karena populateGenerus digunakan untuk data seed, kita buat fungsi khusus
+    
+    try {
+      // Untuk setiap data, panggil addGenerus
+      let successCount = 0;
+      for (const item of data) {
+        // Set desa dan kelompok sesuai dengan currentUser jika belum diatur
+        const generusData = {
+          ...item,
+          desa: item.desa || currentUser?.desa || '',
+          kelompok: item.kelompok || currentUser?.kelompok || ''
+        };
+        
+        // Gunakan addGenerus dari hook
+        setNewGenerus(generusData);
+        const success = await addGenerus();
+        if (success) {
+          successCount++;
+        }
+      }
+      
+      if (successCount > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("Error importing generus:", error);
+      return false;
+    }
+  };
 
   const getPageTitle = () => {
     for (const item of menuItems) {
@@ -181,6 +216,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           newGenerus={newGenerus} 
           setNewGenerus={setNewGenerus}
           onAddGenerus={addGenerus}
+          onImportGenerus={handleImportGenerus}
           onUpdateGenerus={updateGenerus}
           onDeleteGenerus={deleteGenerus}
           searchTerm={searchTerm} 

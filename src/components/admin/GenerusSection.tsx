@@ -12,6 +12,7 @@ interface GenerusSectionProps {
   newGenerus: Omit<Generus, 'id'>;
   setNewGenerus: React.Dispatch<React.SetStateAction<Omit<Generus, 'id'>>>;
   onAddGenerus: () => Promise<boolean>;
+  onImportGenerus: (data: any[]) => Promise<boolean>;
   onUpdateGenerus: (id: string, data: Omit<Generus, 'id'>) => Promise<boolean>;
   onDeleteGenerus: (id: string) => void;
   searchTerm: string;
@@ -28,6 +29,7 @@ export default function GenerusSection({
   newGenerus, 
   setNewGenerus, 
   onAddGenerus,
+  onImportGenerus,
   onUpdateGenerus,
   onDeleteGenerus,
   searchTerm, 
@@ -83,7 +85,8 @@ export default function GenerusSection({
         desas={desas}
         kelompok={kelompok}
         onAddGenerus={onAddGenerus}
-        allGenerus={allGenerus} // Tambahkan properti ini
+        onImportGenerus={onImportGenerus}
+        allGenerus={allGenerus}
       />
       <GenerusTable
         allGenerus={allGenerus}
