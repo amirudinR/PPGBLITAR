@@ -265,10 +265,22 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
                   <Button variant="ghost" size="icon" onClick={() => openManageStudentsDialog(item)}><Users className="w-4 h-4 text-green-600" /></Button>
                   <Button variant="ghost" size="icon" onClick={() => openDialog(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
                   <AlertDialog>
-                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-red-600" /></Button></AlertDialogTrigger>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </AlertDialogTrigger>
                     <AlertDialogContent>
-                      <AlertDialogHeader><AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle><AlertDialogDescription>Tindakan ini akan menghapus data kelas secara permanen.</AlertDialogDescription></AlertDialogHeader>
-                      <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction></AlertDialogFooter>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tindakan ini akan menghapus data kelas secara permanen. Data kehadiran individu generus tidak akan terpengaruh.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
+                      </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </TableCell>
@@ -287,31 +299,110 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>{isEditMode ? 'Edit Data Kelas' : 'Tambah Kelas Baru'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{isEditMode ? 'Edit Data Kelas' : 'Tambah Kelas Baru'}</DialogTitle>
+          </DialogHeader>
           <div className="py-4 space-y-4">
             {isAdmin && (
               <>
-                <div><Label>Desa</Label><Select value={currentItem.desa} onValueChange={desa => setCurrentItem(prev => ({ ...prev, desa, kelompok: '' }))}><SelectTrigger><SelectValue placeholder="Pilih Desa" /></SelectTrigger><SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent></Select></div>
-                <div><Label>Kelompok</Label><Select value={currentItem.kelompok} onValueChange={kelompok => setCurrentItem(prev => ({ ...prev, kelompok }))}><SelectTrigger><SelectValue placeholder="Pilih Kelompok" /></SelectTrigger><SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent></Select></div>
+                <div>
+                  <Label>Desa</Label>
+                  <Select 
+                    value={currentItem.desa} 
+                    onValueChange={desa => setCurrentItem(prev => ({ ...prev, desa, kelompok: '' }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Desa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Kelompok</Label>
+                  <Select 
+                    value={currentItem.kelompok} 
+                    onValueChange={kelompok => setCurrentItem(prev => ({ ...prev, kelompok }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Kelompok" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </>
             )}
-            <div><Label>Nama Kelas</Label><Input value={currentItem.namaKelas} onChange={(e) => setCurrentItem(prev => ({ ...prev, namaKelas: e.target.value }))} /></div>
-            <div><Label>Guru</Label><Select value={currentItem.guruId} onValueChange={handleGuruChange}><SelectTrigger><SelectValue placeholder="Pilih Guru" /></SelectTrigger><SelectContent>{availableGurus.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Jenjang Usia</Label><Select value={currentItem.jenjangUsia} onValueChange={(value) => setCurrentItem(prev => ({ ...prev, jenjangUsia: value as JenjangUsia }))}><SelectTrigger><SelectValue placeholder="Pilih Jenjang Usia" /></SelectTrigger><SelectContent>{JENJANG_USIA_LIST.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></div>
+            <div>
+              <Label>Nama Kelas</Label>
+              <Input 
+                value={currentItem.namaKelas} 
+                onChange={(e) => setCurrentItem(prev => ({ ...prev, namaKelas: e.target.value }))} 
+              />
+            </div>
+            <div>
+              <Label>Guru</Label>
+              <Select 
+                value={currentItem.guruId} 
+                onValueChange={handleGuruChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Guru" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableGurus.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Jenjang Usia</Label>
+              <Select 
+                value={currentItem.jenjangUsia} 
+                onValueChange={(value) => setCurrentItem(prev => ({ ...prev, jenjangUsia: value as JenjangUsia }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Jenjang Usia" />
+                </SelectTrigger>
+                <SelectContent>
+                  {JENJANG_USIA_LIST.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <DialogFooter><Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button onClick={handleSave}>Simpan</Button></DialogFooter>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+            <Button onClick={handleSave}>Simpan</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={manageStudentsDialogOpen} onOpenChange={setManageStudentsDialogOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader><DialogTitle>Kelola Siswa di Kelas {selectedClass?.namaKelas}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Kelola Siswa di Kelas {selectedClass?.namaKelas}</DialogTitle>
+          </DialogHeader>
           <div className="py-4 space-y-6">
             <div>
               <Label className="text-lg font-semibold">Tambah Siswa</Label>
               <div className="flex items-center gap-2 mt-2">
-                <Select value={studentToAdd} onValueChange={setStudentToAdd}><SelectTrigger><SelectValue placeholder="Pilih Generus..." /></SelectTrigger>
-                  <SelectContent><ScrollArea className="h-48">{availableStudents.map(g => <SelectItem key={g.id} value={g.id}>{g.name} ({g.pendidikan})</SelectItem>)}</ScrollArea></SelectContent>
+                <Select 
+                  value={studentToAdd} 
+                  onValueChange={setStudentToAdd}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Generus..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <ScrollArea className="h-48">
+                      {availableStudents.map(g => (
+                        <SelectItem key={g.id} value={g.id}>
+                          {g.name} ({g.pendidikan})
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
+                  </SelectContent>
                 </Select>
                 <Button onClick={handleAddStudent} disabled={!studentToAdd}>Tambah</Button>
               </div>
@@ -326,7 +417,14 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
                         <span className="font-medium">{student.name}</span>
                         <Badge variant="outline" className="ml-2 font-normal">{student.pendidikan}</Badge>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveStudent(student.id)}><X className="h-4 w-4 text-red-500" /></Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7" 
+                        onClick={() => handleRemoveStudent(student.id)}
+                      >
+                        <X className="h-4 w-4 text-red-500" />
+                      </Button>
                     </div>
                   ))
                 ) : (
