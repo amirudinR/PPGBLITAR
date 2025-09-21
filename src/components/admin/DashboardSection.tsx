@@ -226,6 +226,91 @@ export default function DashboardSection({
     };
   }, [attendance, materials, grades, generusData]);
 
+  // Data untuk Prioritas Generus Card (untuk kelompok)
+  const priorityStudents = useMemo(() => {
+    if (currentUser?.role !== 'kelompok') return null;
+
+    const currentMonthIndex = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    // Filter kelas berdasarkan kelompok pengguna
+    const userKelas = kelas.filter(k => k.kelompok === currentUser.kelompok);
+    const userClassIds = userKelas.map(k => k.id);
+    
+    // Filter generus berdasarkan kelas pengguna
+    const userGenerus = generusData.filter(g => 
+      userKelas.some(k => k.studentIds?.includes(g.id))
+    );
+    
+    // Filter attendance dan grades berdasarkan kelas dan generus pengguna
+    const userAttendance = attendance.filter(a => 
+      userClassIds.includes(a.classId) && 
+      userGenerus.some(g => g.id === a.studentId)
+    );
+    
+    const userGrades = grades.filter(g => 
+      userClassIds.includes(g.classId) && 
+      userGenerus.some(gen => gen.id === g.studentId)
+    );
+
+    // Hitung statistik untuk setiap generus
+    const studentStats = userGenerus.map(student => {
+      // Kehadiran Kumulatif dalam semester ini
+      const studentAttendance = userAttendance.filter(a => 
+        a.studentId === student.id && 
+        a.year === currentYear && 
+        months.indexOf(a.month) <= currentMonthIndex
+      );
+      
+      const totalAttended = studentAttendance.reduce((sum, a) => sum + a.meetingsAttended, 0);
+      const totalHeld = studentAttendance.reduce((sum, a) => sum + a.meetingsHeld, 0);
+      const attendancePercentage = totalHeld > 0 ? Math.round((totalAttended / totalHeld) * 100) : 100;
+
+      // Target Materi Kumulatif dalam semester ini
+      const allMonthsSoFar = months.slice(0, currentMonthIndex + 1);
+      const cumulativeTargetMaterials = materials.filter(m => {
+        const targetBulan = Array.isArray(m.targetBulan) ? m.targetBulan : 
+                           typeof m.targetBulan === 'string' ? [m.targetBulan] : [];
+        return m.kelas === student.pendidikan && 
+               targetBulan.some(b => allMonthsSoFar.includes(b));
+      });
+      
+      const studentGrades = userGrades.filter(g => 
+        g.studentId === student.id && 
+        g.year === currentYear && 
+        months.indexOf(g.month) <= currentMonthIndex && 
+        g.grade === 'Tercapai'
+      );
+      
+      const achievedMaterialIds = new Set(studentGrades.map(g => g.materialId));
+      const totalPossibleCount = cumulativeTargetMaterials.length;
+      const achievedCount = achievedMaterialIds.size;
+      const targetPercentage = totalPossibleCount > 0 ? Math.round((achievedCount / totalPossibleCount) * 100) : 100;
+
+      return { 
+        name: student.name, 
+        attendancePercentage, 
+        targetPercentage 
+      };
+    });
+
+    // Ambil 5 generus dengan kehadiran terendah
+    const lowAttendanceStudents = studentStats
+      .filter(s => s.attendancePercentage < 100)
+      .sort((a, b) => a.attendancePercentage - b.attendancePercentage)
+      .slice(0, 5)
+      .map(s => ({ name: s.name, stat: s.attendancePercentage }));
+
+    // Ambil 5 generus dengan pencapaian target terendah
+    const behindTargetStudents = studentStats
+      .filter(s => s.targetPercentage < 100)
+      .sort((a, b) => a.targetPercentage - b.targetPercentage)
+      .slice(0, 5)
+      .map(s => ({ name: s.name, stat: s.targetPercentage }));
+
+    return { lowAttendanceStudents, behindTargetStudents };
+  }, [currentUser, generusData, kelas, attendance, grades, materials]);
+
   if (currentUser?.role === 'guru' && guruDashboardData) {
     return (
       <div className="space-y-6">
@@ -326,6 +411,13 @@ export default function DashboardSection({
         <div className="mb-6">
           <AnnouncementCard announcements={visibleAnnouncements} />
         </div>
+        
+        {priorityStudents && (
+          <PrioritasGenerusCard 
+            lowAttendanceStudents={priorityStudents.lowAttendanceStudents}
+            behindTargetStudents={priorityStudents.behindTargetStudents}
+          />
+        )}
         
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="bg-white rounded-xl shadow-md">
