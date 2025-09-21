@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { M5U } from '@/types/admin';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, Printer } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 const months = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -17,15 +18,6 @@ const months = [
 ];
 
 const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
-
-// Dummy data untuk demonstrasi
-const dummyData: M5U[] = [
-  { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
-  { id: '2', bulan: 'Januari', tahun: 2024, agenda: 'Rapat Koordinasi Awal Tahun', hasil: 'Disepakati rencana kerja', pj: 'Admin Super', waktuPelaksanaan: '2024-01-20', statusHasil: 'Terlaksana' },
-  { id: '3', bulan: 'Februari', tahun: 2024, agenda: 'Perencanaan Program Semester Genap', hasil: 'Program telah disusun', pj: 'Admin', waktuPelaksanaan: '2024-02-10', statusHasil: 'Terlaksana' },
-  { id: '4', bulan: 'Februari', tahun: 2024, agenda: 'Pelatihan Guru', hasil: 'Pelatihan selesai', pj: 'Admin', waktuPelaksanaan: '2024-02-15', statusHasil: 'Terlaksana' },
-  { id: '5', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: '-', pj: 'PJP Desa', waktuPelaksanaan: '2024-03-20', statusHasil: 'Dalam Proses' },
-];
 
 // Fungsi untuk memformat tanggal ke format dd-mm-yyyy
 const formatDate = (dateString: string) => {
@@ -37,6 +29,14 @@ const formatDate = (dateString: string) => {
   return dateString;
 };
 
+// Fungsi untuk memformat tanggal ke format Indonesia
+const formatIndonesianDate = (date: Date) => {
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+};
+
 export default function M5UDetailPage() {
   const navigate = useNavigate();
   const { bulan, tahun } = useParams<{ bulan: string; tahun: string }>();
@@ -46,7 +46,10 @@ export default function M5UDetailPage() {
     bulan: bulan || '', tahun: Number(tahun) || new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [m5uItems, setM5uItems] = useState<M5U[]>(dummyData.filter(item => item.bulan === bulan && item.tahun === Number(tahun)));
+  const [m5uItems, setM5uItems] = useState<M5U[]>([]); // Will be populated with actual data
+
+  // In a real app, this would come from props or context
+  const kelompokName = "Kelompok Contoh"; // Replace with actual kelompok name
 
   const openDialog = (item?: M5U) => {
     if (item) {
@@ -87,6 +90,58 @@ export default function M5UDetailPage() {
     ));
   };
 
+  // Fungsi untuk mencetak PDF
+  const handlePrintPDF = () => {
+    const doc = new jsPDF();
+    
+    // Set font size and styles
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.text('Musyawaroh 5 Unsur (M5U)', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Kelompok: ${kelompokName}`, 105, 30, { align: 'center' });
+    doc.text(`Bulan: ${bulan} ${tahun}`, 105, 37, { align: 'center' });
+    
+    // Add content
+    let yPos = 50;
+    m5uItems.forEach((item, index) => {
+      if (yPos > 250) { // Create new page if needed
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFont(undefined, 'bold');
+      doc.text(`${index + 1}. ${item.agenda}`, 20, yPos);
+      yPos += 7;
+      
+      doc.setFont(undefined, 'normal');
+      doc.text(`Hasil: ${item.hasil || '-'}`, 25, yPos);
+      yPos += 7;
+      
+      doc.text(`Tanggal Pelaksanaan: ${formatDate(item.waktuPelaksanaan)}`, 25, yPos);
+      yPos += 7;
+      
+      doc.text(`Penanggung Jawab: ${item.pj}`, 25, yPos);
+      yPos += 12;
+    });
+    
+    // Add signature section
+    yPos += 10;
+    const signatureY = yPos > 250 ? 250 : yPos;
+    
+    doc.text(`Samarinda, ${formatIndonesianDate(new Date())}`, 140, signatureY);
+    doc.text('PJP Kelompok', 140, signatureY + 30);
+    doc.line(130, signatureY + 25, 180, signatureY + 25); // Signature line
+    
+    doc.text('Pembina Kelompok', 40, signatureY + 30);
+    doc.line(30, signatureY + 25, 80, signatureY + 25); // Signature line
+    
+    // Save the PDF
+    doc.save(`M5U_${kelompokName}_${bulan}_${tahun}.pdf`);
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
@@ -94,6 +149,9 @@ export default function M5UDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold">Detail Agenda M5U</h1>
+        <Button variant="outline" size="icon" onClick={handlePrintPDF} className="ml-auto">
+          <Printer className="h-4 w-4" />
+        </Button>
       </div>
       
       <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -145,7 +203,7 @@ export default function M5UDetailPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                        <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                        {/* Removed "Dalam Proses" option as requested */}
                         <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
                         <SelectItem value="Mansuh">Mansuh</SelectItem>
                       </SelectContent>
@@ -241,7 +299,7 @@ export default function M5UDetailPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                    {/* Removed "Dalam Proses" option as requested */}
                     <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
                     <SelectItem value="Mansuh">Mansuh</SelectItem>
                   </SelectContent>
