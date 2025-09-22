@@ -53,7 +53,7 @@ export default function M5UDetailPage() {
     id: 'user-id',
     name: 'Current User',
     email: 'user@example.com',
-    role: 'admin',
+    role: 'guru', // Changed to 'guru' for testing
     status: 'active',
     desa: 'Desa Example',
     kelompok: 'Kelompok Example'
@@ -172,6 +172,9 @@ export default function M5UDetailPage() {
     doc.save(`M5U_${currentUser?.kelompok || 'Kelompok'}_${bulan}_${tahun}.pdf`);
   };
 
+  // Check if user is a guru
+  const isGuru = currentUser?.role === 'guru';
+
   if (loading) {
     return <div className="p-6 text-center">Memuat data...</div>;
   }
@@ -200,13 +203,16 @@ export default function M5UDetailPage() {
           </div>
         </div>
         
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Daftar Agenda</h2>
-          <Button onClick={() => openDialog()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Tambah Agenda
-          </Button>
-        </div>
+        {/* Only show add button for non-guru users */}
+        {!isGuru && (
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Daftar Agenda</h2>
+            <Button onClick={() => openDialog()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Agenda
+            </Button>
+          </div>
+        )}
         
         <div className="rounded-md border">
           <Table>
@@ -217,7 +223,10 @@ export default function M5UDetailPage() {
                 <TableHead>PJ</TableHead>
                 <TableHead>Tanggal Pelaksanaan</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+                {/* Only show actions column for non-guru users */}
+                {!isGuru && (
+                  <TableHead className="text-center">Aksi</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -227,50 +236,70 @@ export default function M5UDetailPage() {
                   <TableCell>{item.hasil || '-'}</TableCell>
                   <TableCell>{item.pj}</TableCell>
                   <TableCell>{formatDate(item.waktuPelaksanaan)}</TableCell>
+                  {/* Display status as text only for guru users */}
                   <TableCell>
-                    <Select 
-                      value={item.statusHasil || ''} 
-                      onValueChange={(value) => handleStatusChange(item.id, value as M5U['statusHasil'])}
-                    >
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Pilih Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                        <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
-                        <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
-                        <SelectItem value="Mansuh">Mansuh</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {isGuru ? (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.statusHasil === 'Terlaksana' 
+                          ? 'bg-green-100 text-green-800' 
+                          : item.statusHasil === 'Dalam Proses'
+                            ? 'bg-blue-100 text-blue-800'
+                            : item.statusHasil === 'Belum Terlaksana' 
+                              ? 'bg-yellow-100 text-yellow-800' 
+                              : item.statusHasil === 'Mansuh'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.statusHasil || '-'}
+                      </span>
+                    ) : (
+                      <Select 
+                        value={item.statusHasil || ''} 
+                        onValueChange={(value) => handleStatusChange(item.id, value as M5U['statusHasil'])}
+                      >
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Pilih Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Terlaksana">Terlaksana</SelectItem>
+                          <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                          <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
+                          <SelectItem value="Mansuh">Mansuh</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex justify-center space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => openDialog(item)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tindakan ini akan menghapus agenda ini secara permanen.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                              Hapus
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+                  {/* Only show actions column for non-guru users */}
+                  {!isGuru && (
+                    <TableCell className="text-center">
+                      <div className="flex justify-center space-x-2">
+                        <Button variant="ghost" size="sm" onClick={() => openDialog(item)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tindakan ini akan menghapus agenda ini secara permanen.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Batal</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                Hapus
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -278,75 +307,78 @@ export default function M5UDetailPage() {
         </div>
       </div>
       
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{isEditMode ? 'Edit Agenda M5U' : 'Tambah Agenda M5U Baru'}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label htmlFor="agenda">Agenda</Label>
-              <Textarea 
-                id="agenda" 
-                value={currentItem.agenda} 
-                onChange={(e) => handleChange('agenda', e.target.value)} 
-                className="mt-1" 
-              />
-            </div>
-            <div className="col-span-2">
-              <Label htmlFor="hasil">Hasil</Label>
-              <Textarea 
-                id="hasil" 
-                value={currentItem.hasil} 
-                onChange={(e) => handleChange('hasil', e.target.value)} 
-                className="mt-1" 
-              />
-            </div>
-            <div>
-              <Label htmlFor="pj">Penanggung Jawab (PJ)</Label>
-              <Input 
-                id="pj" 
-                value={currentItem.pj} 
-                onChange={(e) => handleChange('pj', e.target.value)} 
-                className="mt-1" 
-              />
-            </div>
-            <div>
-              <Label htmlFor="waktuPelaksanaan">Waktu Pelaksanaan</Label>
-              <Input 
-                id="waktuPelaksanaan" 
-                type="date" 
-                value={currentItem.waktuPelaksanaan} 
-                onChange={(e) => handleChange('waktuPelaksanaan', e.target.value)} 
-                className="mt-1" 
-              />
-            </div>
-            {isEditMode && (
+      {/* Only show dialog for non-guru users */}
+      {!isGuru && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>{isEditMode ? 'Edit Agenda M5U' : 'Tambah Agenda M5U Baru'}</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <Label htmlFor="statusHasil">Status Hasil</Label>
-                <Select 
-                  value={currentItem.statusHasil} 
-                  onValueChange={(value) => handleChange('statusHasil', value as M5U['statusHasil'])}
-                >
-                  <SelectTrigger id="statusHasil" className="mt-1">
-                    <SelectValue placeholder="Pilih Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
-                    <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
-                    <SelectItem value="Mansuh">Mansuh</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="agenda">Agenda</Label>
+                <Textarea 
+                  id="agenda" 
+                  value={currentItem.agenda} 
+                  onChange={(e) => handleChange('agenda', e.target.value)} 
+                  className="mt-1" 
+                />
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-            <Button onClick={handleSave}>Simpan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <div className="col-span-2">
+                <Label htmlFor="hasil">Hasil</Label>
+                <Textarea 
+                  id="hasil" 
+                  value={currentItem.hasil} 
+                  onChange={(e) => handleChange('hasil', e.target.value)} 
+                  className="mt-1" 
+                />
+              </div>
+              <div>
+                <Label htmlFor="pj">Penanggung Jawab (PJ)</Label>
+                <Input 
+                  id="pj" 
+                  value={currentItem.pj} 
+                  onChange={(e) => handleChange('pj', e.target.value)} 
+                  className="mt-1" 
+                />
+              </div>
+              <div>
+                <Label htmlFor="waktuPelaksanaan">Waktu Pelaksanaan</Label>
+                <Input 
+                  id="waktuPelaksanaan" 
+                  type="date" 
+                  value={currentItem.waktuPelaksanaan} 
+                  onChange={(e) => handleChange('waktuPelaksanaan', e.target.value)} 
+                  className="mt-1" 
+                />
+              </div>
+              {isEditMode && (
+                <div className="col-span-2">
+                  <Label htmlFor="statusHasil">Status Hasil</Label>
+                  <Select 
+                    value={currentItem.statusHasil} 
+                    onValueChange={(value) => handleChange('statusHasil', value as M5U['statusHasil'])}
+                  >
+                    <SelectTrigger id="statusHasil" className="mt-1">
+                      <SelectValue placeholder="Pilih Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Terlaksana">Terlaksana</SelectItem>
+                      <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
+                      <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
+                      <SelectItem value="Mansuh">Mansuh</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button onClick={handleSave}>Simpan</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
