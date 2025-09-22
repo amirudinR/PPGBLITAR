@@ -97,6 +97,38 @@ export function useGenerus(currentUser: User | null) {
     } catch (e) { showError("Gagal menambahkan generus."); return false; }
   };
 
+  // Memperbaiki fungsi import data Generus
+  const importGenerus = async (data: Omit<Generus, 'id'>[]) => {
+    if (data.length === 0) {
+      showError("Tidak ada data untuk diimpor.");
+      return false;
+    }
+    
+    const toastId = showLoading(`Mengimpor ${data.length} data generus...`);
+    try {
+      const batch = writeBatch(db);
+      const generusCollection = collection(db, "generus");
+      
+      // Tambahkan setiap data ke batch
+      data.forEach(item => {
+        const docRef = doc(generusCollection);
+        batch.set(docRef, item);
+      });
+      
+      // Commit batch
+      await batch.commit();
+      dismissToast(toastId);
+      showSuccess(`${data.length} data generus berhasil diimpor.`);
+      fetchGenerus(); // Refresh data
+      return true;
+    } catch (error) {
+      console.error("Error importing generus: ", error);
+      dismissToast(toastId);
+      showError("Gagal mengimpor data generus.");
+      return false;
+    }
+  };
+
   const updateGenerus = async (id: string, data: Omit<Generus, 'id'>) => {
     try {
       await updateDoc(doc(db, "generus", id), data);
@@ -106,12 +138,16 @@ export function useGenerus(currentUser: User | null) {
     } catch (e) { showError("Gagal memperbarui data generus."); return false; }
   };
 
+  // Memperbaiki fungsi hapus data Generus
   const deleteGenerus = async (id: string) => {
     try {
       await deleteDoc(doc(db, "generus", id));
-      fetchGenerus();
+      fetchGenerus(); // Refresh data setelah hapus
       showSuccess("Data generus berhasil dihapus.");
-    } catch (e) { showError("Gagal menghapus data generus."); }
+    } catch (e) { 
+      console.error("Error deleting generus: ", e);
+      showError("Gagal menghapus data generus."); 
+    }
   };
 
   const populateGenerus = async (desas: Desa[], kelompok: Kelompok[]) => {
@@ -144,5 +180,17 @@ export function useGenerus(currentUser: User | null) {
     }
   };
 
-  return { generus, loading, fetchGenerus, newGenerus, setNewGenerus, addGenerus, updateGenerus, deleteGenerus, isPopulating, populateGenerus };
+  return { 
+    generus, 
+    loading, 
+    fetchGenerus, 
+    newGenerus, 
+    setNewGenerus, 
+    addGenerus, 
+    importGenerus, // Tambahkan fungsi import
+    updateGenerus, 
+    deleteGenerus, 
+    isPopulating, 
+    populateGenerus 
+  };
 }

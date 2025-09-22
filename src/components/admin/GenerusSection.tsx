@@ -12,9 +12,9 @@ interface GenerusSectionProps {
   newGenerus: Omit<Generus, 'id'>;
   setNewGenerus: React.Dispatch<React.SetStateAction<Omit<Generus, 'id'>>>;
   onAddGenerus: () => Promise<boolean>;
-  onImportGenerus: (data: any[]) => Promise<boolean>;
+  onImportGenerus: (data: Omit<Generus, 'id'>[]) => Promise<boolean>; // Updated type
   onUpdateGenerus: (id: string, data: Omit<Generus, 'id'>) => Promise<boolean>;
-  onDeleteGenerus: (id: string) => void;
+  onDeleteGenerus: (id: string) => Promise<void>; // Updated type
   searchTerm: string;
   onSearchChange: (value: string) => void;
   filterCategory: string;

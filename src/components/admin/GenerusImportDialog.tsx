@@ -10,7 +10,7 @@ import { PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
 interface GenerusImportDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (data: any[]) => Promise<boolean>;
+  onImport: (data: Omit<any, 'id'>[]) => Promise<boolean>; // Updated type
   currentUser: any;
 }
 
@@ -62,7 +62,7 @@ export default function GenerusImportDialog({ isOpen, onClose, onImport, current
       const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
 
       // Validasi dan transformasi data
-      const validatedData = jsonData.map((row, index) => {
+      const validatedData: Omit<any, 'id'>[] = jsonData.map((row, index) => {
         const rowNum = index + 2; // +2 karena baris pertama header dan index dimulai dari 0
         
         // Validasi field wajib

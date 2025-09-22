@@ -18,7 +18,7 @@ interface GenerusTableProps {
   sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
   setSortConfig: (config: { key: string; direction: 'asc' | 'desc' } | null) => void;
   onUpdateGenerus: (id: string, data: Omit<Generus, 'id'>) => Promise<boolean>;
-  onDeleteGenerus: (id: string) => void;
+  onDeleteGenerus: (id: string) => Promise<void>; // Changed to Promise<void>
   desas: Desa[];
   kelompok: Kelompok[];
 }
