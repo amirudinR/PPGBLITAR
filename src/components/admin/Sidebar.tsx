@@ -42,7 +42,16 @@ const menuItems = [
       { id: 'rekap-nilai', label: 'Rekap Nilai', icon: BookOpen, roles: ['guru'] },
     ]
   },
-  { id: 'pencapaian-target-materi', label: 'Pencapaian Target Materi', icon: Target, roles: ['adminsuper', 'admin', 'kelompok'] },
+  { 
+    id: 'target-materi', 
+    label: 'Target Materi', 
+    icon: Target, 
+    roles: ['adminsuper', 'admin', 'kelompok'],
+    children: [
+      { id: 'target-bulanan', label: 'Target Bulanan', icon: Target, roles: ['adminsuper', 'admin', 'kelompok'] },
+      { id: 'rekap-per-kelas', label: 'Rekap Per Kelas', icon: BookOpen, roles: ['adminsuper', 'admin', 'kelompok'] },
+    ]
+  },
   { 
     id: 'laporan', 
     label: 'Laporan', 
@@ -106,7 +115,7 @@ export default function Sidebar({
         return { ...item, children: visibleChildren };
       }
       // If parent is visible but no children are, don't render the parent if it's just a container
-      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai' || item.id === 'laporan') return null;
+      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai' || item.id === 'target-materi' || item.id === 'laporan') return null;
     }
     return item;
   }).filter(Boolean) as (typeof menuItems[number])[];

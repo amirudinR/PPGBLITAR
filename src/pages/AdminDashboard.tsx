@@ -21,6 +21,9 @@ import RekapNilaiSection from '@/components/admin/RekapNilaiSection';
 import AnnouncementsSection from '@/components/admin/AnnouncementsSection';
 import GuruDashboardStats from '@/components/admin/GuruDashboardStats';
 import M5USearchPage from '@/pages/M5USearchPage';
+import TargetBulananSection from '@/components/admin/TargetBulananSection';
+import RekapPerKelasSection from '@/components/admin/RekapPerKelasSection';
+import DetailPencapaianKelas from '@/components/admin/DetailPencapaianKelas';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -72,7 +75,14 @@ const menuItems = [
       { id: 'rekap-nilai', label: 'Rekap Nilai' },
     ]
   },
-  { id: 'pencapaian-target-materi', label: 'Pencapaian Target Materi' },
+  { 
+    id: 'target-materi', 
+    label: 'Target Materi',
+    children: [
+      { id: 'target-bulanan', label: 'Target Bulanan' },
+      { id: 'rekap-per-kelas', label: 'Rekap Per Kelas' },
+    ]
+  },
   { 
     id: 'laporan', 
     label: 'Laporan',
@@ -89,6 +99,13 @@ const menuItems = [
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [detailKelasId, setDetailKelasId] = useState<string | null>(null);
+  const [periode, setPeriode] = useState({
+    startMonth: (new Date().getMonth() + 1).toString().padStart(2, '0'),
+    startYear: new Date().getFullYear().toString(),
+    endMonth: (new Date().getMonth() + 1).toString().padStart(2, '0'),
+    endYear: new Date().getFullYear().toString()
+  });
   const navigate = useNavigate();
   
   // Generus section states
@@ -184,6 +201,16 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       }
     }
     return 'Dashboard';
+  };
+
+  const handleViewDetail = (kelasId: string) => {
+    setDetailKelasId(kelasId);
+    setActiveSection('detail-pencapaian-kelas');
+  };
+
+  const handleBackFromDetail = () => {
+    setDetailKelasId(null);
+    setActiveSection('rekap-per-kelas');
   };
 
   const renderSection = () => {
@@ -389,6 +416,31 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         );
       case 'profile':
         return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
+      case 'target-bulanan':
+        return <TargetBulananSection 
+          kelas={kelas} 
+          materials={materials} 
+          currentUser={currentUser} 
+        />;
+      case 'rekap-per-kelas':
+        return <RekapPerKelasSection 
+          kelas={kelas} 
+          materials={materials} 
+          grades={grades} 
+          currentUser={currentUser} 
+          onViewDetail={handleViewDetail}
+        />;
+      case 'detail-pencapaian-kelas':
+        const selectedKelas = kelas.find(k => k.id === detailKelasId);
+        return <DetailPencapaianKelas 
+          kelas={selectedKelas} 
+          generus={generus} 
+          materials={materials} 
+          grades={grades} 
+          onBack={handleBackFromDetail}
+          startDate={{ month: periode.startMonth, year: periode.startYear }}
+          endDate={{ month: periode.endMonth, year: periode.endYear }}
+        />;
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }
