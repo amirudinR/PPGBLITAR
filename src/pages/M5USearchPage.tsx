@@ -6,18 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useM5U } from '@/hooks/useM5U';
+import { User } from '@/types/admin';
 
-// Dummy data for demonstration - in a real app this would come from your database
-const dummyM5UData = [
-  { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', statusHasil: 'Terlaksana' },
-  { id: '2', bulan: 'Februari', tahun: 2024, agenda: 'Perencanaan Program Semester Genap', hasil: 'Program telah disusun', pj: 'Admin', statusHasil: 'Terlaksana' },
-  { id: '3', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: 'Peserta sudah terdaftar', pj: 'PJP Desa', statusHasil: 'Belum Terlaksana' },
-  { id: '4', bulan: 'Januari', tahun: 2024, agenda: 'Rapat Koordinasi Awal Tahun', hasil: 'Disepakati rencana kerja', pj: 'Admin Super', statusHasil: 'Terlaksana' },
-  { id: '5', bulan: 'Februari', tahun: 2024, agenda: 'Pelatihan Guru', hasil: 'Pelatihan selesai', pj: 'Admin', statusHasil: 'Terlaksana' },
-  { id: '6', bulan: 'April', tahun: 2024, agenda: 'Monitoring Kehadiran Generus', hasil: 'Data kehadiran terkumpul', pj: 'PJP Kelompok', statusHasil: 'Terlaksana' },
-  { id: '7', bulan: 'Mei', tahun: 2024, agenda: 'Penyusunan Laporan Bulanan', hasil: 'Laporan dalam proses', pj: 'PJP Kelompok', statusHasil: 'Belum Terlaksana' },
-];
-
+// Search fields configuration
 const searchFields = [
   { value: 'agenda', label: 'Agenda' },
   { value: 'hasil', label: 'Hasil' },
@@ -28,18 +20,35 @@ export default function M5USearchPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchField, setSearchField] = useState('agenda');
+  
+  // Mock current user - in a real app this would come from context or props
+  const currentUser: User | null = {
+    id: 'user-id',
+    name: 'Current User',
+    email: 'user@example.com',
+    role: 'admin',
+    status: 'active',
+    desa: 'Desa Example',
+    kelompok: 'Kelompok Example'
+  };
+  
+  const { m5uItems, loading } = useM5U(currentUser);
 
   const filteredResults = useMemo(() => {
-    if (!searchTerm) return dummyM5UData;
+    if (!searchTerm) return m5uItems;
     
-    return dummyM5UData.filter(item => {
+    return m5uItems.filter(item => {
       const fieldValue = item[searchField as keyof typeof item];
       if (typeof fieldValue === 'string') {
         return fieldValue.toLowerCase().includes(searchTerm.toLowerCase());
       }
       return false;
     });
-  }, [searchTerm, searchField]);
+  }, [searchTerm, searchField, m5uItems]);
+
+  if (loading) {
+    return <div className="p-6 text-center">Memuat data...</div>;
+  }
 
   return (
     <div className="p-6">
@@ -117,9 +126,11 @@ export default function M5USearchPage() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           item.statusHasil === 'Terlaksana' 
                             ? 'bg-green-100 text-green-800' 
-                            : item.statusHasil === 'Belum Terlaksana' 
-                              ? 'bg-yellow-100 text-yellow-800' 
-                              : 'bg-red-100 text-red-800'
+                            : item.statusHasil === 'Dalam Proses'
+                              ? 'bg-blue-100 text-blue-800'
+                              : item.statusHasil === 'Belum Terlaksana' 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-red-100 text-red-800'
                         }`}>
                           {item.statusHasil}
                         </span>

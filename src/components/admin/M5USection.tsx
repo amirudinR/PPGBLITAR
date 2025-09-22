@@ -6,14 +6,7 @@ import { Plus } from 'lucide-react';
 import M5UStatsCards from './M5UStatsCards';
 import M5UDataTable from './M5UDataTable';
 import M5UDialog from './M5UDialog';
-
-const initialData: M5U[] = [
-  { id: '1', bulan: 'Januari', tahun: 2024, agenda: 'Evaluasi Kegiatan Akhir Tahun', hasil: 'Semua kegiatan berjalan lancar', pj: 'Admin Super', waktuPelaksanaan: '2024-01-15', statusHasil: 'Terlaksana' },
-  { id: '2', bulan: 'Februari', tahun: 2024, agenda: 'Perencanaan Program Semester Genap', hasil: 'Program telah disusun', pj: 'Admin', waktuPelaksanaan: '2024-02-10', statusHasil: 'Terlaksana' },
-  { id: '3', bulan: 'Maret', tahun: 2024, agenda: 'Persiapan Lomba Antar Kelompok', hasil: '-', pj: 'PJP Desa', waktuPelaksanaan: '2024-03-20', statusHasil: 'Dalam Proses' },
-  { id: '4', bulan: 'Januari', tahun: 2024, agenda: 'Rapat Koordinasi Awal Tahun', hasil: 'Disepakati rencana kerja', pj: 'Admin Super', waktuPelaksanaan: '2024-01-20', statusHasil: 'Terlaksana' },
-  { id: '5', bulan: 'Februari', tahun: 2024, agenda: 'Pelatihan Guru', hasil: 'Pelatihan selesai', pj: 'Admin', waktuPelaksanaan: '2024-02-15', statusHasil: 'Terlaksana' },
-];
+import { useM5U } from '@/hooks/useM5U';
 
 const months = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -34,7 +27,7 @@ interface M5USectionProps {
 }
 
 export default function M5USection({ currentUser }: M5USectionProps) {
-  const [m5uItems, setM5uItems] = useState<M5U[]>(initialData);
+  const { m5uItems, loading, addM5U, updateM5U, deleteMultipleM5U } = useM5U(currentUser);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('bulan');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,7 +41,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   const canAdd = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok';
 
   const handleDelete = (bulan: string, tahun: number) => {
-    setM5uItems(m5uItems.filter(item => !(item.bulan === bulan && item.tahun === tahun)));
+    deleteMultipleM5U(bulan, tahun);
   };
 
   const openDialog = (item?: M5U) => {
@@ -78,15 +71,29 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     setEditingId(null);
   };
 
-  const handleSave = (item: Omit<M5U, 'id'>, id: string | null, isEdit: boolean) => {
+  const handleSave = async (item: Omit<M5U, 'id'>, id: string | null, isEdit: boolean) => {
+    let success = false;
     if (isEdit && id) {
-      setM5uItems(m5uItems.map(m => m.id === id ? { ...item, id } : m));
+      success = await updateM5U(id, item);
     } else {
-      const newItem = { ...item, id: Date.now().toString() };
-      setM5uItems([...m5uItems, newItem]);
+      // Add desa and kelompok info for role-based access control
+      const itemWithMetadata = {
+        ...item,
+        desa: currentUser?.desa || '',
+        kelompok: currentUser?.kelompok || '',
+        guruId: currentUser?.id || ''
+      };
+      success = await addM5U(itemWithMetadata);
     }
-    handleCloseDialog();
+    
+    if (success) {
+      handleCloseDialog();
+    }
   };
+
+  if (loading) {
+    return <div className="text-center p-8">Memuat data M5U...</div>;
+  }
 
   return (
     <div>

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useM5U } from '@/hooks/useM5U';
 
 interface KelompokDashboardProps {
   stats: {
@@ -41,6 +42,9 @@ export default function KelompokDashboard({
     grades,
     announcements
 }: KelompokDashboardProps) {
+  // Use M5U hook
+  const { isM5UNotImplemented } = useM5U(currentUser);
+  
   // New state for kelompok dashboard filters
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<string[]>([...JENJANG_USIA_LIST]);
   
@@ -194,17 +198,7 @@ export default function KelompokDashboard({
   }, [kelas, currentUser]);
 
   // Check if M5U has been implemented for current month
-  const isM5UNotImplemented = useMemo(() => {
-    // In a real implementation, this would check against actual M5U data
-    // For now, we'll simulate this with a placeholder
-    // Replace this with actual logic to check M5U status
-    const currentMonth = months[new Date().getMonth()];
-    const currentYear = new Date().getFullYear();
-    
-    // Dummy check - in reality, you would check your M5U database
-    // This is just a placeholder to demonstrate the functionality
-    return false; // Change this to actual logic
-  }, []);
+  const showM5UWarning = isM5UNotImplemented();
 
   return (
     <div className="space-y-6">
@@ -214,7 +208,7 @@ export default function KelompokDashboard({
       </div>
       
       {/* Warning for unimplemented M5U */}
-      {isM5UNotImplemented && (
+      {showM5UWarning && (
         <Alert variant="destructive" className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Peringatan M5U</AlertTitle>

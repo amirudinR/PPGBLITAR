@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { M5U } from '@/types/admin';
+import { M5U, User } from '@/types/admin';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, ArrowLeft, Printer } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { useM5U } from '@/hooks/useM5U';
 
 const months = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -46,10 +47,27 @@ export default function M5UDetailPage() {
     bulan: bulan || '', tahun: Number(tahun) || new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [m5uItems, setM5uItems] = useState<M5U[]>([]); // Will be populated with actual data
-
-  // In a real app, this would come from props or context
-  const kelompokName = "Kelompok Contoh"; // Replace with actual kelompok name
+  
+  // Mock current user - in a real app this would come from context or props
+  const currentUser: User | null = {
+    id: 'user-id',
+    name: 'Current User',
+    email: 'user@example.com',
+    role: 'admin',
+    status: 'active',
+    desa: 'Desa Example',
+    kelompok: 'Kelompok Example'
+  };
+  
+  const { m5uItems, loading, addM5U, updateM5U, deleteM5U } = useM5U(currentUser);
+  
+  // Filter items for current month/year
+  const filteredM5UItems = useMemo(() => {
+    return m5uItems.filter(item => 
+      item.bulan === bulan && 
+      item.tahun === Number(tahun)
+    );
+  }, [m5uItems, bulan, tahun]);
 
   const openDialog = (item?: M5U) => {
     if (item) {
@@ -59,24 +77,35 @@ export default function M5UDetailPage() {
     } else {
       setIsEditMode(false);
       setCurrentItem({
-        bulan: bulan || '', tahun: Number(tahun) || new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
+        bulan: bulan || '', tahun: Number(tahun) || new Date().getFullYear(), agenda: '', hasil: '', pj: currentUser?.name || '', waktuPelaksanaan: '', statusHasil: ''
       });
       setEditingId(null);
     }
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    let success = false;
     if (isEditMode && editingId) {
-      setM5uItems(m5uItems.map(item => item.id === editingId ? { ...currentItem, id: editingId } : item));
+      success = await updateM5U(editingId, currentItem);
     } else {
-      setM5uItems([...m5uItems, { ...currentItem, id: new Date().toISOString() }]);
+      // Add desa and kelompok info for role-based access control
+      const itemWithMetadata = {
+        ...currentItem,
+        desa: currentUser?.desa || '',
+        kelompok: currentUser?.kelompok || '',
+        guruId: currentUser?.id || ''
+      };
+      success = await addM5U(itemWithMetadata);
     }
-    setIsDialogOpen(false);
+    
+    if (success) {
+      setIsDialogOpen(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setM5uItems(m5uItems.filter(item => item.id !== id));
+  const handleDelete = async (id: string) => {
+    await deleteM5U(id);
   };
 
   const handleChange = (field: keyof Omit<M5U, 'id'>, value: string | number) => {
@@ -84,10 +113,11 @@ export default function M5UDetailPage() {
   };
 
   // Fungsi untuk mengubah status hasil langsung di tabel
-  const handleStatusChange = (id: string, newStatus: M5U['statusHasil']) => {
-    setM5uItems(m5uItems.map(item => 
-      item.id === id ? { ...item, statusHasil: newStatus } : item
-    ));
+  const handleStatusChange = async (id: string, newStatus: M5U['statusHasil']) => {
+    const itemToUpdate = filteredM5UItems.find(item => item.id === id);
+    if (itemToUpdate) {
+      await updateM5U(id, { ...itemToUpdate, statusHasil: newStatus });
+    }
   };
 
   // Fungsi untuk mencetak PDF
@@ -101,12 +131,12 @@ export default function M5UDetailPage() {
     
     doc.setFontSize(12);
     doc.setFont(undefined, 'normal');
-    doc.text(`Kelompok: ${kelompokName}`, 105, 30, { align: 'center' });
+    doc.text(`Kelompok: ${currentUser?.kelompok || 'Kelompok Contoh'}`, 105, 30, { align: 'center' });
     doc.text(`Bulan: ${bulan} ${tahun}`, 105, 37, { align: 'center' });
     
     // Add content
     let yPos = 50;
-    m5uItems.forEach((item, index) => {
+    filteredM5UItems.forEach((item, index) => {
       if (yPos > 250) { // Create new page if needed
         doc.addPage();
         yPos = 20;
@@ -139,8 +169,12 @@ export default function M5UDetailPage() {
     doc.line(30, signatureY + 25, 80, signatureY + 25); // Signature line
     
     // Save the PDF
-    doc.save(`M5U_${kelompokName}_${bulan}_${tahun}.pdf`);
+    doc.save(`M5U_${currentUser?.kelompok || 'Kelompok'}_${bulan}_${tahun}.pdf`);
   };
+
+  if (loading) {
+    return <div className="p-6 text-center">Memuat data...</div>;
+  }
 
   return (
     <div className="p-6">
@@ -187,7 +221,7 @@ export default function M5UDetailPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {m5uItems.map((item) => (
+              {filteredM5UItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.agenda}</TableCell>
                   <TableCell>{item.hasil || '-'}</TableCell>
@@ -203,7 +237,7 @@ export default function M5UDetailPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                        {/* Removed "Dalam Proses" option as requested */}
+                        <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
                         <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
                         <SelectItem value="Mansuh">Mansuh</SelectItem>
                       </SelectContent>
@@ -299,7 +333,7 @@ export default function M5UDetailPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Terlaksana">Terlaksana</SelectItem>
-                    {/* Removed "Dalam Proses" option as requested */}
+                    <SelectItem value="Dalam Proses">Dalam Proses</SelectItem>
                     <SelectItem value="Belum Terlaksana">Belum Terlaksana</SelectItem>
                     <SelectItem value="Mansuh">Mansuh</SelectItem>
                   </SelectContent>
