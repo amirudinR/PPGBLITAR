@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, where, documentId } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, where, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Generus, User, Desa, Kelompok, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
 import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
@@ -147,6 +147,22 @@ export function useGenerus(currentUser: User | null) {
         return;
       }
 
+      // Cek permission sebelum mencoba menghapus
+      if (currentUser?.role === 'kelompok') {
+        // Untuk PJP Kelompok, pastikan data milik kelompoknya
+        const generusDoc = await getDoc(doc(db, "generus", id));
+        if (!generusDoc.exists()) {
+          showError("Data generus tidak ditemukan.");
+          return;
+        }
+        
+        const generusData = generusDoc.data();
+        if (generusData.desa !== currentUser.desa || generusData.kelompok !== currentUser.kelompok) {
+          showError("Anda tidak memiliki izin untuk menghapus data generus dari kelompok lain.");
+          return;
+        }
+      }
+
       // Coba hapus dokumen
       await deleteDoc(doc(db, "generus", id));
       
@@ -158,7 +174,7 @@ export function useGenerus(currentUser: User | null) {
       
       // Tangani error spesifik Firebase
       if (error.code === 'permission-denied') {
-        showError("Anda tidak memiliki izin untuk menghapus data ini.");
+        showError("Anda tidak memiliki izin untuk menghapus data ini. Pastikan Anda memiliki hak akses yang sesuai.");
       } else if (error.code === 'not-found') {
         showError("Data generus tidak ditemukan.");
       } else if (error.code === 'unavailable') {
@@ -166,7 +182,7 @@ export function useGenerus(currentUser: User | null) {
       } else if (error.message?.includes('400')) {
         showError("Permintaan tidak valid. Silakan coba lagi.");
       } else {
-        showError("Gagal menghapus data generus. Silakan coba lagi.");
+        showError("Gagal menghapus data generus. Silakan coba lagi atau hubungi administrator.");
       }
     }
   };

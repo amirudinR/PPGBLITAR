@@ -53,9 +53,16 @@ service cloud.firestore {
                    (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
                    (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
                    (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      
+      // Update aturan untuk write (create dan update)
       allow write: if isAdmin() || 
                     (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
                     (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+      
+      // Tambahkan aturan khusus untuk delete
+      allow delete: if isAdmin() ||
+                     (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+                     (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
     }
 
     match /gurus/{guruId} {

@@ -4,7 +4,7 @@ import { Menu, ArrowLeft } from 'lucide-react';
 import { User } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
 import AttendanceSection from '@/components/admin/AttendanceSection';
-import MaterialsSection from '@/components/admin/MaterialsSection';
+import MaterialsSections from '@/components/admin/MaterialsSection';
 import AccountsSection from '@/components/admin/AccountsSection';
 import GenerusSection from '@/components/admin/GenerusSection';
 import DesaSection from '@/components/admin/DesaSection';
@@ -136,6 +136,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { announcements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(currentUser);
   const { grades, fetchGrades } = useGrades(currentUser);
 
+  // Calculate overall loading state
+  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus || loadingKelas;
+
   useEffect(() => {
     if (currentUser) {
       fetchDesas();
@@ -154,8 +157,6 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchKelompok();
     }
   }, [desas, fetchKelompok]);
-
-  const loading = loadingDesa || loadingKelompok || loadingGenerus || loadingUsers || loadingMaterials || loadingAttendance || loadingGurus || loadingKelas;
 
   const handleImportGenerus = async (data: Omit<any, 'id'>[]) => {
     // Menggunakan fungsi importGenerus dari hook
@@ -277,7 +278,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         />;
       case 'pencapaian-target-materi':
         return (
-          <MaterialsSection
+          <MaterialsSections
             materials={materials}
             newMaterial={newMaterial}
             setNewMaterial={setNewMaterial}
