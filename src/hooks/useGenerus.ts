@@ -138,15 +138,36 @@ export function useGenerus(currentUser: User | null) {
     } catch (e) { showError("Gagal memperbarui data generus."); return false; }
   };
 
-  // Memperbaiki fungsi hapus data Generus
+  // Memperbaiki fungsi hapus data Generus dengan penanganan error yang lebih baik
   const deleteGenerus = async (id: string) => {
     try {
+      // Validasi ID sebelum menghapus
+      if (!id || typeof id !== 'string') {
+        showError("ID generus tidak valid.");
+        return;
+      }
+
+      // Coba hapus dokumen
       await deleteDoc(doc(db, "generus", id));
-      fetchGenerus(); // Refresh data setelah hapus
+      
+      // Refresh data setelah hapus
+      await fetchGenerus();
       showSuccess("Data generus berhasil dihapus.");
-    } catch (e) { 
-      console.error("Error deleting generus: ", e);
-      showError("Gagal menghapus data generus."); 
+    } catch (error: any) {
+      console.error("Error deleting generus: ", error);
+      
+      // Tangani error spesifik Firebase
+      if (error.code === 'permission-denied') {
+        showError("Anda tidak memiliki izin untuk menghapus data ini.");
+      } else if (error.code === 'not-found') {
+        showError("Data generus tidak ditemukan.");
+      } else if (error.code === 'unavailable') {
+        showError("Koneksi ke server terputus. Silakan coba lagi.");
+      } else if (error.message?.includes('400')) {
+        showError("Permintaan tidak valid. Silakan coba lagi.");
+      } else {
+        showError("Gagal menghapus data generus. Silakan coba lagi.");
+      }
     }
   };
 
