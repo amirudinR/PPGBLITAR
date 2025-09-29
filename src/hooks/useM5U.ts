@@ -25,14 +25,28 @@ export function useM5U(currentUser: User | null) {
         m5uQuery = query(m5uQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
       } else if (currentUser.role === 'guru') {
         m5uQuery = query(m5uQuery, where("guruId", "==", currentUser.id));
+      } else if (currentUser.role === 'orangtua') {
+        m5uQuery = query(m5uQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
       }
       
       const m5uSnap = await getDocs(m5uQuery);
       const m5uData = m5uSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as M5U[];
       setM5uItems(m5uData);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching M5U data: ", error);
-      showError("Gagal memuat data M5U.");
+      
+      // Handle specific Firebase permission errors
+      if (error.code === 'permission-denied') {
+        showError("Anda tidak memiliki izin untuk mengakses data M5U. Pastikan Anda memiliki hak akses yang sesuai.");
+      } else if (error.code === 'not-found') {
+        showError("Data M5U tidak ditemukan.");
+      } else if (error.code === 'unavailable') {
+        showError("Koneksi ke server terputus. Silakan coba lagi.");
+      } else if (error.message?.includes('400')) {
+        showError("Permintaan tidak valid. Silakan coba lagi.");
+      } else {
+        showError("Gagal memuat data M5U. Silakan coba lagi atau hubungi administrator.");
+      }
     } finally {
       setLoading(false);
     }
