@@ -116,25 +116,17 @@ service cloud.firestore {
 
     // === Aturan untuk M5U ===
     match /m5u/{m5uId} {
-      // Admin bisa membaca semua data M5U
-      allow read: if isAdmin();
+      // Semua pengguna yang terotentikasi bisa membaca data M5U dalam lingkup mereka
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
+        (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
+        (hasRole('guru') && resource.data.guruId == request.auth.uid) ||
+        (hasRole('orangtua') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok)
+      );
       
-      // PJP Desa bisa membaca data M5U di desanya
-      allow read: if hasRole('desa') && resource.data.desa == currentUserData().desa;
-      
-      // PJP Kelompok bisa membaca data M5U di kelompoknya
-      allow read: if hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok;
-      
-      // Guru bisa membaca data M5U yang mereka buat
-      allow read: if hasRole('guru') && resource.data.guruId == request.auth.uid;
-      
-      // Orang tua bisa membaca data M5U di kelompoknya
-      allow read: if hasRole('orangtua') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok;
-      
-      // Write permissions
+      // Write permissions - hanya admin dan guru yang bisa menulis
       allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok) ||
                     (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
     }
 

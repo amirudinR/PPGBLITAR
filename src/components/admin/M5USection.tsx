@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { M5U, User } from '@/types/admin';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { AlertTriangle, Lock, Plus } from 'lucide-react';
 import M5UStatsCards from './M5UStatsCards';
 import M5UDataTable from './M5UDataTable';
 import M5UDialog from './M5UDialog';
@@ -27,7 +27,7 @@ interface M5USectionProps {
 }
 
 export default function M5USection({ currentUser }: M5USectionProps) {
-  const { m5uItems, loading, addM5U, updateM5U, deleteMultipleM5U } = useM5U(currentUser);
+  const { m5uItems, loading, hasPermission, fetchM5U, addM5U, updateM5U, deleteMultipleM5U } = useM5U(currentUser);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('bulan');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -90,6 +90,71 @@ export default function M5USection({ currentUser }: M5USectionProps) {
       handleCloseDialog();
     }
   };
+
+  // Tampilkan pesan error permission
+  if (!hasPermission && !loading) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center gap-3">
+            <Lock className="h-6 w-6 text-red-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-red-800">Akses Ditolak</h3>
+              <p className="text-red-700 mt-1">
+                Anda tidak memiliki izin untuk mengakses data M5U. Pastikan Anda memiliki hak akses yang sesuai.
+              </p>
+              {currentUser?.role === 'kelompok' && (
+                <p className="text-red-600 text-sm mt-2">
+                  Sebagai PJP Kelompok, Anda hanya dapat mengakses data M5U untuk kelompok {currentUser.kelompok} di desa {currentUser.desa}.
+                </p>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-3"
+                onClick={() => fetchM5U()}
+              >
+                Coba Lagi
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tampilkan pesan jika tidak ada data
+  if (!loading && m5uItems.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-6 w-6 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-blue-800">Belum Ada Data M5U</h3>
+              <p className="text-blue-700 mt-1">
+                {currentUser?.role === 'kelompok' 
+                  ? `Belum ada agenda M5U untuk kelompok ${currentUser.kelompok}.`
+                  : 'Belum ada data M5U yang tersedia.'
+                }
+              </p>
+              {canAdd && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3"
+                  onClick={() => openDialog()}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Tambah Agenda M5U
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="text-center p-8">Memuat data M5U...</div>;
