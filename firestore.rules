@@ -114,6 +114,30 @@ service cloud.firestore {
       allow write: if hasRole('guru') && request.resource.data.guruId == request.auth.uid;
     }
 
+    // === ATURAN BARU UNTUK M5U ===
+    match /m5u/{m5uId} {
+      // Admin bisa akses semua data M5U
+      allow read: if isAdmin();
+      
+      // PJP Desa bisa akses data M5U di desanya
+      allow read: if hasRole('desa') && resource.data.desa == currentUserData().desa;
+      
+      // PJP Kelompok bisa akses data M5U di kelompoknya
+      allow read: if hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok;
+      
+      // Guru bisa akses data M5U yang mereka buat
+      allow read: if hasRole('guru') && resource.data.guruId == request.auth.uid;
+      
+      // Orang tua bisa membaca data M5U di kelompoknya
+      allow read: if hasRole('orangtua') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok;
+      
+      // Write permissions
+      allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok) ||
+                    (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
+    }
+
     match /announcements/{announcementId} {
       // Admin bisa membaca semua, pengguna lain hanya bisa membaca jika peran mereka ada di targetRoles.
       allow read: if isAdmin() || (isAuthenticated() && currentUserData().role in resource.data.targetRoles);
