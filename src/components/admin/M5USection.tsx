@@ -7,8 +7,6 @@ import M5UStatsCards from './M5UStatsCards';
 import M5UDataTable from './M5UDataTable';
 import M5UDialog from './M5UDialog';
 import { useM5U } from '@/hooks/useM5U';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
 
 const months = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -29,7 +27,7 @@ interface M5USectionProps {
 }
 
 export default function M5USection({ currentUser }: M5USectionProps) {
-  const { m5uItems, loading, addM5U, updateM5U, deleteM5U, deleteMultipleM5U } = useM5U(currentUser);
+  const { m5uItems, loading, addM5U, updateM5U, deleteMultipleM5U } = useM5U(currentUser);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('bulan');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,24 +39,6 @@ export default function M5USection({ currentUser }: M5USectionProps) {
 
   const canEdit = currentUser?.role !== 'guru';
   const canAdd = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok';
-
-  // Check if user has permission to view M5U data
-  const hasPermission = currentUser?.role === 'adminsuper' || 
-                       currentUser?.role === 'admin' || 
-                       currentUser?.role === 'desa' || 
-                       currentUser?.role === 'kelompok' || 
-                       currentUser?.role === 'guru' || 
-                       currentUser?.role === 'orangtua';
-
-  const filteredM5UItems = React.useMemo(() => {
-    return m5uItems.filter(item => 
-      item.bulan === searchTerm || 
-      item.tahun.toString() === searchTerm ||
-      item.agenda.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.pj.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.statusHasil?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [m5uItems, searchTerm]);
 
   const handleDelete = (bulan: string, tahun: number) => {
     deleteMultipleM5U(bulan, tahun);
@@ -72,31 +52,17 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     } else {
       setIsEditMode(false);
       setCurrentItem({
-        bulan: '', tahun: new Date().getFullYear(), agenda: '', hasil: '', pj: currentUser?.name || '', waktuPelaksanaan: '', statusHasil: ''
+        bulan: '', 
+        tahun: new Date().getFullYear(), 
+        agenda: '', 
+        hasil: '', 
+        pj: currentUser?.name || '', 
+        waktuPelaksanaan: '', 
+        statusHasil: ''
       });
       setEditingId(null);
     }
     setIsDialogOpen(true);
-  };
-
-  const handleSave = async () => {
-    let success = false;
-    if (isEditMode && editingId) {
-      success = await updateM5U(editingId, currentItem);
-    } else {
-      // Add desa and kelompok info for role-based access control
-      const itemWithMetadata = {
-        ...currentItem,
-        desa: currentUser?.desa || '',
-        kelompok: currentUser?.kelompok || '',
-        guruId: currentUser?.id || ''
-      };
-      success = await addM5U(itemWithMetadata);
-    }
-    
-    if (success) {
-      setIsDialogOpen(false);
-    }
   };
 
   const handleCloseDialog = () => {
@@ -105,28 +71,28 @@ export default function M5USection({ currentUser }: M5USectionProps) {
     setEditingId(null);
   };
 
-  if (loading) {
-    return <div className="p-6 text-center">Memuat data M5U...</div>;
-  }
+  const handleSave = async (item: Omit<M5U, 'id'>, id: string | null, isEdit: boolean) => {
+    let success = false;
+    if (isEdit && id) {
+      success = await updateM5U(id, item);
+    } else {
+      // Add desa and kelompok info for role-based access control
+      const itemWithMetadata = {
+        ...item,
+        desa: currentUser?.desa || '',
+        kelompok: currentUser?.kelompok || '',
+        guruId: currentUser?.id || ''
+      };
+      success = await addM5U(itemWithMetadata);
+    }
+    
+    if (success) {
+      handleCloseDialog();
+    }
+  };
 
-  if (!hasPermission) {
-    return (
-      <div className="p-6">
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800">
-              <AlertCircle className="h-5 w-5" />
-              Akses Dibatasi
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-orange-700">
-              Anda tidak memiliki izin untuk mengakses data M5U. Silakan hubungi administrator untuk mendapatkan akses yang sesuai.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (loading) {
+    return <div className="text-center p-8">Memuat data M5U...</div>;
   }
 
   return (
@@ -141,7 +107,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
         )}
       </div>
       
-      {m5uItems.length > 0 && <M5UStatsCards m5uItems={m5uItems} />}
+      <M5UStatsCards m5uItems={m5uItems} />
       
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
@@ -173,29 +139,14 @@ export default function M5USection({ currentUser }: M5USectionProps) {
         </div>
       </div>
       
-      {m5uItems.length === 0 && !loading ? (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-blue-800">Belum Ada Data M5U</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-blue-700">
-              {currentUser?.role === 'kelompok' 
-                ? 'Belum ada agenda M5U untuk kelompok Anda. Silakan tambahkan agenda M5U untuk memulai.'
-                : 'Belum ada data M5U yang tersedia.'}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <M5UDataTable 
-          m5uItems={filteredM5UItems}
-          searchTerm={searchTerm}
-          filterCategory={filterCategory}
-          canEdit={canEdit}
-          onOpenDetail={() => {}}
-          onDelete={handleDelete}
-        />
-      )}
+      <M5UDataTable 
+        m5uItems={m5uItems}
+        searchTerm={searchTerm}
+        filterCategory={filterCategory}
+        canEdit={canEdit}
+        onOpenDetail={() => {}}
+        onDelete={handleDelete}
+      />
 
       <M5UDialog
         isOpen={isDialogOpen}
