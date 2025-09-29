@@ -37,6 +37,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  // Update permission logic - PJP Kelompok bisa menambah M5U
   const canEdit = currentUser?.role !== 'guru';
   const canAdd = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok';
 
@@ -127,6 +128,15 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   if (!loading && m5uItems.length === 0) {
     return (
       <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Agenda M5U</h2>
+          {canAdd && (
+            <Button onClick={() => openDialog()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Agenda
+            </Button>
+          )}
+        </div>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-6 w-6 text-blue-600" />

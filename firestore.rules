@@ -125,8 +125,10 @@ service cloud.firestore {
         (hasRole('orangtua') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok)
       );
       
-      // Write permissions - hanya admin dan guru yang bisa menulis
+      // Write permissions - izinkan PJP Kelompok untuk menambah M5U
       allow write: if isAdmin() || 
+                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
+                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok) ||
                     (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
     }
 
