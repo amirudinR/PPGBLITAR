@@ -119,37 +119,37 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
           Tambah Guru
         </Button>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-card rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('name')}
                 >
                   Nama Guru{getSortIndicator('name')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('status')}
                 >
                   Status Guru{getSortIndicator('status')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('phone')}
                 >
                   No HP{getSortIndicator('phone')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('desa')}
                 >
                   Desa{getSortIndicator('desa')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('kelompok')}
                 >
                   Kelompok{getSortIndicator('kelompok')}

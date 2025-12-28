@@ -65,7 +65,7 @@ const SearchInput = ({
   }
   return (
     <div className="relative">
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -150,7 +150,7 @@ const M5UDataTable = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-auto">
+    <div className="bg-card rounded-lg shadow overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>

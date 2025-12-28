@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2">
-      <div className="hidden lg:flex items-center justify-center bg-gray-100 p-12">
+      <div className="hidden lg:flex items-center justify-center bg-muted p-12">
         <img src="/logo.png" alt="Forgot Password Illustration" className="w-full max-w-md" />
       </div>
       <div className="flex flex-col items-center justify-center bg-indigo-600 p-8 text-white">
@@ -26,19 +26,19 @@ export default function ForgotPasswordPage() {
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="Email Anda"
-                  className="bg-white text-gray-900 rounded-full pl-12 py-6"
+                  className="bg-card text-foreground rounded-full pl-12 py-6"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
             <Button 
-              className="w-full bg-white text-indigo-600 rounded-full py-6 font-semibold hover:bg-indigo-50"
+              className="w-full bg-card text-indigo-600 rounded-full py-6 font-semibold hover:bg-indigo-500/10 dark:bg-indigo-500/20"
               onClick={handleResetPassword}
             >
               Kirim Link Reset

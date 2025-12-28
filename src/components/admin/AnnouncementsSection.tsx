@@ -70,7 +70,7 @@ export default function AnnouncementsSection({ announcements, onAdd, onUpdate, o
           Tambah Pengumuman
         </Button>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
+      <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>

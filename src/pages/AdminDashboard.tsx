@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, ArrowLeft } from 'lucide-react';
 import { User } from '@/types/admin';
 import Sidebar from '@/components/admin/Sidebar';
+import Header from '@/components/admin/Header';
 import AttendanceSection from '@/components/admin/AttendanceSection';
 import MaterialsSections from '@/components/admin/MaterialsSection';
 import AccountsSection from '@/components/admin/AccountsSection';
@@ -24,6 +24,8 @@ import M5USearchPage from '@/pages/M5USearchPage';
 import TargetBulananSection from '@/components/admin/TargetBulananSection';
 import RekapPerKelasSection from '@/components/admin/RekapPerKelasSection';
 import DetailPencapaianKelas from '@/components/admin/DetailPencapaianKelas';
+import LatihanASADSection from '@/components/admin/LatihanASADSection';
+import JariyahPPGSection from '@/components/admin/JariyahPPGSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -37,6 +39,7 @@ import { useKelas } from '@/hooks/useKelas';
 import { useAuthManagement } from '@/hooks/useAuthManagement';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useGrades } from '@/hooks/useGrades';
+import { useTheme } from '@/hooks/useTheme';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -46,9 +49,9 @@ interface AdminDashboardProps {
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'profile', label: 'Profil Saya' },
-  { 
-    id: 'master', 
-    label: 'Data Master', 
+  {
+    id: 'master',
+    label: 'Data Master',
     children: [
       { id: 'akun', label: 'Akun' },
       { id: 'desa', label: 'Desa' },
@@ -58,33 +61,33 @@ const menuItems = [
     ]
   },
   { id: 'generus', label: 'Data Generus' },
-  { 
-    id: 'kehadiran', 
-    label: 'Kehadiran', 
+  {
+    id: 'kehadiran',
+    label: 'Kehadiran',
     children: [
       { id: 'kehadiran-guru', label: 'Input Kehadiran' },
       { id: 'rekap-kelas', label: 'Rekap Per Kelas' },
       { id: 'rekap-siswa', label: 'Rekap Per Siswa' },
     ]
   },
-  { 
-    id: 'nilai', 
+  {
+    id: 'nilai',
     label: 'Nilai Generus',
     children: [
       { id: 'input-nilai', label: 'Input Nilai' },
       { id: 'rekap-nilai', label: 'Rekap Nilai' },
     ]
   },
-  { 
-    id: 'target-materi', 
+  {
+    id: 'target-materi',
     label: 'Target Materi',
     children: [
       { id: 'target-bulanan', label: 'Target Bulanan' },
       { id: 'rekap-per-kelas', label: 'Rekap Per Kelas' },
     ]
   },
-  { 
-    id: 'laporan', 
+  {
+    id: 'laporan',
     label: 'Laporan',
     children: [
       { id: 'm5u', label: 'M5U' },
@@ -99,6 +102,7 @@ const menuItems = [
 export default function AdminDashboard({ currentUser, handleLogout }: AdminDashboardProps) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [detailKelasId, setDetailKelasId] = useState<string | null>(null);
   const [periode, setPeriode] = useState({
     startMonth: (new Date().getMonth() + 1).toString().padStart(2, '0'),
@@ -107,11 +111,11 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
     endYear: new Date().getFullYear().toString()
   });
   const navigate = useNavigate();
-  
+
   // Generus section states
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('name');
-  
+
   // Attendance section states
   const [startMonth, setStartMonth] = useState((new Date().getMonth() + 1).toString().padStart(2, '0'));
   const [startYear, setStartYear] = useState(new Date().getFullYear().toString());
@@ -133,7 +137,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
   const { kelas, loading: loadingKelas, fetchKelas, addKelas, updateKelas, deleteKelas } = useKelas(currentUser);
   const { updateCurrentUserPassword } = useAuthManagement();
-  const { announcements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(currentUser);
+  const { announcements, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(currentUser);
   const { grades, fetchGrades } = useGrades(currentUser);
 
   // Calculate overall loading state
@@ -149,8 +153,9 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       fetchGurus();
       fetchKelas();
       fetchGrades();
+      fetchAnnouncements();
     }
-  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas, fetchGrades]);
+  }, [currentUser, fetchDesas, fetchGenerus, fetchUsers, fetchMaterials, fetchAttendance, fetchGurus, fetchKelas, fetchGrades, fetchAnnouncements]);
 
   useEffect(() => {
     if (desas.length > 0) {
@@ -196,7 +201,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
                 <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser.name}</h2>
                 <p className="text-muted-foreground">Selamat datang di dasbor Anda sebagai Guru.</p>
               </div>
-              <GuruDashboardStats 
+              <GuruDashboardStats
                 kelas={kelas}
                 generusData={generus}
                 attendance={attendance}
@@ -207,8 +212,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           );
         }
         // Default dashboard for other roles
-        return <DashboardSection 
-          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length, kelas: kelas.length }} 
+        return <DashboardSection
+          stats={{ generus: generus.length, desa: desas.length, kelompok: kelompok.length, users: users.length, gurus: gurus.length, kelas: kelas.length }}
           generusData={generus}
           currentUser={currentUser}
           attendance={attendance}
@@ -218,44 +223,44 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           announcements={announcements}
         />;
       case 'generus':
-        return <GenerusSection 
-          allGenerus={generus} 
+        return <GenerusSection
+          allGenerus={generus}
           desas={desas}
           kelompok={kelompok}
-          newGenerus={newGenerus} 
+          newGenerus={newGenerus}
           setNewGenerus={setNewGenerus}
           onAddGenerus={addGenerus}
           onImportGenerus={handleImportGenerus}
           onUpdateGenerus={updateGenerus}
           onDeleteGenerus={deleteGenerus}
-          searchTerm={searchTerm} 
+          searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          filterCategory={filterCategory} 
+          filterCategory={filterCategory}
           onFilterCategoryChange={setFilterCategory}
           currentUser={currentUser}
         />;
       case 'desa':
-        return <DesaSection 
+        return <DesaSection
           desas={desas} onAddDesa={addDesa} onUpdateDesa={updateDesa}
           onDeleteDesa={deleteDesa}
         />;
       case 'kelompok':
-        return <KelompokSection 
+        return <KelompokSection
           kelompok={kelompok} desas={desas} onAddKelompok={addKelompok}
           onUpdateKelompok={updateKelompok} onDeleteKelompok={deleteKelompok}
         />;
       case 'akun':
-        return <AccountsSection 
-          users={users} 
+        return <AccountsSection
+          users={users}
           desas={desas}
           kelompok={kelompok}
           onAddUser={addUser}
           onUpdateUser={updateUser}
-          onDeleteUser={deleteUser} 
+          onDeleteUser={deleteUser}
           currentUser={currentUser}
         />;
       case 'dataguru':
-        return <GuruSection 
+        return <GuruSection
           gurus={gurus}
           onAddGuru={addGuru}
           onUpdateGuru={updateGuru}
@@ -265,7 +270,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           kelompok={kelompok}
         />;
       case 'datakelas':
-        return <KelasSection 
+        return <KelasSection
           kelas={kelas}
           gurus={gurus}
           generus={generus}
@@ -297,7 +302,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           />
         );
       case 'rekap-kelas':
-        return <AttendanceSection 
+        return <AttendanceSection
           attendance={attendance}
           desas={desas}
           generusData={generus}
@@ -358,7 +363,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           setEndYear={setEndYear}
         />;
       case 'pengumuman':
-        return <AnnouncementsSection 
+        return <AnnouncementsSection
           announcements={announcements}
           onAdd={addAnnouncement}
           onUpdate={updateAnnouncement}
@@ -367,48 +372,34 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
       case 'm5u':
         return <M5USection currentUser={currentUser} />;
       case 'cari-hasil-m5u':
-        return <M5USearchPage />;
+        return <M5USearchPage currentUser={currentUser} />;
       case 'latihan-asad':
-        return (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Laporan Latihan ASAD</h2>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-600">Halaman laporan Latihan ASAD akan ditampilkan di sini.</p>
-            </div>
-          </div>
-        );
+        return <LatihanASADSection currentUser={currentUser} generus={generus} />;
       case 'jariyah-ppg':
-        return (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Laporan Jariyah PPG</h2>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-600">Halaman laporan Jariyah PPG akan ditampilkan di sini.</p>
-            </div>
-          </div>
-        );
+        return <JariyahPPGSection currentUser={currentUser} generus={generus} />;
       case 'profile':
         return <ProfileSection currentUser={currentUser} onUpdatePassword={updateCurrentUserPassword} />;
       case 'target-bulanan':
-        return <TargetBulananSection 
-          kelas={kelas} 
-          materials={materials} 
-          currentUser={currentUser} 
+        return <TargetBulananSection
+          kelas={kelas}
+          materials={materials}
+          currentUser={currentUser}
         />;
       case 'rekap-per-kelas':
-        return <RekapPerKelasSection 
-          kelas={kelas} 
-          materials={materials} 
-          grades={grades} 
-          currentUser={currentUser} 
+        return <RekapPerKelasSection
+          kelas={kelas}
+          materials={materials}
+          grades={grades}
+          currentUser={currentUser}
           onViewDetail={handleViewDetail}
         />;
       case 'detail-pencapaian-kelas':
         const selectedKelas = kelas.find(k => k.id === detailKelasId);
-        return <DetailPencapaianKelas 
-          kelas={selectedKelas} 
-          generus={generus} 
-          materials={materials} 
-          grades={grades} 
+        return <DetailPencapaianKelas
+          kelas={selectedKelas}
+          generus={generus}
+          materials={materials}
+          grades={grades}
           onBack={handleBackFromDetail}
           startDate={{ month: periode.startMonth, year: periode.startYear }}
           endDate={{ month: periode.endMonth, year: periode.endYear }}
@@ -417,27 +408,31 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }
   };
+  // Theme hook
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       <Sidebar
-        activeSection={activeSection} setActiveSection={setActiveSection}
-        sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        sidebarCollapsed={sidebarCollapsed}
+        onLogout={handleLogout}
         currentUser={currentUser}
       />
-      <div className="flex-1 overflow-auto">
-        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="text-gray-600">
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <h2 className="text-lg font-semibold">{getPageTitle()}</h2>
-          </div>
-          <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
-            <Menu className="w-6 h-6" />
-          </button>
-        </div>
-        <main className="p-6">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header
+          title={getPageTitle()}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+        <main className="flex-1 overflow-auto p-6">
           {loading ? <div className="text-center p-8">Memuat data...</div> : renderSection()}
         </main>
       </div>

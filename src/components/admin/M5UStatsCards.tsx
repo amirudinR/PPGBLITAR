@@ -58,7 +58,7 @@ export default function M5UStatsCards({ m5uItems }: M5UStatsCardsProps) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.count}</div>
-              <Progress value={stat.percentage} className="mt-2 bg-white/30" />
+              <Progress value={stat.percentage} className="mt-2 bg-card/30" />
               <div className="text-xs mt-1">{stat.percentage}%</div>
             </CardContent>
           </Card>

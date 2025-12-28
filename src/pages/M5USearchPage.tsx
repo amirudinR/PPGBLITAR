@@ -16,27 +16,20 @@ const searchFields = [
   { value: 'pj', label: 'Penanggung Jawab' },
 ];
 
-export default function M5USearchPage() {
+interface M5USearchPageProps {
+  currentUser: User | null;
+}
+
+export default function M5USearchPage({ currentUser }: M5USearchPageProps) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchField, setSearchField] = useState('agenda');
-  
-  // Mock current user - in a real app this would come from context or props
-  const currentUser: User | null = {
-    id: 'user-id',
-    name: 'Current User',
-    email: 'user@example.com',
-    role: 'admin',
-    status: 'active',
-    desa: 'Desa Example',
-    kelompok: 'Kelompok Example'
-  };
-  
+
   const { m5uItems, loading } = useM5U(currentUser);
 
   const filteredResults = useMemo(() => {
     if (!searchTerm) return m5uItems;
-    
+
     return m5uItems.filter(item => {
       const fieldValue = item[searchField as keyof typeof item];
       if (typeof fieldValue === 'string') {
@@ -58,7 +51,7 @@ export default function M5USearchPage() {
         </Button>
         <h1 className="text-2xl font-bold">Cari Hasil M5U</h1>
       </div>
-      
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filter Pencarian</CardTitle>
@@ -83,7 +76,7 @@ export default function M5USearchPage() {
             <div className="flex-1">
               <label className="block text-sm font-medium mb-2">Kata Kunci</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Masukkan kata kunci..."
                   className="pl-10"
@@ -95,7 +88,7 @@ export default function M5USearchPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Hasil Pencarian</CardTitle>
@@ -123,15 +116,14 @@ export default function M5USearchPage() {
                       <TableCell>{item.hasil}</TableCell>
                       <TableCell>{item.pj}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          item.statusHasil === 'Terlaksana' 
-                            ? 'bg-green-100 text-green-800' 
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.statusHasil === 'Terlaksana'
+                            ? 'bg-green-500/20 text-green-800'
                             : item.statusHasil === 'Dalam Proses'
-                              ? 'bg-blue-100 text-blue-800'
-                              : item.statusHasil === 'Belum Terlaksana' 
-                                ? 'bg-yellow-100 text-yellow-800' 
-                                : 'bg-red-100 text-red-800'
-                        }`}>
+                              ? 'bg-blue-500/20 text-blue-800'
+                              : item.statusHasil === 'Belum Terlaksana'
+                                ? 'bg-yellow-500/20 text-yellow-800'
+                                : 'bg-red-500/20 text-red-800'
+                          }`}>
                           {item.statusHasil}
                         </span>
                       </TableCell>
@@ -141,9 +133,9 @@ export default function M5USearchPage() {
               </Table>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              {searchTerm 
-                ? 'Tidak ada hasil yang ditemukan untuk kata kunci tersebut.' 
+            <div className="text-center py-8 text-muted-foreground">
+              {searchTerm
+                ? 'Tidak ada hasil yang ditemukan untuk kata kunci tersebut.'
                 : 'Gunakan filter di atas untuk mencari hasil M5U.'}
             </div>
           )}

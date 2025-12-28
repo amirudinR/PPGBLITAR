@@ -61,15 +61,15 @@ export const STATUS_MONDOK_LIST = [
 export type StatusMondok = typeof STATUS_MONDOK_LIST[number];
 
 export const GENERUS_FILTER_FIELDS = [
-    { value: 'name', label: 'Nama Generus' },
-    { value: 'tahunLahir', label: 'Tahun Lahir' },
-    { value: 'pendidikan', label: 'Pendidikan' },
-    { value: 'jenjangUsia', label: 'Jenjang Usia' },
-    { value: 'statusMondok', label: 'Status Mondok' },
-    { value: 'desa', label: 'Desa' },
-    { value: 'kelompok', label: 'Kelompok' },
-    { value: 'namaAyah', label: 'Nama Ayah' },
-    { value: 'namaIbu', label: 'Nama Ibu' },
+  { value: 'name', label: 'Nama Generus' },
+  { value: 'tahunLahir', label: 'Tahun Lahir' },
+  { value: 'pendidikan', label: 'Pendidikan' },
+  { value: 'jenjangUsia', label: 'Jenjang Usia' },
+  { value: 'statusMondok', label: 'Status Mondok' },
+  { value: 'desa', label: 'Desa' },
+  { value: 'kelompok', label: 'Kelompok' },
+  { value: 'namaAyah', label: 'Nama Ayah' },
+  { value: 'namaIbu', label: 'Nama Ibu' },
 ] as const;
 
 export const JUDUL_MATERI_LIST = [
@@ -134,15 +134,15 @@ export interface MonthlyAttendance {
 }
 
 export interface Desa {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 export interface Kelompok {
-    id: string;
-    name: string;
-    desaId: string;
-    desaName: string;
+  id: string;
+  name: string;
+  desaId: string;
+  desaName: string;
 }
 
 export interface M5U {
@@ -204,4 +204,62 @@ export interface Announcement {
   content: string;
   targetRoles: Role[];
   createdAt: any; // Firestore Timestamp
+}
+
+export const JENIS_LATIHAN_LIST = [
+  'Sholat Berjamaah',
+  'Tilawah Al-Quran',
+  'Puasa Sunnah',
+  'Sholat Tahajud',
+  'Sholat Dhuha',
+  'Dzikir Pagi/Petang',
+  'Sedekah',
+  'Membaca Buku Islami',
+  'Menghafal Al-Quran',
+  'Lainnya'
+] as const;
+export type JenisLatihan = typeof JENIS_LATIHAN_LIST[number];
+
+export interface LatihanASAD {
+  id: string;
+  generusId: string;
+  generusName: string;
+  jenisLatihan: JenisLatihan;
+  tanggal: string; // YYYY-MM-DD
+  bulan: string;
+  tahun: number;
+  keterangan: string;
+  status: 'Tercapai' | 'Tidak Tercapai' | 'Dalam Proses';
+  desa: string;
+  kelompok: string;
+  createdBy: string;
+}
+
+export const JENIS_JARIYAH_LIST = [
+  'Infaq Bulanan',
+  'Sedekah',
+  'Wakaf',
+  'Zakat Maal',
+  'Zakat Fitrah',
+  'Donasi Pembangunan',
+  'Donasi Kegiatan',
+  'Lainnya'
+] as const;
+export type JenisJariyah = typeof JENIS_JARIYAH_LIST[number];
+
+export interface JariyahPPG {
+  id: string;
+  donaturName: string;
+  donaturType: 'Generus' | 'Orang Tua' | 'Umum';
+  generusId?: string;
+  jenisJariyah: JenisJariyah;
+  nominal: number;
+  tanggal: string; // YYYY-MM-DD
+  bulan: string;
+  tahun: number;
+  keterangan: string;
+  status: 'Diterima' | 'Pending' | 'Ditolak';
+  desa: string;
+  kelompok: string;
+  createdBy: string;
 }

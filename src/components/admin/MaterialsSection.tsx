@@ -188,7 +188,7 @@ export default function MaterialsSection({
     }
     return (
       <div className="relative w-full md:w-auto flex-grow">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
           placeholder="Cari..." 
           className="pl-10"
@@ -273,7 +273,7 @@ export default function MaterialsSection({
           </Dialog>
         </div>
       )}
-      <div className="bg-white rounded-lg shadow overflow-auto">
+      <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader><TableRow>
             {canEdit && <TableHead className="w-[50px]"><Checkbox checked={selectedMaterials.length === filteredMaterials.length && filteredMaterials.length > 0} onCheckedChange={handleSelectAll} aria-label="Pilih semua" /></TableHead>}
@@ -289,8 +289,8 @@ export default function MaterialsSection({
               <TableCell>{material.semester}</TableCell>
               <TableCell>{Array.isArray(material.targetBulan) ? material.targetBulan.join(', ') : material.targetBulan}</TableCell>
               {canEdit && <TableCell className="text-center">
-                <button onClick={() => openEditDialog(material)} className="p-2 text-blue-600 hover:bg-blue-50 rounded mr-2"><Edit className="w-4 h-4" /></button>
-                <AlertDialog><AlertDialogTrigger asChild><button className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></AlertDialogTrigger>
+                <button onClick={() => openEditDialog(material)} className="p-2 text-blue-600 hover:bg-blue-500/10 dark:bg-blue-500/20 rounded mr-2"><Edit className="w-4 h-4" /></button>
+                <AlertDialog><AlertDialogTrigger asChild><button className="p-2 text-red-600 hover:bg-red-500/10 dark:bg-red-500/20 rounded"><Trash2 className="w-4 h-4" /></button></AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle><AlertDialogDescription>Tindakan ini tidak dapat dibatalkan. Ini akan menghapus materi ini secara permanen.</AlertDialogDescription></AlertDialogHeader>
                     <AlertDialogFooter><AlertDialogCancel>Batal</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteMaterial(material.id)}>Hapus</AlertDialogAction></AlertDialogFooter>

@@ -101,18 +101,18 @@ export default function KelompokSection({ kelompok, desas, onAddKelompok, onUpda
           <span>Tambah Kelompok</span>
         </Button>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
+      <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('name')}
               >
                 Nama Kelompok{getSortIndicator('name')}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('desaName' as keyof Kelompok)}
               >
                 Nama Desa{getSortIndicator('desaName' as keyof Kelompok)}

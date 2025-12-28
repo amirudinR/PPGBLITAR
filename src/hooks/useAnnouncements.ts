@@ -10,8 +10,8 @@ export function useAnnouncements(currentUser: User | null) {
 
   const fetchAnnouncements = useCallback(async () => {
     if (!currentUser) {
-        setLoading(false);
-        return;
+      setLoading(false);
+      return;
     }
     setLoading(true);
     try {
@@ -23,8 +23,8 @@ export function useAnnouncements(currentUser: User | null) {
       } else {
         // Melakukan query tanpa pengurutan untuk menghindari error indeks
         announcementsQuery = query(
-            collection(db, "announcements"), 
-            where("targetRoles", "array-contains", currentUser.role)
+          collection(db, "announcements"),
+          where("targetRoles", "array-contains", currentUser.role)
         );
         sortClientSide = true;
       }
@@ -83,10 +83,6 @@ export function useAnnouncements(currentUser: User | null) {
       showError("Gagal menghapus pengumuman.");
     }
   };
-
-  useEffect(() => {
-    fetchAnnouncements();
-  }, [fetchAnnouncements]);
 
   return { announcements, loading, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement };
 }

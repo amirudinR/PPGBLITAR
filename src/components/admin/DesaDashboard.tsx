@@ -103,37 +103,37 @@ export default function DesaDashboard({
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-white rounded-xl shadow-md">
+        <Card className="bg-card rounded-xl shadow-md">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-800">Statistik Umum</CardTitle>
+            <CardTitle className="text-lg font-semibold text-foreground">Statistik Umum</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-blue-500/10 dark:bg-blue-500/20 rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-full">
+                <div className="p-2 bg-blue-500/20 rounded-full">
                   <School className="h-5 w-5 text-blue-600" />
                 </div>
-                <span className="font-medium text-gray-700">Total Kelas</span>
+                <span className="font-medium text-foreground">Total Kelas</span>
               </div>
               <span className="text-2xl font-bold text-blue-600">{stats.kelas}</span>
             </div>
             
-            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-green-500/10 dark:bg-green-500/20 rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-full">
+                <div className="p-2 bg-green-500/20 rounded-full">
                   <BookOpen className="h-5 w-5 text-green-600" />
                 </div>
-                <span className="font-medium text-gray-700">Total Materi</span>
+                <span className="font-medium text-foreground">Total Materi</span>
               </div>
               <span className="text-2xl font-bold text-green-600">{materials.length}</span>
             </div>
             
-            <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-amber-500/10 dark:bg-amber-500/20 rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-amber-100 rounded-full">
+                <div className="p-2 bg-amber-500/20 rounded-full">
                   <Calendar className="h-5 w-5 text-amber-600" />
                 </div>
-                <span className="font-medium text-gray-700">Kehadiran Rata-rata</span>
+                <span className="font-medium text-foreground">Kehadiran Rata-rata</span>
               </div>
               <span className="text-2xl font-bold text-amber-600">{overallStats.overallAttendanceRate}%</span>
             </div>

@@ -1,142 +1,249 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // === Helper Functions ===
+    
+    // Helper function - get user data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
-
-    function currentUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-
-    function hasRole(role) {
-      return isAuthenticated() && currentUserData().role == role;
+    
+    // Check if user is admin (adminsuper or admin)
+    function isAdmin() {
+      return isAuthenticated() && 
+             (getUserData().role == 'adminsuper' || getUserData().role == 'admin');
     }
     
-    function hasOneOfRoles(roles) {
-      return isAuthenticated() && currentUserData().role in roles;
+    // Check if user is PJP Desa
+    function isPJPDesa() {
+      return isAuthenticated() && getUserData().role == 'desa';
     }
-
-    function isAdmin() {
-      return hasOneOfRoles(['adminsuper', 'admin']);
+    
+    // Check if user is PJP Kelompok
+    function isPJPKelompok() {
+      return isAuthenticated() && getUserData().role == 'kelompok';
     }
-
-    // === Aturan untuk Koleksi 'users' ===
+    
+    // Check if user is Guru
+    function isGuru() {
+      return isAuthenticated() && getUserData().role == 'guru';
+    }
+    
+    // Check if user is Orang Tua
+    function isOrangTua() {
+      return isAuthenticated() && getUserData().role == 'orangtua';
+    }
+    
+    // ============== USERS COLLECTION ==============
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      // Membatasi pembuatan dokumen hanya untuk pengguna yang sudah terotentikasi
+      // Allow read for authenticated users - admins see all, others see only themselves
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     request.auth.uid == userId ||
+                     // PJP Desa can see users in their desa
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     // PJP Kelompok can see users in their kelompok
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
       allow create: if isAuthenticated();
-      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
-      allow delete: if hasRole('adminsuper') ||
-                     (hasRole('admin') && resource.data.role != 'adminsuper') ||
-                     (hasRole('desa') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa) ||
-                     (hasRole('kelompok') && resource.data.role == 'guru' && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
     }
-
-    // === Aturan untuk Data Master ('desa', 'kelompok') ===
+    
+    // ============== DESA COLLECTION ==============
     match /desa/{desaId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
-
+    
+    // ============== KELOMPOK COLLECTION ==============
     match /kelompok/{kelompokId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() || hasRole('desa');
+      allow write: if isAdmin() || isPJPDesa();
     }
-
-    // === Aturan untuk Data Operasional ===
-    match /generus/{generusId} {
-      // Pengguna hanya bisa membaca data generus dalam lingkup mereka (desa/kelompok)
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
-      
-      // Update aturan untuk write (create dan update)
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
-      
-      // Tambahkan aturan khusus untuk delete
-      allow delete: if isAdmin() ||
-                     (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                     (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
-    }
-
+    
+    // ============== GURUS COLLECTION ==============
     match /gurus/{guruId} {
-      // Pengguna hanya bisa membaca data guru dalam lingkup mereka
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.userId == request.auth.uid);
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == resource.data.userId));
+      
+      allow create: if isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok);
+      
+      allow update: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
+      
+      allow delete: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa);
     }
-
+    
+    // ============== KELAS COLLECTION ==============
     match /kelas/{kelasId} {
-      // Pengguna hanya bisa membaca data kelas dalam lingkup mereka
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok);
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok);
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow create: if isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok);
+      
+      allow update: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
+      
+      allow delete: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa);
     }
     
-    match /monthlyAttendance/{attendanceId} {
-      // Admin, PJP Desa, dan PJP Kelompok dapat membaca data kehadiran dalam lingkup mereka.
-      // Guru hanya dapat membaca data kehadiran yang mereka buat.
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.guruId == request.auth.uid);
-      // Hanya guru yang bisa menulis data kehadiran, dan harus sesuai dengan ID mereka. Admin juga bisa menulis.
-      allow write: if isAdmin() || (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
+    // ============== GENERUS COLLECTION ==============
+    match /generus/{generusId} {
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow create: if isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok);
+      
+      allow update: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
+      
+      allow delete: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
     }
     
+    // ============== MATERIALS COLLECTION ==============
     match /materials/{materialId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() || hasRole('kelompok');
+      allow write: if isAdmin() || isPJPDesa();
     }
-
-    match /grades/{gradeId} {
-      // Admin, PJP Desa, dan PJP Kelompok dapat membaca data nilai dalam lingkup mereka.
-      // Guru hanya dapat membaca data nilai yang mereka buat.
-      allow read: if isAdmin() ||
-                   (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-                   (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-                   (hasRole('guru') && resource.data.guruId == request.auth.uid);
-      // Hanya guru yang bertanggung jawab yang dapat membuat/memperbarui nilai.
-      allow write: if hasRole('guru') && request.resource.data.guruId == request.auth.uid;
-    }
-
-    // === Aturan untuk M5U ===
-    match /m5u/{m5uId} {
-      // Semua pengguna yang terotentikasi bisa membaca data M5U dalam lingkup mereka
-      allow read: if isAuthenticated() && (
-        isAdmin() ||
-        (hasRole('desa') && resource.data.desa == currentUserData().desa) ||
-        (hasRole('kelompok') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok) ||
-        (hasRole('guru') && resource.data.guruId == request.auth.uid) ||
-        (hasRole('orangtua') && resource.data.desa == currentUserData().desa && resource.data.kelompok == currentUserData().kelompok)
-      );
+    
+    // ============== MONTHLY ATTENDANCE COLLECTION ==============
+    match /monthlyAttendance/{attendanceId} {
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == resource.data.guruId));
       
-      // Write permissions - izinkan PJP Kelompok untuk menambah M5U
-      allow write: if isAdmin() || 
-                    (hasRole('desa') && request.resource.data.desa == currentUserData().desa) ||
-                    (hasRole('kelompok') && request.resource.data.desa == currentUserData().desa && request.resource.data.kelompok == currentUserData().kelompok) ||
-                    (hasRole('guru') && request.resource.data.guruId == request.auth.uid);
+      allow create: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || isGuru() ||
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
+      
+      allow update: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || 
+                     (isGuru() && request.auth.uid == resource.data.guruId) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow delete: if isAdmin() || isPJPDesa() || 
+                     (isGuru() && request.auth.uid == resource.data.guruId);
     }
-
+    
+    // ============== GRADES COLLECTION ==============
+    match /grades/{gradeId} {
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == resource.data.guruId));
+      
+      allow create: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || isGuru() ||
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
+      
+      allow update: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || 
+                     (isGuru() && request.auth.uid == resource.data.guruId) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow delete: if isAdmin() || isPJPDesa() || 
+                     (isGuru() && request.auth.uid == resource.data.guruId);
+    }
+    
+    // ============== M5U COLLECTION ==============
+    match /m5u/{m5uId} {
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isOrangTua() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow create: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || isGuru() ||
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
+      
+      allow update: if isAuthenticated() &&
+                     (isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == resource.data.guruId));
+      
+      allow delete: if isAdmin() || 
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
+    }
+    
+    // ============== ANNOUNCEMENTS COLLECTION ==============
     match /announcements/{announcementId} {
-      // Admin bisa membaca semua, pengguna lain hanya bisa membaca jika peran mereka ada di targetRoles.
-      allow read: if isAdmin() || (isAuthenticated() && currentUserData().role in resource.data.targetRoles);
-      // Hanya admin yang bisa membuat, mengubah, atau menghapus pengumuman.
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     getUserData().role in resource.data.targetRoles);
+      
       allow write: if isAdmin();
+    }
+    
+    // ============== LATIHAN ASAD COLLECTION ==============
+    match /latihanASAD/{latihanId} {
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow create: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
+      
+      allow update: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow delete: if isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
+    }
+    
+    // ============== JARIYAH PPG COLLECTION ==============
+    match /jariyahPPG/{jariyahId} {
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow create: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
+      
+      allow update: if isAuthenticated() &&
+                     (isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      
+      allow delete: if isAdmin() || isPJPDesa() || 
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
     }
   }
 }

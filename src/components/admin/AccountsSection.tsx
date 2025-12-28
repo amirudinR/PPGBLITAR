@@ -25,8 +25,8 @@ const ITEMS_PER_PAGE = 10;
 
 const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Active': return 'bg-green-500/20 text-green-800';
+      default: return 'bg-muted text-foreground';
     }
 };
 
@@ -212,42 +212,42 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
           </Dialog>
         )}
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
+      <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('name')}
               >
                 Nama{getSortIndicator('name')}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('email')}
               >
                 Email{getSortIndicator('email')}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('role')}
               >
                 Peran{getSortIndicator('role')}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('status')}
               >
                 Status{getSortIndicator('status')}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('desa' as keyof User)}
               >
                 Desa{getSortIndicator('desa' as keyof User)}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('kelompok' as keyof User)}
               >
                 Kelompok{getSortIndicator('kelompok' as keyof User)}
@@ -276,10 +276,10 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
                       <TooltipTrigger asChild>
                         <span className="inline-flex">
                           <Button variant="ghost" size="icon" disabled>
-                            <Edit className="w-4 h-4 text-gray-400" />
+                            <Edit className="w-4 h-4 text-muted-foreground" />
                           </Button>
                           <Button variant="ghost" size="icon" disabled>
-                            <Trash2 className="w-4 h-4 text-gray-400" />
+                            <Trash2 className="w-4 h-4 text-muted-foreground" />
                           </Button>
                         </span>
                       </TooltipTrigger>

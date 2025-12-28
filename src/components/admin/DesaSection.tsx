@@ -125,12 +125,12 @@ export default function DesaSection({ desas, onAddDesa, onUpdateDesa, onDeleteDe
           </DialogContent>
         </Dialog>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
+      <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('name')}
               >
                 Nama Desa{getSortIndicator('name')}

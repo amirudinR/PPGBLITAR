@@ -96,7 +96,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   if (!hasPermission && !loading) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="bg-red-500/10 dark:bg-red-500/20 border border-red-200 rounded-lg p-6">
           <div className="flex items-center gap-3">
             <Lock className="h-6 w-6 text-red-600" />
             <div>
@@ -137,7 +137,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
             </Button>
           )}
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-blue-500/10 dark:bg-blue-500/20 border border-blue-200 rounded-lg p-6">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-6 w-6 text-blue-600" />
             <div>

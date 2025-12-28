@@ -145,7 +145,7 @@ export default function AttendanceSection({
       {desas.map(desa => {
         const desaSummary = (summaryData as Record<string, SummaryData>)[desa.name] || {};
         return (
-          <AccordionItem value={desa.id} key={desa.id} className="bg-white rounded-lg shadow">
+          <AccordionItem value={desa.id} key={desa.id} className="bg-card rounded-lg shadow">
             <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
               {desa.name}
             </AccordionTrigger>
@@ -181,7 +181,7 @@ export default function AttendanceSection({
       : 'Rekap Kehadiran Kelas Saya';
 
     return (
-      <Card className="bg-white rounded-lg shadow">
+      <Card className="bg-card rounded-lg shadow">
         <CardHeader><CardTitle>{viewTitle}</CardTitle></CardHeader>
         <CardContent>
           <Table>

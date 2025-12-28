@@ -209,7 +209,7 @@ export default function KelompokDashboard({
       
       {/* Warning for unimplemented M5U */}
       {showM5UWarning && (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <Alert variant="destructive" className="border-red-200 bg-red-500/10 dark:bg-red-500/20">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Peringatan M5U</AlertTitle>
           <AlertDescription>
@@ -237,13 +237,13 @@ export default function KelompokDashboard({
       )}
       
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-white rounded-xl shadow-md">
+        <Card className="bg-card rounded-xl shadow-md">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-800">Statistik Jumlah Generus</CardTitle>
+            <CardTitle className="text-lg font-semibold text-foreground">Statistik Jumlah Generus</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <Label className="text-sm font-medium mb-2 block text-gray-700">Filter Jenjang Usia:</Label>
+              <Label className="text-sm font-medium mb-2 block text-foreground">Filter Jenjang Usia:</Label>
               <div className="grid grid-cols-2 gap-2">
                 {JENJANG_USIA_LIST.map((group) => (
                   <div key={group} className="flex items-center space-x-2">
@@ -252,7 +252,7 @@ export default function KelompokDashboard({
                       checked={selectedAgeGroups.includes(group)}
                       onCheckedChange={() => toggleAgeGroup(group)}
                     />
-                    <Label htmlFor={`age-group-${group}`} className="text-sm font-normal text-gray-600">
+                    <Label htmlFor={`age-group-${group}`} className="text-sm font-normal text-muted-foreground">
                       {group}
                     </Label>
                   </div>
@@ -263,9 +263,9 @@ export default function KelompokDashboard({
           </CardContent>
         </Card>
         
-        <Card className="bg-white rounded-xl shadow-md">
+        <Card className="bg-card rounded-xl shadow-md">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-800">Distribusi Generus per Jenjang Usia</CardTitle>
+            <CardTitle className="text-lg font-semibold text-foreground">Distribusi Generus per Jenjang Usia</CardTitle>
           </CardHeader>
           <CardContent>
             <GenerusChart data={kelompokStats?.ageGroupData || []} />

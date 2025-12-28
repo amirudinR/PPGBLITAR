@@ -205,19 +205,19 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
           Tambah Kelas
         </Button>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-auto">
+      <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('namaKelas')}
               >
                 Nama Kelas{getSortIndicator('namaKelas')}
               </TableHead>
               {isAdmin && (
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('desa' as keyof Kelas)}
                 >
                   Desa{getSortIndicator('desa' as keyof Kelas)}
@@ -225,26 +225,26 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
               )}
               {isAdmin && (
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => requestSort('kelompok' as keyof Kelas)}
                 >
                   Kelompok{getSortIndicator('kelompok' as keyof Kelas)}
                 </TableHead>
               )}
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('guruName' as keyof Kelas)}
               >
                 Guru{getSortIndicator('guruName' as keyof Kelas)}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('jenjangUsia' as keyof Kelas)}
               >
                 Jenjang Usia{getSortIndicator('jenjangUsia' as keyof Kelas)}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('studentIds' as keyof Kelas)}
               >
                 Jumlah Siswa{getSortIndicator('studentIds' as keyof Kelas)}
@@ -412,7 +412,7 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
               <ScrollArea className="h-64 mt-2 rounded-md border p-2">
                 {enrolledStudents.length > 0 ? (
                   enrolledStudents.map(student => (
-                    <div key={student.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                    <div key={student.id} className="flex items-center justify-between p-2 hover:bg-background rounded">
                       <div>
                         <span className="font-medium">{student.name}</span>
                         <Badge variant="outline" className="ml-2 font-normal">{student.pendidikan}</Badge>
@@ -428,7 +428,7 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-gray-500 py-4">Belum ada siswa di kelas ini.</p>
+                  <p className="text-center text-muted-foreground py-4">Belum ada siswa di kelas ini.</p>
                 )}
               </ScrollArea>
             </div>

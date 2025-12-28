@@ -103,7 +103,7 @@ export default function DetailPencapaianKelas({
           </Button>
           <h1 className="text-2xl font-bold">Detail Pencapaian Kelas</h1>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 text-center">
+        <div className="bg-card rounded-lg shadow p-6 text-center">
           <p>Kelas tidak ditemukan</p>
         </div>
       </div>

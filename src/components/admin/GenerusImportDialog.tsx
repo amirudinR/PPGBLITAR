@@ -171,16 +171,16 @@ export default function GenerusImportDialog({ isOpen, onClose, onImport, current
             onClick={() => document.getElementById('file-input')?.click()}
           >
             <div className="flex flex-col items-center justify-center gap-4">
-              <div className="p-3 bg-gray-100 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-3 bg-muted rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-gray-700">
+                <p className="font-medium text-foreground">
                   {file ? file.name : 'Seret file ke sini atau klik untuk memilih'}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Format yang didukung: .xlsx, .xls
                 </p>
               </div>
@@ -195,12 +195,12 @@ export default function GenerusImportDialog({ isOpen, onClose, onImport, current
           </div>
           
           {file && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-md flex items-center justify-between">
+            <div className="mt-4 p-3 bg-background rounded-md flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span className="text-sm font-medium text-gray-700">{file.name}</span>
+                <span className="text-sm font-medium text-foreground">{file.name}</span>
               </div>
               <Button 
                 variant="ghost" 

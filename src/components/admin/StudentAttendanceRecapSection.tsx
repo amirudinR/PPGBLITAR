@@ -229,31 +229,31 @@ export default function StudentAttendanceRecapSection({
             <TableHeader>
               <TableRow>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  className="cursor-pointer hover:bg-muted whitespace-nowrap"
                   onClick={() => requestSort('name')}
                 >
                   Nama Siswa{getSortIndicator('name')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  className="cursor-pointer hover:bg-muted whitespace-nowrap"
                   onClick={() => requestSort('className')}
                 >
                   Kelas{getSortIndicator('className')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 whitespace-nowrap"
+                  className="cursor-pointer hover:bg-muted whitespace-nowrap"
                   onClick={() => requestSort('guruName')}
                 >
                   Guru{getSortIndicator('guruName')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 text-center whitespace-nowrap"
+                  className="cursor-pointer hover:bg-muted text-center whitespace-nowrap"
                   onClick={() => requestSort('attended')}
                 >
                   Total Kehadiran{getSortIndicator('attended')}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-gray-100 w-48 whitespace-nowrap"
+                  className="cursor-pointer hover:bg-muted w-48 whitespace-nowrap"
                   onClick={() => requestSort('percentage')}
                 >
                   Persentase{getSortIndicator('percentage')}
