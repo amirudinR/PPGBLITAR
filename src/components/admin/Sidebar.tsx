@@ -85,6 +85,7 @@ interface SidebarProps {
   sidebarCollapsed: boolean;
   onLogout: () => void;
   currentUser: User | null;
+  canAccessFeature?: (featureId: string) => boolean;
 }
 
 export default function Sidebar({
@@ -95,6 +96,7 @@ export default function Sidebar({
   sidebarCollapsed,
   onLogout,
   currentUser,
+  canAccessFeature,
 }: SidebarProps) {
   const userRole = currentUser?.role || 'orangtua';
 
@@ -119,16 +121,37 @@ export default function Sidebar({
 
   const panelTitle = getPanelTitle();
 
+  // Parent menu IDs that are just containers (not in FEATURE_LIST)
+  const containerMenuIds = ['master', 'kehadiran', 'nilai', 'target-materi', 'laporan', 'pengaturan'];
+
+  // Check if user can access a menu item
+  const hasAccess = (itemId: string, itemRoles: string[]): boolean => {
+    // Container menus (parent items) always fallback to static role check
+    // because they are not in FEATURE_LIST
+    if (containerMenuIds.includes(itemId)) {
+      return itemRoles.includes(userRole);
+    }
+
+    // If canAccessFeature is provided, use it (checks Firestore permissions)
+    if (canAccessFeature) {
+      return canAccessFeature(itemId);
+    }
+    // Fallback to static role check
+    return itemRoles.includes(userRole);
+  };
+
   const visibleMenuItems = menuItems.map(item => {
-    if (!item.roles.includes(userRole)) return null;
+    // For container menus, check if any children are accessible
     if (item.children) {
-      const visibleChildren = item.children.filter(child => child.roles.includes(userRole));
+      const visibleChildren = item.children.filter(child => hasAccess(child.id, child.roles));
       if (visibleChildren.length > 0) {
         return { ...item, children: visibleChildren };
       }
-      // If parent is visible but no children are, don't render the parent if it's just a container
-      if (item.id === 'master' || item.id === 'kehadiran' || item.id === 'nilai' || item.id === 'target-materi' || item.id === 'laporan') return null;
+      // No visible children, don't show the container
+      return null;
     }
+    // For non-container items, check direct access
+    if (!hasAccess(item.id, item.roles)) return null;
     return item;
   }).filter(Boolean) as (typeof menuItems[number])[];
 

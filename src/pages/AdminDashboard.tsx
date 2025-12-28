@@ -41,6 +41,7 @@ import { useAuthManagement } from '@/hooks/useAuthManagement';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useGrades } from '@/hooks/useGrades';
 import { useTheme } from '@/hooks/useTheme';
+import { useFeaturePermissions } from '@/hooks/useFeaturePermissions';
 
 interface AdminDashboardProps {
   currentUser: User | null;
@@ -414,6 +415,15 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
   // Theme hook
   const { theme, toggleTheme } = useTheme();
 
+  // Feature permissions hook
+  const { canAccessFeature } = useFeaturePermissions(currentUser);
+
+  // Wrapper function to check feature access based on user role
+  const checkFeatureAccess = (featureId: string): boolean => {
+    if (!currentUser) return false;
+    return canAccessFeature(featureId, currentUser.role);
+  };
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar
@@ -424,6 +434,7 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
         sidebarCollapsed={sidebarCollapsed}
         onLogout={handleLogout}
         currentUser={currentUser}
+        canAccessFeature={checkFeatureAccess}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
