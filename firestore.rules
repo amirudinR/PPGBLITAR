@@ -245,5 +245,14 @@ service cloud.firestore {
       allow delete: if isAdmin() || isPJPDesa() || 
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
     }
+    
+    // ============== FEATURE PERMISSIONS COLLECTION ==============
+    match /featurePermissions/{permissionId} {
+      // All authenticated users can read (to check their access)
+      allow read: if isAuthenticated();
+      
+      // Only adminsuper can write
+      allow write: if isAuthenticated() && getUserData().role == 'adminsuper';
+    }
   }
 }

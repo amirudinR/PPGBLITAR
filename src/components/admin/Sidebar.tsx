@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit, Megaphone, FileText, Target, BookMarked, Search } from 'lucide-react';
+import { Users, BookOpen, Calendar, LogOut, X, GraduationCap, Database, Home, Users2, LayoutDashboard, ClipboardCheck, Contact, School, UserCircle, Edit, Megaphone, FileText, Target, BookMarked, Search, Shield, Settings } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from '@/types/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -65,6 +65,16 @@ const menuItems = [
     ]
   },
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, roles: ['adminsuper', 'admin'] },
+  // Super Admin Only - Settings
+  {
+    id: 'pengaturan',
+    label: 'Pengaturan',
+    icon: Settings,
+    roles: ['adminsuper'],
+    children: [
+      { id: 'akses-fitur', label: 'Akses Fitur', icon: Shield, roles: ['adminsuper'] },
+    ]
+  },
 ];
 
 interface SidebarProps {

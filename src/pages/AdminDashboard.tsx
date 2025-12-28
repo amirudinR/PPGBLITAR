@@ -26,6 +26,7 @@ import RekapPerKelasSection from '@/components/admin/RekapPerKelasSection';
 import DetailPencapaianKelas from '@/components/admin/DetailPencapaianKelas';
 import LatihanASADSection from '@/components/admin/LatihanASADSection';
 import JariyahPPGSection from '@/components/admin/JariyahPPGSection';
+import FeaturePermissionsSection from '@/components/admin/FeaturePermissionsSection';
 
 // Import custom hooks
 import { useDesa } from '@/hooks/useDesa';
@@ -404,6 +405,8 @@ export default function AdminDashboard({ currentUser, handleLogout }: AdminDashb
           startDate={{ month: periode.startMonth, year: periode.startYear }}
           endDate={{ month: periode.endMonth, year: periode.endYear }}
         />;
+      case 'akses-fitur':
+        return <FeaturePermissionsSection currentUser={currentUser} />;
       default:
         return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
     }
