@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
@@ -13,7 +14,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { isDarkMode, toggleDarkMode } = useTheme();
+
+  // Load saved email from localStorage on mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    const savedRememberMe = localStorage.getItem('rememberMe');
+    if (savedEmail && savedRememberMe === 'true') {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -24,6 +36,15 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       showSuccess("Login berhasil!");
+
+      // Save email to localStorage if rememberMe is checked
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberMe');
+      }
       // Navigasi sekarang ditangani secara otomatis oleh App.tsx
     } catch (error) {
       const firebaseError = error as FirebaseError;
@@ -109,6 +130,20 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+            </div>
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                className="rounded"
+              />
+              <label
+                htmlFor="rememberMe"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                Ingat Saya
+              </label>
             </div>
             <div className="flex items-center justify-end pt-2">
               <Button

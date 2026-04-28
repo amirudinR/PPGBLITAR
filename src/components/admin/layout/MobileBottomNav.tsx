@@ -106,11 +106,11 @@ export default function MobileBottomNav({
                 <span className="text-[10px] font-medium leading-tight text-muted-foreground">Lainnya</span>
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-auto max-h-[70vh] rounded-t-2xl">
+            <SheetContent side="bottom" className="h-auto max-h-[70vh] rounded-t-2xl pb-8">
               <SheetHeader className="pb-4">
                 <SheetTitle className="text-lg text-center">Menu Lainnya</SheetTitle>
               </SheetHeader>
-              <div className="grid grid-cols-3 gap-3 pb-6">
+              <div className="grid grid-cols-3 gap-3 pb-4">
                 {moreItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -128,16 +128,18 @@ export default function MobileBottomNav({
                     </button>
                   );
                 })}
-                {/* Logout */}
+              </div>
+              {/* Logout - separate section at bottom */}
+              <div className="border-t border-border pt-4">
                 <button
                   onClick={() => {
                     setMoreOpen(false);
                     onLogout();
                   }}
-                  className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border hover:border-destructive/30 hover:bg-destructive/5 text-destructive transition-all"
+                  className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-border hover:border-destructive/30 hover:bg-destructive/5 text-destructive transition-all"
                 >
-                  <LogOut className="h-6 w-6" />
-                  <span className="text-xs font-medium text-center leading-tight">Logout</span>
+                  <LogOut className="h-5 w-5" />
+                  <span className="text-sm font-medium">Logout</span>
                 </button>
               </div>
             </SheetContent>
