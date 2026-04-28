@@ -154,6 +154,14 @@ export default function M5USection({ currentUser }: M5USectionProps) {
             </Button>
           ) : null}
         />
+        <M5UDialog
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          onSave={handleSave}
+          isEditMode={isEditMode}
+          currentItem={currentItem}
+          editingId={editingId}
+        />
       </div>
     );
   }
