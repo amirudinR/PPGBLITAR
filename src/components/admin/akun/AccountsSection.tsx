@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Desa, Kelompok, ROLES, Role } from '@/types/admin';
-import { Edit, Trash2, Plus, CheckSquare } from 'lucide-react';
+import { Edit, Trash2, Plus, CheckSquare, KeyRound } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -21,6 +21,7 @@ interface AccountsSectionProps {
   onAddUser: (user: Omit<User, 'id'>) => Promise<boolean>;
   onUpdateUser: (id: string, updatedData: Omit<User, 'id'>) => Promise<boolean>;
   onDeleteUser: (id: string) => void;
+  onResetUserPassword: (email: string) => Promise<void>;
   currentUser: User | null;
 }
 
@@ -44,7 +45,7 @@ const ROLE_LABELS: Record<Role, string> = {
   orangtua: 'Orang Tua'
 };
 
-export default function AccountsSection({ users, desas, kelompok, onAddUser, onUpdateUser, onDeleteUser, currentUser }: AccountsSectionProps) {
+export default function AccountsSection({ users, desas, kelompok, onAddUser, onUpdateUser, onDeleteUser, onResetUserPassword, currentUser }: AccountsSectionProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -438,9 +439,18 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
                 <Label>Email</Label>
                 <Input type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} />
               </div>
-              <div>
-                <Label>Password (Kosongkan jika tidak ingin mengubah)</Label>
-                <Input type="password" onChange={e => setEditingUser({...editingUser, password: e.target.value})} />
+              <div className="space-y-1">
+                <Label>Password</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => onResetUserPassword(editingUser.email)}
+                >
+                  <KeyRound className="w-4 h-4 mr-2" />
+                  Kirim Email Reset Password
+                </Button>
+                <p className="text-xs text-muted-foreground">Tautan reset akan dikirim ke email pengguna.</p>
               </div>
             </div>
           )}

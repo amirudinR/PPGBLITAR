@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { collection, getDocs, setDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { db } from '@/lib/firebase';
 import { User } from '@/types/admin';
@@ -85,6 +85,20 @@ export function useUsers(currentUser: User | null) {
     }
   };
 
+  const resetUserPassword = async (email: string) => {
+    const toastId = showLoading('Mengirim email reset password...');
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
+      dismissToast(toastId);
+      showSuccess(`Email reset password dikirim ke ${email}.`);
+    } catch (e: any) {
+      dismissToast(toastId);
+      if (e.code === 'auth/user-not-found') showError('Email tidak ditemukan di sistem.');
+      else showError('Gagal mengirim email reset password.');
+    }
+  };
+
   const deleteUser = async (id: string) => {
     try {
       await deleteDoc(doc(db, "users", id));
@@ -93,5 +107,5 @@ export function useUsers(currentUser: User | null) {
     } catch (e) { showError("Gagal menghapus akun."); }
   };
 
-  return { users, loading, fetchUsers, addUser, updateUser, deleteUser };
+  return { users, loading, fetchUsers, addUser, updateUser, resetUserPassword, deleteUser };
 }
