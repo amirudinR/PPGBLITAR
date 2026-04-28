@@ -35,9 +35,16 @@ export function useAccounts(
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
+  /* ---------- role hierarchy for visibility ---------- */
+  const ROLE_HIERARCHY: Record<Role, number> = {
+    adminsuper: 5, admin: 4, desa: 3, kelompok: 2, guru: 1, orangtua: 0,
+  };
+
   /* ---------- sorting & pagination ---------- */
   const sortedUsers = useMemo(() => {
-    const items = [...users];
+    const currentLevel = currentUser ? ROLE_HIERARCHY[currentUser.role] : -1;
+    const filtered = users.filter(u => ROLE_HIERARCHY[u.role] <= currentLevel);
+    const items = [...filtered];
     if (sortConfig) {
       items.sort((a, b) => {
         const aVal = a[sortConfig.key];
@@ -50,7 +57,7 @@ export function useAccounts(
       });
     }
     return items;
-  }, [users, sortConfig]);
+  }, [users, sortConfig, currentUser]);
 
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
