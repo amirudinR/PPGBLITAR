@@ -3,65 +3,65 @@
    ============================================ */
 
 :root:not(.dark):not(.soft):not(.neu):not(.editorial):not(.glass) {
-  --background: 140 12% 96%;
-  --foreground: 160 20% 8%;
+  --background: 85 12% 96%;
+  --foreground: 85 20% 8%;
 
   --card: 0 0% 100%;
-  --card-foreground: 160 20% 8%;
+  --card-foreground: 85 20% 8%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 160 20% 8%;
+  --popover-foreground: 85 20% 8%;
 
-  --primary: 160 70% 38%;
+  --primary: 85 55% 40%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 140 10% 93%;
-  --secondary-foreground: 160 20% 10%;
+  --secondary: 85 10% 93%;
+  --secondary-foreground: 85 20% 10%;
 
-  --muted: 140 10% 94%;
-  --muted-foreground: 140 8% 46%;
+  --muted: 85 10% 94%;
+  --muted-foreground: 85 8% 46%;
 
-  --accent: 160 30% 90%;
-  --accent-foreground: 160 50% 20%;
+  --accent: 85 30% 90%;
+  --accent-foreground: 85 50% 20%;
 
   --destructive: 0 65% 50%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 140 10% 88%;
-  --input: 140 10% 88%;
-  --ring: 160 70% 38%;
+  --border: 85 10% 88%;
+  --input: 85 10% 88%;
+  --ring: 85 55% 40%;
 
   --radius: 0.75rem;
 
-  --sidebar-background: 160 70% 38%;
-  --sidebar-foreground: 140 20% 92%;
-  --sidebar-primary: 160 70% 38%;
+  --sidebar-background: 85 55% 40%;
+  --sidebar-foreground: 85 20% 92%;
+  --sidebar-primary: 85 55% 40%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 160 65% 34%;
+  --sidebar-accent: 85 50% 35%;
   --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 160 65% 34%;
-  --sidebar-ring: 160 70% 38%;
+  --sidebar-border: 85 50% 35%;
+  --sidebar-ring: 85 55% 40%;
 
-  --hero-from: 160 70% 38%;
-  --hero-to: 150 60% 28%;
+  --hero-from: 85 55% 40%;
+  --hero-to: 85 50% 30%;
   --hero-foreground: 0 0% 100%;
-  --hero-muted: 150 30% 78%;
+  --hero-muted: 85 30% 78%;
 
-  --stat-1: 160 70% 38%;
+  --stat-1: 85 55% 40%;
   --stat-2: 195 60% 45%;
   --stat-3: 45 80% 45%;
   --stat-4: 0 65% 50%;
   --stat-5: 347 65% 48%;
   --stat-6: 271 60% 55%;
 
-  --chart-1: 160 70% 38%;
+  --chart-1: 85 55% 40%;
   --chart-2: 195 60% 45%;
   --chart-3: 45 80% 45%;
   --chart-4: 0 65% 50%;
   --chart-5: 347 65% 48%;
   --chart-6: 271 60% 55%;
 
-  --success: 160 70% 38%;
+  --success: 85 55% 40%;
   --success-foreground: 0 0% 100%;
   --warning: 45 80% 45%;
   --warning-foreground: 0 0% 100%;
