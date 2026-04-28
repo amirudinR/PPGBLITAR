@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from '@/components/admin/layout/Sidebar';
 import Header from '@/components/admin/layout/Header';
+import MobileBottomNav from '@/components/admin/layout/MobileBottomNav';
 import { User } from '@/types/admin';
 
 interface AdminDashboardLayoutProps {
@@ -61,9 +62,16 @@ export default function AdminDashboardLayout({
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
         />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-6 pb-20 lg:pb-6">
           {loading ? <div className="text-center p-8">Memuat data...</div> : children}
         </main>
+        <MobileBottomNav
+          activeSection={activeSection}
+          setActiveSection={onSectionChange}
+          currentUser={currentUser}
+          canAccessFeature={canAccessFeature}
+          onLogout={onLogout}
+        />
       </div>
     </div>
   );

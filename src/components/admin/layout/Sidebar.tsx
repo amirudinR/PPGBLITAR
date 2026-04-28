@@ -27,7 +27,7 @@ export default function Sidebar({
   currentUser,
   canAccessFeature,
 }: SidebarProps) {
-  const { theme } = useTheme();
+  const { baseTheme } = useTheme();
   const userRole: Role = currentUser?.role ?? 'orangtua';
 
   const getPanelTitle = () => {
@@ -77,7 +77,7 @@ export default function Sidebar({
   )?.id;
 
   const getSidebarClass = () => {
-    switch (theme) {
+    switch (baseTheme) {
       case 'neu':
         return 'neu-sidebar';
       case 'soft':
@@ -89,7 +89,7 @@ export default function Sidebar({
 
   const getItemClass = (isActive: boolean) => {
     const base = 'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors mb-2';
-    switch (theme) {
+    switch (baseTheme) {
       case 'neu':
         return `${base} ${isActive ? 'neu-inset text-primary font-semibold' : 'neu-flat'}`;
       case 'soft':
@@ -101,7 +101,7 @@ export default function Sidebar({
 
   const getChildClass = (isActive: boolean) => {
     const base = 'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors mb-1 text-sm';
-    switch (theme) {
+    switch (baseTheme) {
       case 'neu':
         return `${base} ${isActive ? 'neu-inset text-primary font-semibold' : 'neu-flat'}`;
       case 'soft':
@@ -113,7 +113,7 @@ export default function Sidebar({
 
   const getLogoutClass = () => {
     const base = 'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors';
-    switch (theme) {
+    switch (baseTheme) {
       case 'neu':
         return `${base} neu-flat text-destructive`;
       case 'soft':
