@@ -1,70 +1,70 @@
 /* ============================================
-   LIGHT THEME — default
+   CLASSIC LIGHT THEME — Green Islamic Natural
    ============================================ */
 
 :root:not(.dark):not(.soft):not(.neu):not(.editorial):not(.glass) {
-  --background: 240 5% 96.1%;
-  --foreground: 240 10% 3.9%;
+  --background: 140 12% 96%;
+  --foreground: 160 20% 8%;
 
   --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
+  --card-foreground: 160 20% 8%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
+  --popover-foreground: 160 20% 8%;
 
-  --primary: 243 75% 59%;
+  --primary: 160 70% 38%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
+  --secondary: 140 10% 93%;
+  --secondary-foreground: 160 20% 10%;
 
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
+  --muted: 140 10% 94%;
+  --muted-foreground: 140 8% 46%;
 
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
+  --accent: 160 30% 90%;
+  --accent-foreground: 160 50% 20%;
 
-  --destructive: 0 84.2% 60.2%;
+  --destructive: 0 65% 50%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 243 75% 59%;
+  --border: 140 10% 88%;
+  --input: 140 10% 88%;
+  --ring: 160 70% 38%;
 
   --radius: 0.75rem;
 
-  --sidebar-background: 243 75% 59%;
-  --sidebar-foreground: 240 5% 90%;
-  --sidebar-primary: 243 75% 59%;
+  --sidebar-background: 160 70% 38%;
+  --sidebar-foreground: 140 20% 92%;
+  --sidebar-primary: 160 70% 38%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 243 75% 55%;
+  --sidebar-accent: 160 65% 34%;
   --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 243 75% 55%;
-  --sidebar-ring: 243 75% 59%;
+  --sidebar-border: 160 65% 34%;
+  --sidebar-ring: 160 70% 38%;
 
-  --hero-from: 243 75% 59%;
-  --hero-to: 217 91% 60%;
+  --hero-from: 160 70% 38%;
+  --hero-to: 150 60% 28%;
   --hero-foreground: 0 0% 100%;
-  --hero-muted: 226 71% 82%;
+  --hero-muted: 150 30% 78%;
 
-  --stat-1: 243 75% 59%;
-  --stat-2: 217 91% 60%;
-  --stat-3: 160 84% 39%;
-  --stat-4: 38 92% 50%;
-  --stat-5: 347 77% 50%;
-  --stat-6: 271 91% 65%;
+  --stat-1: 160 70% 38%;
+  --stat-2: 195 60% 45%;
+  --stat-3: 45 80% 45%;
+  --stat-4: 0 65% 50%;
+  --stat-5: 347 65% 48%;
+  --stat-6: 271 60% 55%;
 
-  --chart-1: 243 75% 59%;
-  --chart-2: 217 91% 60%;
-  --chart-3: 160 84% 39%;
-  --chart-4: 38 92% 50%;
-  --chart-5: 347 77% 50%;
-  --chart-6: 271 91% 65%;
+  --chart-1: 160 70% 38%;
+  --chart-2: 195 60% 45%;
+  --chart-3: 45 80% 45%;
+  --chart-4: 0 65% 50%;
+  --chart-5: 347 65% 48%;
+  --chart-6: 271 60% 55%;
 
-  --success: 160 84% 39%;
+  --success: 160 70% 38%;
   --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%;
+  --warning: 45 80% 45%;
   --warning-foreground: 0 0% 100%;
-  --info: 217 91% 60%;
+  --info: 195 60% 45%;
   --info-foreground: 0 0% 100%;
 }
