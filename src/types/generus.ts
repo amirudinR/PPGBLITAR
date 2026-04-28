@@ -44,8 +44,8 @@ export const getJenjangUsia = (pendidikan: Pendidikan): JenjangUsia | '-' => {
 };
 
 export const STATUS_MONDOK_LIST = [
-  'Boarding school di Samarinda',
-  'Boarding school di luar Samarinda',
+  'Boarding school di Kutim',
+  'Boarding school di luar Kutim',
   'Mubaligh/Mubalighot',
   'Tidak Sedang Mondok',
   'Hadis Besar'
