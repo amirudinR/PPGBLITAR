@@ -1,17 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Kelas, Guru, User, JENJANG_USIA_LIST, JenjangUsia, Generus, getJenjangUsia, Desa, Kelompok } from '@/types/admin';
-import { Plus, Edit, Trash2, Users, X } from 'lucide-react';
+import { Kelas, Guru, User, JenjangUsia, Generus, getJenjangUsia, Desa, Kelompok } from '@/types/admin';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import PaginationControls from '../layout/PaginationControls';
 import SectionHeader from '../shared/SectionHeader';
+import KelasTable from './KelasTable';
+import KelasFormDialog from './KelasFormDialog';
+import ManageStudentsDialog from './ManageStudentsDialog';
 
 interface KelasSectionProps {
   kelas: Kelas[];
@@ -72,11 +66,6 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
     }
     setSortConfig({ key, direction });
     setCurrentPage(1);
-  };
-
-  const getSortIndicator = (key: keyof Kelas) => {
-    if (!sortConfig || sortConfig.key !== key) return null;
-    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
   };
 
   const openDialog = (item?: Kelas) => {
@@ -209,236 +198,46 @@ export default function KelasSection({ kelas, gurus, generus, onAddKelas, onUpda
           </Button>
         }
       />
-      <div className="bg-card rounded-lg shadow overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => requestSort('namaKelas')}
-              >
-                Nama Kelas{getSortIndicator('namaKelas')}
-              </TableHead>
-              {isAdmin && (
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => requestSort('desa' as keyof Kelas)}
-                >
-                  Desa{getSortIndicator('desa' as keyof Kelas)}
-                </TableHead>
-              )}
-              {isAdmin && (
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => requestSort('kelompok' as keyof Kelas)}
-                >
-                  Kelompok{getSortIndicator('kelompok' as keyof Kelas)}
-                </TableHead>
-              )}
-              <TableHead 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => requestSort('guruName' as keyof Kelas)}
-              >
-                Guru{getSortIndicator('guruName' as keyof Kelas)}
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => requestSort('jenjangUsia' as keyof Kelas)}
-              >
-                Jenjang Usia{getSortIndicator('jenjangUsia' as keyof Kelas)}
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => requestSort('studentIds' as keyof Kelas)}
-              >
-                Jumlah Siswa{getSortIndicator('studentIds' as keyof Kelas)}
-              </TableHead>
-              <TableHead className="text-center">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedKelas.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.namaKelas}</TableCell>
-                {isAdmin && <TableCell>{item.desa}</TableCell>}
-                {isAdmin && <TableCell>{item.kelompok}</TableCell>}
-                <TableCell>{item.guruName}</TableCell>
-                <TableCell>{item.jenjangUsia}</TableCell>
-                <TableCell>{(item.studentIds || []).length}</TableCell>
-                <TableCell className="text-center space-x-1">
-                  <Button variant="ghost" size="icon" onClick={() => openManageStudentsDialog(item)} aria-label={`Kelola siswa kelas ${item.namaKelas}`}><Users className="w-4 h-4 text-[hsl(var(--success))]" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => openDialog(item)} aria-label={`Edit kelas ${item.namaKelas}`}><Edit className="w-4 h-4 text-[hsl(var(--info))]" /></Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label={`Hapus kelas ${item.namaKelas}`}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tindakan ini akan menghapus data kelas secara permanen. Data kehadiran individu generus tidak akan terpengaruh.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Hapus</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={sortedKelas.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+      <KelasTable
+        kelas={paginatedKelas}
+        isAdmin={isAdmin}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={sortedKelas.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        sortConfig={sortConfig}
+        onSort={requestSort}
+        onPageChange={setCurrentPage}
+        onManageStudents={openManageStudentsDialog}
+        onEdit={openDialog}
+        onDelete={handleDelete}
+      />
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{isEditMode ? 'Edit Data Kelas' : 'Tambah Kelas Baru'}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            {isAdmin && (
-              <>
-                <div>
-                  <Label>Desa</Label>
-                  <Select 
-                    value={currentItem.desa} 
-                    onValueChange={desa => setCurrentItem(prev => ({ ...prev, desa, kelompok: '' }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Desa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Kelompok</Label>
-                  <Select 
-                    value={currentItem.kelompok} 
-                    onValueChange={kelompok => setCurrentItem(prev => ({ ...prev, kelompok }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Kelompok" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-            <div>
-              <Label>Nama Kelas</Label>
-              <Input 
-                value={currentItem.namaKelas} 
-                onChange={(e) => setCurrentItem(prev => ({ ...prev, namaKelas: e.target.value }))} 
-              />
-            </div>
-            <div>
-              <Label>Guru</Label>
-              <Select 
-                value={currentItem.guruId} 
-                onValueChange={handleGuruChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Guru" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableGurus.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Jenjang Usia</Label>
-              <Select 
-                value={currentItem.jenjangUsia} 
-                onValueChange={(value) => setCurrentItem(prev => ({ ...prev, jenjangUsia: value as JenjangUsia }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Jenjang Usia" />
-                </SelectTrigger>
-                <SelectContent>
-                  {JENJANG_USIA_LIST.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-            <Button onClick={handleSave}>Simpan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <KelasFormDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSave={handleSave}
+        isEditMode={isEditMode}
+        formData={currentItem as any}
+        onFormDataChange={setCurrentItem as any}
+        onGuruChange={handleGuruChange}
+        availableGurus={availableGurus}
+        desas={desas}
+        filteredKelompok={filteredKelompok}
+        isAdmin={isAdmin}
+      />
 
-      <Dialog open={manageStudentsDialogOpen} onOpenChange={setManageStudentsDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Kelola Siswa di Kelas {selectedClass?.namaKelas}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-6">
-            <div>
-              <Label className="text-lg font-semibold">Tambah Siswa</Label>
-              <div className="flex items-center gap-2 mt-2">
-                <Select 
-                  value={studentToAdd} 
-                  onValueChange={setStudentToAdd}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Generus..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <ScrollArea className="h-48">
-                      {availableStudents.map(g => (
-                        <SelectItem key={g.id} value={g.id}>
-                          {g.name} ({g.pendidikan})
-                        </SelectItem>
-                      ))}
-                    </ScrollArea>
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleAddStudent} disabled={!studentToAdd}>Tambah</Button>
-              </div>
-            </div>
-            <div>
-              <Label className="text-lg font-semibold">Siswa Terdaftar ({enrolledStudents.length})</Label>
-              <ScrollArea className="h-64 mt-2 rounded-md border p-2">
-                {enrolledStudents.length > 0 ? (
-                  enrolledStudents.map(student => (
-                    <div key={student.id} className="flex items-center justify-between p-2 hover:bg-background rounded">
-                      <div>
-                        <span className="font-medium">{student.name}</span>
-                        <Badge variant="outline" className="ml-2 font-normal">{student.pendidikan}</Badge>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7" 
-                        onClick={() => handleRemoveStudent(student.id)}
-                      >
-                        <X className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground py-4">Belum ada siswa di kelas ini.</p>
-                )}
-              </ScrollArea>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ManageStudentsDialog
+        isOpen={manageStudentsDialogOpen}
+        onClose={() => setManageStudentsDialogOpen(false)}
+        selectedClass={selectedClass}
+        availableStudents={availableStudents}
+        enrolledStudents={enrolledStudents}
+        studentToAdd={studentToAdd}
+        onStudentToAddChange={setStudentToAdd}
+        onAddStudent={handleAddStudent}
+        onRemoveStudent={handleRemoveStudent}
+      />
     </div>
   );
 }

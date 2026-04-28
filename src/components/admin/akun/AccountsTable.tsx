@@ -88,7 +88,7 @@ export default function AccountsTable({
         </TableHeader>
         <TableBody>
           {users.map((user) => {
-            const isSelectable = user.role !== 'guru' && user.id !== currentUser?.id;
+            const isSelectable = currentUser?.role === 'adminsuper' || (user.role !== 'guru' && user.id !== currentUser?.id);
             return (
               <TableRow
                 key={user.id}

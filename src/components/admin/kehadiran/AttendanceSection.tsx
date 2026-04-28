@@ -1,14 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { MonthlyAttendance, Desa, Generus, getJenjangUsia, User, JENJANG_USIA_LIST, Kelas } from '@/types/admin';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Eye } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import AttendanceFilters from './AttendanceFilters';
+import JenjangSummary from './JenjangSummary';
+import AdminDesaView from './AdminDesaView';
+import RestrictedView from './RestrictedView';
+import AttendanceDetailDialog from './AttendanceDetailDialog';
 
 interface AttendanceSectionProps {
   attendance: MonthlyAttendance[];
@@ -33,7 +29,6 @@ const months = [
   { value: '10', label: 'Oktober' }, { value: '11', label: 'November' }, { value: '12', label: 'Desember' }
 ];
 const monthMap = Object.fromEntries(months.map(m => [m.label, m.value]));
-const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(String);
 
 type SummaryData = {
   [key: string]: { attended: number; held: number };
@@ -140,170 +135,44 @@ export default function AttendanceSection({
     setIsDetailOpen(true);
   };
 
-  const renderAdminDesaView = () => (
-    <Accordion type="multiple" className="w-full space-y-4">
-      {desas.map(desa => {
-        const desaSummary = (summaryData as Record<string, SummaryData>)[desa.name] || {};
-        return (
-          <AccordionItem value={desa.id} key={desa.id} className="bg-card rounded-lg shadow">
-            <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
-              {desa.name}
-            </AccordionTrigger>
-            <AccordionContent className="px-6 pb-4">
-              <Table>
-                <TableHeader><TableRow><TableHead>Jenjang Usia</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead></TableRow></TableHeader>
-                <TableBody>
-                  {JENJANG_USIA_LIST.map(jenjang => {
-                    const stats = desaSummary[jenjang] || { attended: 0, held: 0 };
-                    const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
-                    return (
-                      <TableRow key={jenjang}>
-                        <TableCell>{jenjang}</TableCell>
-                        <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
-                        <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </AccordionContent>
-          </AccordionItem>
-        )
-      })}
-    </Accordion>
-  );
-
-  const renderRestrictedView = () => {
-    const summary = summaryData as SummaryData;
-    const classesForUser = kelas; // Data 'kelas' sudah difilter oleh hook
-    const viewTitle = currentUser?.role === 'kelompok' 
-      ? `Rekap Kehadiran Kelompok: ${currentUser.kelompok}` 
-      : 'Rekap Kehadiran Kelas Saya';
-
-    return (
-      <Card className="bg-card rounded-lg shadow">
-        <CardHeader><CardTitle>{viewTitle}</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader><TableRow><TableHead>Nama Kelas</TableHead><TableHead>Jenjang Usia</TableHead><TableHead>Nama Guru</TableHead><TableHead className="text-center">Total Kehadiran</TableHead><TableHead className="w-48">Persentase</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {classesForUser.map(k => {
-                const stats = summary[k.id] || { attended: 0, held: 0 };
-                const percentage = stats.held > 0 ? Math.round((stats.attended / stats.held) * 100) : 0;
-                return (
-                  <TableRow key={k.id}>
-                    <TableCell>{k.namaKelas}</TableCell>
-                    <TableCell>{k.jenjangUsia}</TableCell>
-                    <TableCell>{k.guruName}</TableCell>
-                    <TableCell className="text-center">{stats.attended} / {stats.held}</TableCell>
-                    <TableCell><div className="flex items-center gap-2"><Progress value={percentage} className="w-24" /><span>{percentage}%</span></div></TableCell>
-                    <TableCell className="text-center">
-                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(k)}>
-                        <Eye className="w-4 h-4 mr-2" />
-                        Lihat Detail
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Kelas</h2>
-      <Card className="mb-8">
-        <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <Label>Dari</Label>
-                <div className="flex gap-2">
-                    <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger><SelectValue placeholder="Bulan Mulai" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-                    <Select value={startYear} onValueChange={setStartYear}><SelectTrigger><SelectValue placeholder="Tahun Mulai" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                </div>
-            </div>
-            <div className="space-y-2">
-                <Label>Sampai</Label>
-                <div className="flex gap-2">
-                    <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger><SelectValue placeholder="Bulan Selesai" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-                    <Select value={endYear} onValueChange={setEndYear}><SelectTrigger><SelectValue placeholder="Tahun Selesai" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                </div>
-            </div>
-        </CardContent>
-      </Card>
+      <AttendanceFilters
+        startMonth={startMonth}
+        setStartMonth={setStartMonth}
+        startYear={startYear}
+        setStartYear={setStartYear}
+        endMonth={endMonth}
+        setEndMonth={setEndMonth}
+        endYear={endYear}
+        setEndYear={setEndYear}
+      />
 
       {currentUser?.role === 'kelompok' && (
-        <Card className="mb-8">
-          <CardHeader><CardTitle>Rata-rata Kehadiran per Jenjang Usia</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Jenjang Usia</TableHead>
-                  <TableHead className="text-center">Total Kehadiran</TableHead>
-                  <TableHead className="w-48">Persentase</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jenjangUsiaSummary.map(summary => (
-                  <TableRow key={summary.name}>
-                    <TableCell>{summary.name}</TableCell>
-                    <TableCell className="text-center">{summary.attended} / {summary.held}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={summary.percentage} className="w-24" />
-                        <span>{summary.percentage}%</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <JenjangSummary jenjangUsiaSummary={jenjangUsiaSummary} />
       )}
 
-      {isRestrictedRole ? renderRestrictedView() : renderAdminDesaView()}
+      {isRestrictedRole ? (
+        <RestrictedView
+          summaryData={summaryData as any}
+          kelas={kelas}
+          currentUser={currentUser}
+          onViewDetails={handleViewDetails}
+        />
+      ) : (
+        <AdminDesaView
+          desas={desas}
+          summaryData={summaryData as any}
+        />
+      )}
 
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Detail Kehadiran Kelas: {selectedClass?.namaKelas}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Siswa</TableHead>
-                  <TableHead className="text-center">Total Kehadiran</TableHead>
-                  <TableHead className="w-40">Persentase</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {detailData.map(student => {
-                  const percentage = student.held > 0 ? Math.round((student.attended / student.held) * 100) : 0;
-                  return (
-                    <TableRow key={student.name}>
-                      <TableCell>{student.name}</TableCell>
-                      <TableCell className="text-center">{student.attended} / {student.held}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Progress value={percentage} className="w-24" />
-                          <span>{percentage}%</span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AttendanceDetailDialog
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        selectedClass={selectedClass}
+        detailData={detailData}
+      />
     </div>
   );
 }

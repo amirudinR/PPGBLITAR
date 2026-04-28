@@ -60,7 +60,12 @@ export function useAccounts(
   const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
 
   const selectableUsers = useMemo(
-    () => paginatedUsers.filter((u) => u.role !== 'guru' && u.id !== currentUser?.id),
+    () => {
+      if (currentUser?.role === 'adminsuper') {
+        return paginatedUsers;
+      }
+      return paginatedUsers.filter((u) => u.role !== 'guru' && u.id !== currentUser?.id);
+    },
     [paginatedUsers, currentUser],
   );
 
