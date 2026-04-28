@@ -181,6 +181,26 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
     return ROLES;
   };
 
+  const canResetPassword = (targetUser: User): boolean => {
+    if (!currentUser || targetUser.id === currentUser.id) return false; // Self reset via Profile
+    const roleHierarchy: Record<Role, number> = {
+      adminsuper: 4, admin: 3, desa: 2, kelompok: 1,
+      guru: 0, orangtua: 0,
+    };
+    const currentLevel = roleHierarchy[currentUser.role];
+    const targetLevel = roleHierarchy[targetUser.role];
+    // Must be strictly higher in hierarchy
+    if (currentLevel <= targetLevel) return false;
+    // Desa can only reset users in same desa
+    if (currentUser.role === 'desa' && targetUser.desa !== currentUser.desa) return false;
+    // Kelompok can only reset users in same desa + kelompok
+    if (currentUser.role === 'kelompok') {
+      if (targetUser.desa !== currentUser.desa) return false;
+      if (targetUser.kelompok !== currentUser.kelompok) return false;
+    }
+    return true;
+  };
+
   return (
     <div>
       <SectionHeader
@@ -439,19 +459,21 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
                 <Label>Email</Label>
                 <Input type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} />
               </div>
-              <div className="space-y-1">
-                <Label>Password</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => onResetUserPassword(editingUser.email)}
-                >
-                  <KeyRound className="w-4 h-4 mr-2" />
-                  Kirim Email Reset Password
-                </Button>
-                <p className="text-xs text-muted-foreground">Tautan reset akan dikirim ke email pengguna.</p>
-              </div>
+              {editingUser && canResetPassword(editingUser) && (
+                <div className="space-y-1">
+                  <Label>Password</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => onResetUserPassword(editingUser.email)}
+                  >
+                    <KeyRound className="w-4 h-4 mr-2" />
+                    Kirim Email Reset Password
+                  </Button>
+                  <p className="text-xs text-muted-foreground">Tautan reset akan dikirim ke email pengguna.</p>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>
