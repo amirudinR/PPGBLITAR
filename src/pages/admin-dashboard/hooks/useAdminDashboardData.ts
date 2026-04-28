@@ -10,7 +10,7 @@ import { useKelas } from '@/hooks/useKelas';
 import { useAuthManagement } from '@/hooks/useAuthManagement';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useGrades } from '@/hooks/useGrades';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { AdminSectionId } from '@/config/adminSections';
 
 interface UseAdminDashboardDataParams {
@@ -64,7 +64,10 @@ export function useAdminDashboardData({ currentUser, activeSection }: UseAdminDa
   const { announcements, loading: loadingAnnouncements, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(currentUser);
   const { grades, loading: loadingGrades, fetchGrades } = useGrades(currentUser);
 
-  const loading =
+  const [forceLoadingComplete, setForceLoadingComplete] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const rawLoading =
     loadingDesa ||
     loadingKelompok ||
     loadingGenerus ||
@@ -76,11 +79,25 @@ export function useAdminDashboardData({ currentUser, activeSection }: UseAdminDa
     loadingAnnouncements ||
     loadingGrades;
 
+  const loading = rawLoading && !forceLoadingComplete;
+
   useEffect(() => {
     if (!currentUser) return;
+    
+    // Set timeout to force loading complete if Firestore is blocked
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      console.log("Forcing loading complete due to timeout (Firestore likely blocked)");
+      setForceLoadingComplete(true);
+    }, 8000); // 8 second timeout
+    
     fetchDesas();
     fetchUsers();
     fetchAnnouncements();
+    
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [currentUser, fetchDesas, fetchUsers, fetchAnnouncements]);
 
   useEffect(() => {

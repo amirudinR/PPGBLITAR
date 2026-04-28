@@ -7,7 +7,7 @@ import { generusSeedData } from '@/data/seed';
 
 export function useGenerus(currentUser: User | null) {
   const [generus, setGenerus] = useState<Generus[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isPopulating, setIsPopulating] = useState(false);
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
     name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],

@@ -6,7 +6,7 @@ import { showError } from '@/utils/toast';
 
 export function useAttendance(currentUser: User | null) {
   const [attendance, setAttendance] = useState<MonthlyAttendance[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchAttendance = useCallback(async () => {
     if (!currentUser) return;

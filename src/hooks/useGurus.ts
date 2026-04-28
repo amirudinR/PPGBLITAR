@@ -12,13 +12,12 @@ const firebaseConfig = {
   projectId: "ppg-samarinda",
   storageBucket: "ppg-samarinda.appspot.com",
   messagingSenderId: "935384769767",
-  appId: "1:935384769767:web:056c746c3dc19223742e42",
-  measurementId: "G-W1V594C6EN"
+  appId: "1:935384769767:web:056c746c3dc19223742e42"
 };
 
 export function useGurus(currentUser: User | null, callbacks?: { onDataChange?: () => void }) {
   const [gurus, setGurus] = useState<Guru[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchGurus = useCallback(async () => {
     if (!currentUser) return;

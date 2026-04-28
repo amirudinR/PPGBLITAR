@@ -6,7 +6,7 @@ import { showError, showSuccess } from '@/utils/toast';
 
 export function useKelas(currentUser: User | null) {
   const [kelas, setKelas] = useState<Kelas[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchKelas = useCallback(async () => {
     if (!currentUser) return;

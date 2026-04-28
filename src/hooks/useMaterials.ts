@@ -6,7 +6,7 @@ import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast
 
 export function useMaterials() {
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [newMaterial, setNewMaterial] = useState<Omit<Material, 'id'>>({
     judulMateri: JUDUL_MATERI_LIST[0], rincianMateri: '', kelas: KELAS_MATERI_LIST[0], semester: 'Ganjil', targetBulan: []
   });

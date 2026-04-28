@@ -6,7 +6,7 @@ import { showError, showSuccess } from '@/utils/toast';
 
 export function useKelompok(desas: Desa[], currentUser: User | null) {
   const [kelompok, setKelompok] = useState<Kelompok[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchKelompok = useCallback(async () => {
     if (!currentUser) return;

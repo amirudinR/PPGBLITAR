@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -10,14 +9,21 @@ const firebaseConfig = {
   projectId: "ppg-samarinda",
   storageBucket: "ppg-samarinda.appspot.com",
   messagingSenderId: "935384769767",
-  appId: "1:935384769767:web:056c746c3dc19223742e42",
-  measurementId: "G-W1V594C6EN"
+  appId: "1:935384769767:web:056c746c3dc19223742e42"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+// Use memory-only cache so all writes (including deletes) require server confirmation
+// This prevents phantom deletes where data appears deleted locally but still exists in Firebase
+const db = initializeFirestore(app, {
+  localCache: memoryLocalCache()
+});
 const auth = getAuth(app);
 
-export { db, auth, analytics };
+// Analytics disabled to prevent blocking by ad blockers
+// Uncomment if needed and accept that it may be blocked
+// import { getAnalytics } from "firebase/analytics";
+// const analytics = getAnalytics(app);
+
+export { db, auth };
