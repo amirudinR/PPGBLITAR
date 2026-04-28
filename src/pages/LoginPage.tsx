@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { FirebaseError } from 'firebase/app';
 import { showError, showSuccess } from '@/utils/toast';
-import { Mail, Lock, Sun, Moon } from 'lucide-react';
+import { Mail, Lock, Sun, Moon, Sparkles, Layers, Layout, Droplets } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function LoginPage() {
@@ -23,9 +24,10 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       showSuccess("Login berhasil!");
       // Navigasi sekarang ditangani secara otomatis oleh App.tsx
-    } catch (error: any) {
-      console.error("Error logging in: ", error);
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+    } catch (error) {
+      const firebaseError = error as FirebaseError;
+      console.error("Error logging in: ", firebaseError);
+      if (firebaseError.code === 'auth/user-not-found' || firebaseError.code === 'auth/wrong-password') {
         showError("Email atau password salah.");
       } else {
         showError("Terjadi kesalahan saat mencoba login.");
@@ -39,12 +41,20 @@ export default function LoginPage() {
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-4 z-50 p-3 rounded-full bg-card/20 backdrop-blur-sm hover:bg-card/30 transition-all duration-300 shadow-lg"
-        title={theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+        title={theme === 'light' ? 'Mode Gelap' : theme === 'dark' ? 'Mode Soft Minimal' : theme === 'soft' ? 'Mode Neumorphism' : theme === 'neu' ? 'Mode Editorial' : theme === 'editorial' ? 'Mode Glassmorphism' : 'Mode Terang'}
       >
-        {theme === 'dark' ? (
-          <Sun className="h-5 w-5 text-yellow-300" />
-        ) : (
+        {theme === 'light' ? (
           <Moon className="h-5 w-5 text-white" />
+        ) : theme === 'dark' ? (
+          <Sparkles className="h-5 w-5 text-cyan-200" />
+        ) : theme === 'soft' ? (
+          <Layers className="h-5 w-5 text-violet-300" />
+        ) : theme === 'neu' ? (
+          <Layout className="h-5 w-5 text-red-400" />
+        ) : theme === 'editorial' ? (
+          <Droplets className="h-5 w-5 text-sky-300" />
+        ) : (
+          <Sun className="h-5 w-5 text-yellow-300" />
         )}
       </button>
 

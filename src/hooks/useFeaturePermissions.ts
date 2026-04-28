@@ -1,8 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, doc, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FeaturePermission, FEATURE_LIST, Role, User } from '@/types/admin';
 import { showSuccess, showError } from '@/utils/toast';
+
+const getDefaultPermissions = (): FeaturePermission[] =>
+    FEATURE_LIST.map((feature) => ({
+        ...feature,
+        id: feature.featureId
+    }));
 
 export function useFeaturePermissions(currentUser: User | null) {
     const [permissions, setPermissions] = useState<FeaturePermission[]>([]);
@@ -11,43 +17,76 @@ export function useFeaturePermissions(currentUser: User | null) {
     const fetchPermissions = useCallback(async () => {
         try {
             setLoading(true);
+            const defaultPermissions = getDefaultPermissions();
             const querySnapshot = await getDocs(collection(db, 'featurePermissions'));
 
             if (querySnapshot.empty) {
                 // Initialize default permissions if none exist
                 console.log('Initializing default feature permissions...');
-                const batch = writeBatch(db);
-                const defaultPermissions: FeaturePermission[] = FEATURE_LIST.map((feature, index) => ({
-                    ...feature,
-                    id: feature.featureId
-                }));
+                if (currentUser?.role === 'adminsuper') {
+                    const batch = writeBatch(db);
 
-                for (const perm of defaultPermissions) {
-                    const docRef = doc(db, 'featurePermissions', perm.id);
-                    batch.set(docRef, perm);
+                    for (const perm of defaultPermissions) {
+                        const docRef = doc(db, 'featurePermissions', perm.id);
+                        batch.set(docRef, perm);
+                    }
+
+                    await batch.commit();
                 }
 
-                await batch.commit();
                 setPermissions(defaultPermissions);
             } else {
-                const perms = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                })) as FeaturePermission[];
-                setPermissions(perms);
+                const storedPermissions = querySnapshot.docs.map(snapshot => ({
+                    ...(snapshot.data() as Omit<FeaturePermission, 'id'>),
+                    id: snapshot.id,
+                }));
+                const storedByFeatureId = new Map(
+                    storedPermissions.map(permission => [permission.featureId || permission.id, permission])
+                );
+                const defaultFeatureIds = new Set(defaultPermissions.map(permission => permission.featureId));
+                const missingPermissions = defaultPermissions.filter(
+                    permission => !storedByFeatureId.has(permission.featureId)
+                );
+
+                if (missingPermissions.length > 0 && currentUser?.role === 'adminsuper') {
+                    const batch = writeBatch(db);
+
+                    for (const perm of missingPermissions) {
+                        const docRef = doc(db, 'featurePermissions', perm.id);
+                        batch.set(docRef, perm);
+                    }
+
+                    await batch.commit();
+                }
+
+                const mergedPermissions = defaultPermissions.map(defaultPermission => {
+                    const storedPermission = storedByFeatureId.get(defaultPermission.featureId);
+
+                    if (!storedPermission) {
+                        return defaultPermission;
+                    }
+
+                    return {
+                        ...defaultPermission,
+                        allowedRoles: storedPermission.allowedRoles ?? defaultPermission.allowedRoles,
+                        isEnabled: typeof storedPermission.isEnabled === 'boolean' ? storedPermission.isEnabled : defaultPermission.isEnabled,
+                        id: defaultPermission.id,
+                    };
+                });
+                const customPermissions = storedPermissions.filter(
+                    permission => !defaultFeatureIds.has(permission.featureId || permission.id)
+                );
+
+                setPermissions([...mergedPermissions, ...customPermissions]);
             }
         } catch (error) {
             console.error('Error fetching permissions:', error);
             // Fallback to default permissions from FEATURE_LIST
-            const defaultPermissions: FeaturePermission[] = FEATURE_LIST.map((feature) => ({
-                ...feature,
-                id: feature.featureId
-            }));
-            setPermissions(defaultPermissions);
+            setPermissions(getDefaultPermissions());
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [currentUser?.role]);
 
     useEffect(() => {
         if (currentUser) {
@@ -63,7 +102,7 @@ export function useFeaturePermissions(currentUser: User | null) {
 
         try {
             const docRef = doc(db, 'featurePermissions', featureId);
-            await updateDoc(docRef, updates);
+            await setDoc(docRef, updates, { merge: true });
 
             setPermissions(prev =>
                 prev.map(p => p.id === featureId ? { ...p, ...updates } : p)

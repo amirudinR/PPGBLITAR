@@ -117,12 +117,12 @@ export default function M5USearchPage({ currentUser }: M5USearchPageProps) {
                       <TableCell>{item.pj}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.statusHasil === 'Terlaksana'
-                            ? 'bg-green-500/20 text-green-800'
+                            ? 'bg-[hsl(var(--success)/0.2)] text-[hsl(var(--success))]'
                             : item.statusHasil === 'Dalam Proses'
-                              ? 'bg-blue-500/20 text-blue-800'
+                              ? 'bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))]'
                               : item.statusHasil === 'Belum Terlaksana'
-                                ? 'bg-yellow-500/20 text-yellow-800'
-                                : 'bg-red-500/20 text-red-800'
+                                ? 'bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]'
+                                : 'bg-destructive/20 text-destructive'
                           }`}>
                           {item.statusHasil}
                         </span>

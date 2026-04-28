@@ -1,0 +1,35 @@
+/* ============================================
+   BASE STYLES — always applied
+   ============================================ */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================
+   COMPONENT UTILITIES — reusable classes
+   ============================================ */
+
+@layer components {
+
+  /* Hero gradient banner */
+  .hero-gradient {
+    background: linear-gradient(
+      to right,
+      hsl(var(--hero-from)),
+      hsl(var(--hero-to))
+    );
+    color: hsl(var(--hero-foreground));
+  }
+
+  /* Stat card base (color set inline) */
+  .stat-card {
+    color: white;
+  }
+}

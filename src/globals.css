@@ -1,95 +1,13 @@
+/* ============================================
+   MODULAR STYLESHEET
+   Each partial handles one concern.
+   Order matters — tokens first, then themes,
+   then base/component utilities.
+   ============================================ */
+
+@import './styles/themes/_tokens.css';
+@import './styles/_base.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  :root {
-    --background: 240 5% 96.1%; /* gray-100 */
-    --foreground: 240 10% 3.9%; /* gray-900 */
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    --primary: 243 75% 59%; /* indigo-600 */
-    --primary-foreground: 0 0% 100%; /* white */
-
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 243 75% 59%; /* indigo-600 */
-
-    --radius: 0.75rem; /* rounded-xl */
-
-    --sidebar-background: 243 75% 59%; /* indigo-600 */
-    --sidebar-foreground: 240 5% 90%; /* indigo-100 */
-    --sidebar-primary: 243 75% 59%; /* indigo-600 */
-    --sidebar-primary-foreground: 0 0% 100%; /* white */
-    --sidebar-accent: 243 75% 55%; /* indigo-700 */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 243 75% 55%;
-    --sidebar-ring: 243 75% 59%;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 243 75% 69%;
-    --primary-foreground: 243 75% 10%;
-
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 243 75% 69%;
-    
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 243 75% 69%;
-    --sidebar-primary-foreground: 243 75% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 243 75% 69%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-}

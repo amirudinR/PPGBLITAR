@@ -38,7 +38,11 @@ const formatIndonesianDate = (date: Date) => {
   return `${day} ${month} ${year}`;
 };
 
-export default function M5UDetailPage() {
+interface M5UDetailPageProps {
+  currentUser: User | null;
+}
+
+export default function M5UDetailPage({ currentUser }: M5UDetailPageProps) {
   const navigate = useNavigate();
   const { bulan, tahun } = useParams<{ bulan: string; tahun: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -47,17 +51,6 @@ export default function M5UDetailPage() {
     bulan: bulan || '', tahun: Number(tahun) || new Date().getFullYear(), agenda: '', hasil: '', pj: '', waktuPelaksanaan: '', statusHasil: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
-  
-  // Mock current user - in a real app this would come from context or props
-  const currentUser: User | null = {
-    id: 'user-id',
-    name: 'Current User',
-    email: 'user@example.com',
-    role: 'guru', // Changed to 'guru' for testing
-    status: 'active',
-    desa: 'Desa Example',
-    kelompok: 'Kelompok Example'
-  };
   
   const { m5uItems, loading, addM5U, updateM5U, deleteM5U } = useM5U(currentUser);
   
@@ -94,7 +87,7 @@ export default function M5UDetailPage() {
         ...currentItem,
         desa: currentUser?.desa || '',
         kelompok: currentUser?.kelompok || '',
-        guruId: currentUser?.id || ''
+        guruId: currentUser?.role === 'guru' ? (currentUser.id || '') : ''
       };
       success = await addM5U(itemWithMetadata);
     }
@@ -115,9 +108,15 @@ export default function M5UDetailPage() {
   // Fungsi untuk mengubah status hasil langsung di tabel
   const handleStatusChange = async (id: string, newStatus: M5U['statusHasil']) => {
     const itemToUpdate = filteredM5UItems.find(item => item.id === id);
-    if (itemToUpdate) {
-      await updateM5U(id, { ...itemToUpdate, statusHasil: newStatus });
+    if (!itemToUpdate) {
+      return;
     }
+
+    if (currentUser?.role === 'guru' && itemToUpdate.guruId !== currentUser.id) {
+      return;
+    }
+
+    await updateM5U(id, { ...itemToUpdate, statusHasil: newStatus });
   };
 
   // Fungsi untuk mencetak PDF
@@ -172,8 +171,9 @@ export default function M5UDetailPage() {
     doc.save(`M5U_${currentUser?.kelompok || 'Kelompok'}_${bulan}_${tahun}.pdf`);
   };
 
-  // Check if user is a guru
-  const isGuru = currentUser?.role === 'guru';
+  const canAdd = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok';
+  const canUpdate = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok' || currentUser?.role === 'guru';
+  const canDelete = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok';
 
   if (loading) {
     return <div className="p-6 text-center">Memuat data...</div>;
@@ -203,16 +203,15 @@ export default function M5UDetailPage() {
           </div>
         </div>
         
-        {/* Only show add button for non-guru users */}
-        {!isGuru && (
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Daftar Agenda</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Daftar Agenda</h2>
+          {canAdd ? (
             <Button onClick={() => openDialog()}>
               <Plus className="w-4 h-4 mr-2" />
               Tambah Agenda
             </Button>
-          </div>
-        )}
+          ) : null}
+        </div>
         
         <div className="rounded-md border">
           <Table>
@@ -223,10 +222,7 @@ export default function M5UDetailPage() {
                 <TableHead>PJ</TableHead>
                 <TableHead>Tanggal Pelaksanaan</TableHead>
                 <TableHead>Status</TableHead>
-                {/* Only show actions column for non-guru users */}
-                {!isGuru && (
-                  <TableHead className="text-center">Aksi</TableHead>
-                )}
+                {canUpdate || canDelete ? <TableHead className="text-center">Aksi</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -236,25 +232,10 @@ export default function M5UDetailPage() {
                   <TableCell>{item.hasil || '-'}</TableCell>
                   <TableCell>{item.pj}</TableCell>
                   <TableCell>{formatDate(item.waktuPelaksanaan)}</TableCell>
-                  {/* Display status as text only for guru users */}
                   <TableCell>
-                    {isGuru ? (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.statusHasil === 'Terlaksana' 
-                          ? 'bg-green-500/20 text-green-800' 
-                          : item.statusHasil === 'Dalam Proses'
-                            ? 'bg-blue-500/20 text-blue-800'
-                            : item.statusHasil === 'Belum Terlaksana' 
-                              ? 'bg-yellow-500/20 text-yellow-800' 
-                              : item.statusHasil === 'Mansuh'
-                                ? 'bg-red-500/20 text-red-800'
-                                : 'bg-muted text-foreground'
-                      }`}>
-                        {item.statusHasil || '-'}
-                      </span>
-                    ) : (
-                      <Select 
-                        value={item.statusHasil || ''} 
+                    {canUpdate && (currentUser?.role !== 'guru' || item.guruId === currentUser?.id) ? (
+                      <Select
+                        value={item.statusHasil || ''}
                         onValueChange={(value) => handleStatusChange(item.id, value as M5U['statusHasil'])}
                       >
                         <SelectTrigger className="w-[140px]">
@@ -267,39 +248,56 @@ export default function M5UDetailPage() {
                           <SelectItem value="Mansuh">Mansuh</SelectItem>
                         </SelectContent>
                       </Select>
+                    ) : (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.statusHasil === 'Terlaksana'
+                          ? 'bg-[hsl(var(--success)/0.2)] text-[hsl(var(--success))]'
+                          : item.statusHasil === 'Dalam Proses'
+                            ? 'bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))]'
+                            : item.statusHasil === 'Belum Terlaksana'
+                              ? 'bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]'
+                              : item.statusHasil === 'Mansuh'
+                                ? 'bg-destructive/20 text-destructive'
+                                : 'bg-muted text-foreground'
+                      }`}>
+                        {item.statusHasil || '-'}
+                      </span>
                     )}
                   </TableCell>
-                  {/* Only show actions column for non-guru users */}
-                  {!isGuru && (
+                  {canUpdate || canDelete ? (
                     <TableCell className="text-center">
                       <div className="flex justify-center space-x-2">
-                        <Button variant="ghost" size="sm" onClick={() => openDialog(item)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tindakan ini akan menghapus agenda ini secara permanen.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Batal</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                Hapus
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        {canUpdate ? (
+                          <Button variant="ghost" size="sm" onClick={() => openDialog(item)} aria-label={`Edit agenda ${item.agenda}`}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        ) : null}
+                        {canDelete ? (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" aria-label={`Hapus agenda ${item.agenda}`}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tindakan ini akan menghapus agenda ini secara permanen.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                  Hapus
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        ) : null}
                       </div>
                     </TableCell>
-                  )}
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>
@@ -307,8 +305,7 @@ export default function M5UDetailPage() {
         </div>
       </div>
       
-      {/* Only show dialog for non-guru users */}
-      {!isGuru && (
+      {canAdd && (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>

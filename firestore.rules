@@ -41,16 +41,31 @@ service cloud.firestore {
     // ============== USERS COLLECTION ==============
     match /users/{userId} {
       // Allow read for authenticated users - admins see all, others see only themselves
-      allow read: if isAuthenticated() && 
-                    (isAdmin() || 
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
                      request.auth.uid == userId ||
                      // PJP Desa can see users in their desa
                      (isPJPDesa() && getUserData().desa == resource.data.desa) ||
                      // PJP Kelompok can see users in their kelompok
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
-      
-      allow create: if isAuthenticated();
-      allow update: if isAdmin() || request.auth.uid == userId;
+
+      allow create: if isAdmin() ||
+                    (isPJPDesa() &&
+                     request.resource.data.role in ['kelompok', 'guru', 'orangtua'] &&
+                     request.resource.data.desa == getUserData().desa) ||
+                    (isPJPKelompok() &&
+                     request.resource.data.role in ['guru', 'orangtua'] &&
+                     request.resource.data.desa == getUserData().desa &&
+                     request.resource.data.kelompok == getUserData().kelompok);
+
+      allow update: if isAdmin() ||
+                    (request.auth.uid == userId &&
+                     request.resource.data.role == resource.data.role &&
+                     request.resource.data.status == resource.data.status &&
+                     request.resource.data.desa == resource.data.desa &&
+                     request.resource.data.kelompok == resource.data.kelompok &&
+                     request.resource.data.email == resource.data.email);
+
       allow delete: if isAdmin();
     }
     
@@ -133,66 +148,76 @@ service cloud.firestore {
     
     // ============== MONTHLY ATTENDANCE COLLECTION ==============
     match /monthlyAttendance/{attendanceId} {
-      allow read: if isAuthenticated() && 
-                    (isAdmin() || 
-                     isPJPDesa() || 
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
                      (isGuru() && request.auth.uid == resource.data.guruId));
-      
+
       allow create: if isAuthenticated() &&
-                     (isAdmin() || isPJPDesa() || isGuru() ||
-                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
-      
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == request.resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == request.resource.data.guruId));
+
       allow update: if isAuthenticated() &&
-                     (isAdmin() || isPJPDesa() || 
-                     (isGuru() && request.auth.uid == resource.data.guruId) ||
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isGuru() && request.auth.uid == resource.data.guruId && request.auth.uid == request.resource.data.guruId) ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
-      
-      allow delete: if isAdmin() || isPJPDesa() || 
+
+      allow delete: if isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
                      (isGuru() && request.auth.uid == resource.data.guruId);
     }
     
     // ============== GRADES COLLECTION ==============
     match /grades/{gradeId} {
-      allow read: if isAuthenticated() && 
-                    (isAdmin() || 
-                     isPJPDesa() || 
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
                      (isGuru() && request.auth.uid == resource.data.guruId));
-      
+
       allow create: if isAuthenticated() &&
-                     (isAdmin() || isPJPDesa() || isGuru() ||
-                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
-      
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == request.resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == request.resource.data.guruId));
+
       allow update: if isAuthenticated() &&
-                     (isAdmin() || isPJPDesa() || 
-                     (isGuru() && request.auth.uid == resource.data.guruId) ||
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isGuru() && request.auth.uid == resource.data.guruId && request.auth.uid == request.resource.data.guruId) ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
-      
-      allow delete: if isAdmin() || isPJPDesa() || 
+
+      allow delete: if isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
                      (isGuru() && request.auth.uid == resource.data.guruId);
     }
     
     // ============== M5U COLLECTION ==============
     match /m5u/{m5uId} {
-      allow read: if isAuthenticated() && 
-                    (isAdmin() || 
-                     isPJPDesa() || 
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
                      (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
                      (isOrangTua() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
-      
+
       allow create: if isAuthenticated() &&
-                     (isAdmin() || isPJPDesa() || isGuru() ||
-                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
-      
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == request.resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == request.resource.data.guruId));
+
       allow update: if isAuthenticated() &&
-                     (isAdmin() || 
+                     (isAdmin() ||
                      (isPJPDesa() && getUserData().desa == resource.data.desa) ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
                      (isGuru() && request.auth.uid == resource.data.guruId));
-      
-      allow delete: if isAdmin() || 
+
+      allow delete: if isAdmin() ||
                      (isPJPDesa() && getUserData().desa == resource.data.desa) ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok);
     }

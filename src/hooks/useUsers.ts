@@ -69,11 +69,20 @@ export function useUsers(currentUser: User | null) {
 
   const updateUser = async (id: string, updatedData: Omit<User, 'id'>) => {
     try {
-      await updateDoc(doc(db, "users", id), updatedData);
+      const { password, ...safeData } = updatedData;
+
+      if (password) {
+        showError("Perubahan password dilakukan dari menu profil pengguna.");
+      }
+
+      await updateDoc(doc(db, "users", id), safeData);
       fetchUsers();
       showSuccess("Akun berhasil diperbarui.");
       return true;
-    } catch (e) { showError("Gagal memperbarui akun."); return false; }
+    } catch (e) {
+      showError("Gagal memperbarui akun.");
+      return false;
+    }
   };
 
   const deleteUser = async (id: string) => {

@@ -1,0 +1,200 @@
+/* ============================================
+   SOFT MINIMAL ENTERPRISE THEME
+   Refined blue-gray palette for professional UI.
+   ============================================ */
+
+.soft {
+  --background: 220 14% 96%;
+  --foreground: 220 20% 14%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 220 20% 14%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 20% 14%;
+
+  --primary: 215 55% 48%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 220 14% 93%;
+  --secondary-foreground: 220 20% 14%;
+
+  --muted: 220 14% 93%;
+  --muted-foreground: 220 10% 42%;
+
+  --accent: 215 55% 95%;
+  --accent-foreground: 215 55% 35%;
+
+  --destructive: 0 65% 52%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 220 13% 88%;
+  --input: 220 13% 88%;
+  --ring: 215 55% 48%;
+
+  --radius: 0.625rem;
+
+  --sidebar-background: 220 20% 12%;
+  --sidebar-foreground: 220 14% 96%;
+  --sidebar-primary: 215 55% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 20% 18%;
+  --sidebar-accent-foreground: 220 14% 96%;
+  --sidebar-border: 220 20% 22%;
+  --sidebar-ring: 215 55% 48%;
+
+  --hero-from: 215 55% 48%;
+  --hero-to: 210 50% 40%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 220 14% 82%;
+
+  --stat-1: 215 55% 48%;
+  --stat-2: 200 50% 45%;
+  --stat-3: 160 50% 38%;
+  --stat-4: 38 70% 48%;
+  --stat-5: 340 50% 48%;
+  --stat-6: 270 50% 52%;
+
+  --chart-1: 215 55% 48%;
+  --chart-2: 200 50% 45%;
+  --chart-3: 160 50% 38%;
+  --chart-4: 38 70% 48%;
+  --chart-5: 340 50% 48%;
+  --chart-6: 270 50% 52%;
+
+  --success: 160 50% 38%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 70% 48%;
+  --warning-foreground: 0 0% 100%;
+  --info: 200 50% 45%;
+  --info-foreground: 0 0% 100%;
+
+  /* Soft enterprise surface tokens */
+  --surface-elevated: 0 0% 100%;
+  --surface-sunken: 220 14% 94%;
+  --divider: 220 13% 88%;
+}
+
+/* ---- Enterprise Card Styling ---- */
+.soft [class*="rounded-lg border bg-card"],
+.soft .soft-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 3px hsl(220 13% 88% / 0.5), 0 1px 2px hsl(220 13% 88% / 0.3);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.soft [class*="rounded-lg border bg-card"]:hover,
+.soft .soft-card:hover {
+  box-shadow: 0 4px 12px hsl(220 13% 88% / 0.4), 0 2px 4px hsl(220 13% 88% / 0.2);
+}
+
+/* ---- Enterprise Button Styling ---- */
+.soft button[class*="inline-flex"] {
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.soft button[class*="bg-primary"] {
+  box-shadow: 0 1px 2px hsl(215 55% 48% / 0.2);
+}
+
+.soft button[class*="bg-primary"]:hover {
+  box-shadow: 0 2px 8px hsl(215 55% 48% / 0.3);
+  transform: translateY(-0.5px);
+}
+
+/* ---- Enterprise Input Styling ---- */
+.soft input[class*="border border-input"],
+.soft .soft-input {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--input));
+  box-shadow: inset 0 1px 2px hsl(220 13% 88% / 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.soft input[class*="border border-input"]:focus,
+.soft .soft-input:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.08), inset 0 1px 2px hsl(220 13% 88% / 0.2);
+  outline: none;
+}
+
+/* ---- Enterprise Table Styling ---- */
+.soft [class*="rounded-lg border"] table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.soft [class*="rounded-lg border"] thead tr {
+  background: hsl(var(--muted));
+}
+
+.soft [class*="rounded-lg border"] tbody tr {
+  transition: background 0.15s ease;
+}
+
+.soft [class*="rounded-lg border"] tbody tr:hover {
+  background: hsl(var(--accent));
+}
+
+/* ---- Enterprise Sidebar Styling ---- */
+.soft .soft-sidebar,
+.soft [class*="bg-sidebar"] {
+  box-shadow: 2px 0 8px hsl(220 20% 12% / 0.08);
+}
+
+/* ---- Enterprise Header Styling ---- */
+.soft header,
+.soft .soft-header {
+  background: hsl(var(--card));
+  border-bottom: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 3px hsl(220 13% 88% / 0.2);
+}
+
+/* ---- Enterprise Badge / Tag ---- */
+.soft .soft-badge {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  border: 1px solid hsl(var(--border));
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Enterprise Navigation Active State ---- */
+.soft nav button[class*="bg-card text-primary"] {
+  background: hsl(var(--accent));
+  border-left: 3px solid hsl(var(--primary));
+  box-shadow: inset 2px 0 4px hsl(215 55% 48% / 0.08);
+}
+
+/* ---- Soft Button Base ---- */
+.soft .soft-btn {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 2px hsl(220 13% 88% / 0.3);
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: all 0.2s ease;
+}
+
+.soft .soft-btn:hover {
+  box-shadow: 0 2px 6px hsl(220 13% 88% / 0.4);
+  transform: translateY(-0.5px);
+}
+
+.soft .soft-btn:active {
+  box-shadow: inset 0 1px 2px hsl(220 13% 88% / 0.3);
+  transform: translateY(0);
+}
+
+/* ---- Subtle dividers ---- */
+.soft hr,
+.soft .soft-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
+}
