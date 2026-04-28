@@ -3,42 +3,42 @@
    ============================================ */
 
 .dark:not(.soft):not(.neu):not(.editorial):not(.glass) {
-  --background: 155 28% 8%;
+  --background: 155 35% 5%;
   --foreground: 85 12% 94%;
 
-  --card: 155 28% 12%;
+  --card: 155 35% 8%;
   --card-foreground: 85 12% 94%;
 
-  --popover: 155 28% 12%;
+  --popover: 155 35% 8%;
   --popover-foreground: 85 12% 94%;
 
-  --primary: 85 55% 50%;
+  --primary: 85 55% 40%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 155 20% 14%;
+  --secondary: 155 30% 10%;
   --secondary-foreground: 85 12% 94%;
 
-  --muted: 155 20% 14%;
-  --muted-foreground: 155 10% 55%;
+  --muted: 155 30% 10%;
+  --muted-foreground: 155 15% 50%;
 
-  --accent: 85 25% 18%;
+  --accent: 85 30% 14%;
   --accent-foreground: 85 40% 80%;
 
   --destructive: 0 55% 40%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 155 20% 18%;
-  --input: 155 20% 18%;
-  --ring: 85 55% 50%;
+  --border: 155 30% 12%;
+  --input: 155 30% 12%;
+  --ring: 85 55% 40%;
 
-  --sidebar-background: 155 28% 8%;
+  --sidebar-background: 155 35% 5%;
   --sidebar-foreground: 85 12% 94%;
-  --sidebar-primary: 85 55% 50%;
+  --sidebar-primary: 85 55% 40%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 155 20% 14%;
+  --sidebar-accent: 155 30% 10%;
   --sidebar-accent-foreground: 85 12% 94%;
-  --sidebar-border: 155 20% 18%;
-  --sidebar-ring: 85 55% 50%;
+  --sidebar-border: 155 30% 12%;
+  --sidebar-ring: 85 55% 40%;
 
   --hero-from: 85 55% 38%;
   --hero-to: 155 40% 20%;

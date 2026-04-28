@@ -51,21 +51,21 @@ export default function LoginPage() {
         )}
       </button>
 
-      <div className="hidden lg:flex flex-col items-center justify-center bg-muted p-12 gap-8">
+      <div className={`hidden lg:flex flex-col items-center justify-center p-12 gap-8 ${isDarkMode ? 'bg-background' : 'bg-muted'}`}>
         <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1777369093/Untitled_design_25_r5xdb7.png" alt="PPG KUTIM Logo" className="w-full max-w-md drop-shadow-lg" />
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-foreground">PPG KUTIM</h2>
           <p className="text-muted-foreground text-sm">Sistem Manajemen Data Pendidikan</p>
         </div>
       </div>
-      <div className="flex flex-col items-center justify-center bg-primary p-8 text-primary-foreground">
+      <div className={`flex flex-col items-center justify-center p-8 ${isDarkMode ? 'bg-background text-foreground' : 'bg-primary text-primary-foreground'}`}>
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo - visible only on small screens */}
           <div className="flex flex-col items-center gap-4 lg:hidden">
             <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1777369093/Untitled_design_25_r5xdb7.png" alt="PPG KUTIM Logo" className="w-32 h-auto drop-shadow-lg" />
             <div className="text-center">
-              <h2 className="text-lg font-bold text-primary-foreground">PPG KUTIM</h2>
-              <p className="text-primary-foreground/70 text-xs">Sistem Manajemen Data Pendidikan</p>
+              <h2 className={`text-lg font-bold ${isDarkMode ? 'text-foreground' : 'text-primary-foreground'}`}>PPG KUTIM</h2>
+              <p className={`text-xs ${isDarkMode ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>Sistem Manajemen Data Pendidikan</p>
             </div>
           </div>
           <div className="text-left">
