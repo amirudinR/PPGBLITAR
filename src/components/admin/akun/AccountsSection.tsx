@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Desa, Kelompok, ROLES, Role } from '@/types/admin';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, CheckSquare } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,8 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
   const sortedUsers = useMemo(() => {
     const sortableItems = [...users];
@@ -75,6 +78,40 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
   }, [sortedUsers, currentPage]);
 
   const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+
+  const selectableUsers = useMemo(
+    () => paginatedUsers.filter(u => u.role !== 'guru' && u.id !== currentUser?.id),
+    [paginatedUsers, currentUser]
+  );
+
+  const allPageSelected =
+    selectableUsers.length > 0 && selectableUsers.every(u => selectedIds.has(u.id));
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selectedIds);
+      selectableUsers.forEach(u => next.delete(u.id));
+      setSelectedIds(next);
+    } else {
+      const next = new Set(selectedIds);
+      selectableUsers.forEach(u => next.add(u.id));
+      setSelectedIds(next);
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      await onDeleteUser(id);
+    }
+    setSelectedIds(new Set());
+    setIsBulkDeleteOpen(false);
+  };
 
   const requestSort = (key: keyof User) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -217,10 +254,45 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
           </Dialog>
         ) : null}
       />
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 mb-3 px-1">
+          <span className="text-sm text-muted-foreground">{selectedIds.size} akun dipilih</span>
+          <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Hapus Terpilih
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Hapus {selectedIds.size} akun?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tindakan ini akan menghapus {selectedIds.size} akun secara permanen dan tidak dapat dibatalkan.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction onClick={handleBulkDelete}>Hapus Semua</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
+            Batalkan Pilihan
+          </Button>
+        </div>
+      )}
       <div className="bg-card rounded-lg shadow overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={allPageSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Tandai semua"
+                />
+              </TableHead>
               <TableHead 
                 className="cursor-pointer hover:bg-muted"
                 onClick={() => requestSort('name')}
@@ -262,8 +334,18 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedUsers.map((user) => (
-              <TableRow key={user.id}>
+            {paginatedUsers.map((user) => {
+              const isSelectable = user.role !== 'guru' && user.id !== currentUser?.id;
+              return (
+              <TableRow key={user.id} data-state={selectedIds.has(user.id) ? 'selected' : undefined}>
+                <TableCell className="w-12">
+                  <Checkbox
+                    checked={selectedIds.has(user.id)}
+                    onCheckedChange={() => toggleSelectOne(user.id)}
+                    disabled={!isSelectable}
+                    aria-label={`Pilih ${user.name}`}
+                  />
+                </TableCell>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{ROLE_LABELS[user.role]}</TableCell>
@@ -318,7 +400,8 @@ export default function AccountsSection({ users, desas, kelompok, onAddUser, onU
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+            );
+            })}
           </TableBody>
         </Table>
         <PaginationControls
