@@ -20,7 +20,7 @@ interface Props {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   onSave: () => void;
-  creatableRoles: () => Role[];
+  creatableRoles: Role[];
   canResetPassword: (target: User) => boolean;
   onResetPassword: (email: string) => void;
 }
@@ -46,7 +46,7 @@ export default function EditUserDialog({
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {creatableRoles().map((r) => (
+                {creatableRoles.map((r) => (
                   <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
                 ))}
               </SelectContent>

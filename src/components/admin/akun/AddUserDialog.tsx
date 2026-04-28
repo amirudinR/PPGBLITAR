@@ -21,7 +21,7 @@ interface Props {
   setUser: React.Dispatch<React.SetStateAction<Omit<User, 'id'>>>;
   onSave: () => void;
   onRoleChange: (role: Role) => void;
-  creatableRoles: () => Role[];
+  creatableRoles: Role[];
   desas: { id: string; name: string }[];
   kelompok: { id: string; name: string; desaName: string }[];
   currentUser: { role: string; desa?: string } | null;
@@ -51,7 +51,7 @@ export default function AddUserDialog({
             <Select value={user.role} onValueChange={(v) => onRoleChange(v as Role)}>
               <SelectTrigger><SelectValue placeholder="Pilih Peran" /></SelectTrigger>
               <SelectContent>
-                {creatableRoles().map((r) => (
+                {creatableRoles.map((r) => (
                   <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
                 ))}
               </SelectContent>

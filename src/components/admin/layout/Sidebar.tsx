@@ -215,7 +215,7 @@ export default function Sidebar({
           </Accordion>
         </nav>
 
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t border-sidebar-border pb-20 lg:pb-4">
           <button
             onClick={onLogout}
             className={getLogoutClass()}
