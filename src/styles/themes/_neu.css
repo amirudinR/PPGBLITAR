@@ -169,3 +169,83 @@
   background: hsl(var(--neu-bg));
   box-shadow: 0 2px 4px var(--neu-shadow-dark-str), 0 -1px 2px var(--neu-shadow-light-str);
 }
+
+/* ============================================
+   NEUMORPHISM DARK VARIANT
+   ============================================ */
+.neu.dark {
+  --background: 220 15% 12%;
+  --foreground: 220 14% 96%;
+
+  --card: 220 15% 14%;
+  --card-foreground: 220 14% 96%;
+
+  --popover: 220 15% 14%;
+  --popover-foreground: 220 14% 96%;
+
+  --primary: 214 60% 55%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 220 15% 18%;
+  --secondary-foreground: 220 14% 92%;
+
+  --muted: 220 15% 18%;
+  --muted-foreground: 220 10% 55%;
+
+  --accent: 220 15% 18%;
+  --accent-foreground: 220 14% 96%;
+
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 220 15% 22%;
+  --input: 220 15% 22%;
+  --ring: 214 60% 55%;
+
+  --sidebar-background: 220 15% 12%;
+  --sidebar-foreground: 220 14% 96%;
+  --sidebar-primary: 214 60% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 15% 18%;
+  --sidebar-accent-foreground: 220 14% 92%;
+  --sidebar-border: 220 15% 22%;
+  --sidebar-ring: 214 60% 55%;
+
+  --hero-from: 214 60% 40%;
+  --hero-to: 214 55% 30%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 220 10% 45%;
+
+  --stat-1: 214 60% 55%;
+  --stat-2: 200 55% 50%;
+  --stat-3: 160 55% 40%;
+  --stat-4: 30 55% 48%;
+  --stat-5: 345 45% 45%;
+  --stat-6: 260 45% 55%;
+
+  --chart-1: 214 60% 55%;
+  --chart-2: 200 55% 50%;
+  --chart-3: 160 55% 40%;
+  --chart-4: 30 55% 48%;
+  --chart-5: 345 45% 45%;
+  --chart-6: 260 45% 55%;
+
+  --success: 160 55% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 30 55% 48%;
+  --warning-foreground: 0 0% 100%;
+  --info: 200 55% 50%;
+  --info-foreground: 0 0% 100%;
+
+  /* Dark neu shadow tokens - lighter shadows on dark bg */
+  --neu-bg: 220 15% 14%;
+  --neu-shadow-dark: 220 15% 6%;
+  --neu-shadow-light: 220 15% 22%;
+  --neu-shadow-dark-str: hsla(220, 15%, 6%, 0.7);
+  --neu-shadow-light-str: hsla(220, 15%, 22%, 0.5);
+  --neu-raised: 6px 6px 12px var(--neu-shadow-dark-str), -6px -6px 12px var(--neu-shadow-light-str);
+  --neu-raised-sm: 4px 4px 8px var(--neu-shadow-dark-str), -4px -4px 8px var(--neu-shadow-light-str);
+  --neu-inset: inset 6px 6px 12px var(--neu-shadow-dark-str), inset -6px -6px 12px var(--neu-shadow-light-str);
+  --neu-inset-sm: inset 4px 4px 8px var(--neu-shadow-dark-str), inset -4px -4px 8px var(--neu-shadow-light-str);
+  --neu-flat: 3px 3px 6px var(--neu-shadow-dark-str), -3px -3px 6px var(--neu-shadow-light-str);
+}

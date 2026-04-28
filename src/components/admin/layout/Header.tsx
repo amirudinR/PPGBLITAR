@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Sun, Moon, Sparkles, Layers, Layout, Droplets, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Menu, Sun, Moon, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -9,8 +9,9 @@ interface HeaderProps {
     setSidebarOpen: (open: boolean) => void;
     sidebarCollapsed: boolean;
     setSidebarCollapsed: (collapsed: boolean) => void;
-    theme: 'light' | 'dark' | 'soft' | 'neu' | 'editorial' | 'glass';
-    toggleTheme: () => void;
+    baseTheme: 'classic' | 'soft' | 'neu' | 'editorial' | 'glass';
+    isDarkMode: boolean;
+    toggleDarkMode: () => void;
 }
 
 export default function Header({
@@ -19,11 +20,12 @@ export default function Header({
     setSidebarOpen,
     sidebarCollapsed,
     setSidebarCollapsed,
-    theme,
-    toggleTheme,
+    baseTheme,
+    isDarkMode,
+    toggleDarkMode,
 }: HeaderProps) {
     const getHeaderClass = () => {
-        switch (theme) {
+        switch (baseTheme) {
             case 'neu':
                 return 'neu-header bg-card border-b border-border sticky top-0 z-40 h-14 flex items-center';
             case 'soft':
@@ -36,7 +38,7 @@ export default function Header({
     };
 
     const getBtnClass = () => {
-        switch (theme) {
+        switch (baseTheme) {
             case 'neu':
                 return 'neu-btn';
             case 'soft':
@@ -90,26 +92,23 @@ export default function Header({
                     <h1 className="text-lg font-semibold text-foreground">{title}</h1>
                 </div>
 
-                {/* Right side - Theme toggle */}
+                {/* Right side - Dark mode toggle */}
                 <div className="flex items-center gap-2">
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 size="icon"
-                                onClick={toggleTheme}
+                                variant="ghost"
+                                onClick={toggleDarkMode}
                                 className={`${getBtnClass()} relative overflow-hidden transition-all duration-300`}
                             >
-                                <Sun className={`h-5 w-5 transition-all duration-300 ${theme === 'light' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
-                                <Moon className={`absolute h-5 w-5 transition-all duration-300 ${theme === 'dark' ? 'rotate-0 scale-100' : '-rotate-90 scale-0'}`} />
-                                <Sparkles className={`absolute h-5 w-5 transition-all duration-300 ${theme === 'soft' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
-                                <Layers className={`absolute h-5 w-5 transition-all duration-300 ${theme === 'neu' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
-                                <Layout className={`absolute h-5 w-5 transition-all duration-300 ${theme === 'editorial' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
-                                <Droplets className={`absolute h-5 w-5 transition-all duration-300 ${theme === 'glass' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
-                                <span className="sr-only">Toggle theme</span>
+                                <Sun className={`h-5 w-5 transition-all duration-300 absolute ${isDarkMode ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
+                                <Moon className={`h-5 w-5 transition-all duration-300 ${isDarkMode ? 'rotate-90 scale-0' : 'rotate-0 scale-100'}`} />
+                                <span className="sr-only">Toggle dark mode</span>
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            {theme === 'light' ? 'Mode Gelap' : theme === 'dark' ? 'Mode Soft Minimal' : theme === 'soft' ? 'Mode Neumorphism' : theme === 'neu' ? 'Mode Editorial' : theme === 'editorial' ? 'Mode Glassmorphism' : 'Mode Terang'}
+                            {isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
                         </TooltipContent>
                     </Tooltip>
                 </div>

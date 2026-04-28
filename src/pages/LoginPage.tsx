@@ -6,13 +6,13 @@ import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { showError, showSuccess } from '@/utils/toast';
-import { Mail, Lock, Sun, Moon, Sparkles, Layers, Layout, Droplets } from 'lucide-react';
+import { Mail, Lock, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { theme, toggleTheme } = useTheme();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -37,24 +37,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 relative">
-      {/* Theme Toggle Button */}
+      {/* Dark Mode Toggle Button */}
       <button
-        onClick={toggleTheme}
+        onClick={toggleDarkMode}
         className="absolute top-4 right-4 z-50 p-3 rounded-full bg-card/20 backdrop-blur-sm hover:bg-card/30 transition-all duration-300 shadow-lg"
-        title={theme === 'light' ? 'Mode Gelap' : theme === 'dark' ? 'Mode Soft Minimal' : theme === 'soft' ? 'Mode Neumorphism' : theme === 'neu' ? 'Mode Editorial' : theme === 'editorial' ? 'Mode Glassmorphism' : 'Mode Terang'}
+        title={isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
       >
-        {theme === 'light' ? (
-          <Moon className="h-5 w-5 text-white" />
-        ) : theme === 'dark' ? (
-          <Sparkles className="h-5 w-5 text-cyan-200" />
-        ) : theme === 'soft' ? (
-          <Layers className="h-5 w-5 text-violet-300" />
-        ) : theme === 'neu' ? (
-          <Layout className="h-5 w-5 text-red-400" />
-        ) : theme === 'editorial' ? (
-          <Droplets className="h-5 w-5 text-sky-300" />
-        ) : (
+        {isDarkMode ? (
           <Sun className="h-5 w-5 text-yellow-300" />
+        ) : (
+          <Moon className="h-5 w-5 text-white" />
         )}
       </button>
 

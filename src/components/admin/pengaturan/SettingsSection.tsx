@@ -1,22 +1,14 @@
 import React from 'react';
-import { Theme, useTheme } from '@/hooks/useTheme';
+import { BaseTheme, useTheme } from '@/hooks/useTheme';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sun, Moon, Sparkles, Layers, Layout, Droplets } from 'lucide-react';
 
-const THEME_OPTIONS: { value: Theme; label: string; icon: React.ReactNode; description: string }[] = [
+const THEME_OPTIONS: { value: BaseTheme; label: string; icon: React.ReactNode; description: string }[] = [
   {
-    value: 'light',
-    label: 'Terang',
+    value: 'classic',
+    label: 'Classic',
     icon: <Sun className="h-5 w-5" />,
-    description: 'Tampilan cerah dan bersih untuk penggunaan di siang hari.',
-  },
-  {
-    value: 'dark',
-    label: 'Gelap',
-    icon: <Moon className="h-5 w-5" />,
-    description: 'Tampilan gelap yang nyaman untuk mata di malam hari.',
+    description: 'Tampilan klasik bersih dengan warna biru cerah.',
   },
   {
     value: 'soft',
@@ -45,28 +37,59 @@ const THEME_OPTIONS: { value: Theme; label: string; icon: React.ReactNode; descr
 ];
 
 export default function SettingsSection() {
-  const { theme, setTheme } = useTheme();
+  const { baseTheme, isDarkMode, setBaseTheme, toggleDarkMode } = useTheme();
 
   return (
     <div>
       <h2 className="text-3xl font-bold tracking-tight mb-6">Pengaturan</h2>
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Dark Mode Toggle */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Mode Tampilan</CardTitle>
+            <CardDescription>
+              Aktifkan mode gelap untuk kenyamanan mata di malam hari.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <button
+              onClick={toggleDarkMode}
+              className={`
+                flex items-center gap-4 p-4 rounded-xl border-2 w-full text-left transition-all duration-200
+                ${isDarkMode ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:border-primary/40 hover:bg-muted/50'}
+              `}
+            >
+              <div className={`flex items-center justify-center h-10 w-10 rounded-lg shrink-0 ${isDarkMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                {isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-foreground">{isDarkMode ? 'Mode Gelap Aktif' : 'Mode Terang Aktif'}</div>
+                <div className="text-sm text-muted-foreground">Klik untuk {isDarkMode ? 'beralih ke mode terang' : 'beralih ke mode gelap'}</div>
+              </div>
+              <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${isDarkMode ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${isDarkMode ? 'translate-x-7' : 'translate-x-1'}`} />
+              </div>
+            </button>
+          </CardContent>
+        </Card>
+
+        {/* Theme Selection */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Tema Aplikasi</CardTitle>
             <CardDescription>
-              Pilih tampilan yang sesuai dengan preferensi Anda. Pilihan ini akan disimpan secara otomatis.
+              Pilih tampilan yang sesuai dengan preferensi Anda. Setiap tema tersedia dalam mode terang dan gelap.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {THEME_OPTIONS.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setTheme(option.value)}
+                  onClick={() => setBaseTheme(option.value)}
                   className={`
                     flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200
-                    ${theme === option.value
+                    ${baseTheme === option.value
                       ? 'border-primary bg-primary/5 shadow-sm'
                       : 'border-border hover:border-primary/40 hover:bg-muted/50'
                     }
@@ -74,7 +97,7 @@ export default function SettingsSection() {
                 >
                   <div className={`
                     flex items-center justify-center h-10 w-10 rounded-lg shrink-0
-                    ${theme === option.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
+                    ${baseTheme === option.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
                   `}>
                     {option.icon}
                   </div>
@@ -84,9 +107,9 @@ export default function SettingsSection() {
                   </div>
                   <div className={`
                     h-5 w-5 rounded-full border-2 shrink-0 transition-all duration-200
-                    ${theme === option.value ? 'border-primary bg-primary' : 'border-muted-foreground/30'}
+                    ${baseTheme === option.value ? 'border-primary bg-primary' : 'border-muted-foreground/30'}
                   `}>
-                    {theme === option.value && (
+                    {baseTheme === option.value && (
                       <div className="h-full w-full rounded-full bg-primary-foreground scale-[0.4]" />
                     )}
                   </div>

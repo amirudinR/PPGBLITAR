@@ -14,7 +14,7 @@ interface AdminDashboardPageProps {
 }
 
 export default function AdminDashboardPage({ currentUser, handleLogout }: AdminDashboardPageProps) {
-  const { theme, toggleTheme } = useTheme();
+  const { baseTheme, isDarkMode, toggleDarkMode } = useTheme();
   const { canAccessFeature } = useFeaturePermissions(currentUser);
 
   const checkFeatureAccess = useCallback(
@@ -83,8 +83,9 @@ export default function AdminDashboardPage({ currentUser, handleLogout }: AdminD
       currentUser={currentUser}
       canAccessFeature={checkFeatureAccess}
       title={title}
-      theme={theme}
-      toggleTheme={toggleTheme}
+      baseTheme={baseTheme}
+      isDarkMode={isDarkMode}
+      toggleDarkMode={toggleDarkMode}
       loading={data.loading}
     >
       <AdminSectionContainer

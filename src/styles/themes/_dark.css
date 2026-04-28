@@ -1,8 +1,8 @@
 /* ============================================
-   DARK THEME
+   CLASSIC DARK THEME
    ============================================ */
 
-.dark {
+.dark:not(.soft):not(.neu):not(.editorial):not(.glass) {
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
 

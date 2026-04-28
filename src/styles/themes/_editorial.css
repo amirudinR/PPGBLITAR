@@ -53,3 +53,58 @@
   --info: 0 0% 35%;
   --info-foreground: 0 0% 100%;
 }
+
+/* ============================================
+   EDITORIAL DARK VARIANT
+   ============================================ */
+.editorial.dark {
+  --background: 0 0% 6%;
+  --foreground: 0 0% 96%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 96%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 0 90% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 0 0% 12%;
+  --accent-foreground: 0 0% 96%;
+  --destructive: 0 90% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 0 90% 55%;
+  --sidebar-background: 0 0% 5%;
+  --sidebar-foreground: 0 0% 96%;
+  --sidebar-primary: 0 90% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 12%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-border: 0 0% 18%;
+  --sidebar-ring: 0 90% 55%;
+  --hero-from: 0 0% 92%;
+  --hero-to: 0 0% 80%;
+  --hero-foreground: 0 0% 5%;
+  --hero-muted: 0 0% 45%;
+  --stat-1: 0 90% 55%;
+  --stat-2: 0 0% 70%;
+  --stat-3: 0 0% 50%;
+  --stat-4: 0 70% 50%;
+  --stat-5: 0 0% 60%;
+  --stat-6: 0 50% 45%;
+  --chart-1: 0 90% 55%;
+  --chart-2: 0 0% 70%;
+  --chart-3: 0 0% 50%;
+  --chart-4: 0 70% 50%;
+  --chart-5: 0 0% 60%;
+  --chart-6: 0 50% 45%;
+  --success: 0 0% 35%;
+  --success-foreground: 0 0% 100%;
+  --warning: 0 70% 50%;
+  --warning-foreground: 0 0% 100%;
+  --info: 0 0% 45%;
+  --info-foreground: 0 0% 100%;
+}

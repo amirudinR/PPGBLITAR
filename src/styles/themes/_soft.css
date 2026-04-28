@@ -198,3 +198,131 @@
   height: 1px;
   background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
 }
+
+/* ============================================
+   SOFT DARK VARIANT
+   ============================================ */
+.soft.dark {
+  --background: 220 20% 8%;
+  --foreground: 220 14% 96%;
+
+  --card: 220 18% 11%;
+  --card-foreground: 220 14% 96%;
+
+  --popover: 220 18% 11%;
+  --popover-foreground: 220 14% 96%;
+
+  --primary: 215 60% 55%;
+  --primary-foreground: 220 20% 8%;
+
+  --secondary: 220 18% 14%;
+  --secondary-foreground: 220 14% 92%;
+
+  --muted: 220 18% 14%;
+  --muted-foreground: 220 10% 55%;
+
+  --accent: 215 55% 18%;
+  --accent-foreground: 215 60% 75%;
+
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 220 15% 18%;
+  --input: 220 15% 18%;
+  --ring: 215 60% 55%;
+
+  --sidebar-background: 220 20% 8%;
+  --sidebar-foreground: 220 14% 96%;
+  --sidebar-primary: 215 60% 55%;
+  --sidebar-primary-foreground: 220 20% 8%;
+  --sidebar-accent: 220 18% 14%;
+  --sidebar-accent-foreground: 220 14% 96%;
+  --sidebar-border: 220 15% 18%;
+  --sidebar-ring: 215 60% 55%;
+
+  --hero-from: 215 60% 40%;
+  --hero-to: 210 50% 30%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 220 10% 45%;
+
+  --stat-1: 215 60% 55%;
+  --stat-2: 200 55% 50%;
+  --stat-3: 160 55% 40%;
+  --stat-4: 38 65% 45%;
+  --stat-5: 340 50% 45%;
+  --stat-6: 270 50% 55%;
+
+  --chart-1: 215 60% 55%;
+  --chart-2: 200 55% 50%;
+  --chart-3: 160 55% 40%;
+  --chart-4: 38 65% 45%;
+  --chart-5: 340 50% 45%;
+  --chart-6: 270 50% 55%;
+
+  --success: 160 55% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 65% 45%;
+  --warning-foreground: 0 0% 100%;
+  --info: 200 55% 50%;
+  --info-foreground: 0 0% 100%;
+
+  --surface-elevated: 220 18% 11%;
+  --surface-sunken: 220 20% 6%;
+  --divider: 220 15% 18%;
+}
+
+.soft.dark [class*="rounded-lg border bg-card"],
+.soft.dark .soft-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 3px hsl(220 15% 18% / 0.5), 0 1px 2px hsl(220 15% 18% / 0.3);
+}
+
+.soft.dark [class*="rounded-lg border bg-card"]:hover,
+.soft.dark .soft-card:hover {
+  box-shadow: 0 4px 12px hsl(220 15% 18% / 0.4), 0 2px 4px hsl(220 15% 18% / 0.2);
+}
+
+.soft.dark input[class*="border border-input"],
+.soft.dark .soft-input {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--input));
+  box-shadow: inset 0 1px 2px hsl(220 15% 18% / 0.3);
+}
+
+.soft.dark input[class*="border border-input"]:focus,
+.soft.dark .soft-input:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.12), inset 0 1px 2px hsl(220 15% 18% / 0.2);
+}
+
+.soft.dark header,
+.soft.dark .soft-header {
+  background: hsl(var(--card));
+  border-bottom: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 3px hsl(220 15% 18% / 0.3);
+}
+
+.soft.dark .soft-sidebar,
+.soft.dark [class*="bg-sidebar"] {
+  box-shadow: 2px 0 8px hsl(220 20% 8% / 0.2);
+}
+
+.soft.dark .soft-badge {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.soft.dark [class*="rounded-lg border"] thead tr {
+  background: hsl(var(--muted));
+}
+
+.soft.dark [class*="rounded-lg border"] tbody tr:hover {
+  background: hsl(var(--accent));
+}
+
+.soft.dark hr,
+.soft.dark .soft-divider {
+  background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
+}

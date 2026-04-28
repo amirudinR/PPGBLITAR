@@ -1,8 +1,8 @@
 /* ============================================
-   GLASS THEME
+   GLASS THEME — Dark
    ============================================ */
 
-.glass {
+.glass.dark {
   --background: 240 15% 12%;
   --foreground: 0 0% 98%;
   --card: 240 15% 12%;
@@ -55,14 +55,14 @@
 }
 
 /* ---- Glass body background ---- */
-body.glass {
+body.glass.dark {
   background: linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #24243e 70%, #0f0c29 100%);
   background-attachment: fixed;
 }
 
 /* ---- Glass card ---- */
-.glass [class*="rounded-lg border bg-card"],
-.glass .glass-card {
+.glass.dark [class*="rounded-lg border bg-card"],
+.glass.dark .glass-card {
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -71,8 +71,8 @@ body.glass {
 }
 
 /* ---- Glass header / nav ---- */
-.glass header,
-.glass nav {
+.glass.dark header,
+.glass.dark nav {
   background: rgba(15, 12, 41, 0.6) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -80,8 +80,8 @@ body.glass {
 }
 
 /* ---- Glass input ---- */
-.glass input[class*="border border-input"],
-.glass .glass-input {
+.glass.dark input[class*="border border-input"],
+.glass.dark .glass-input {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -89,14 +89,14 @@ body.glass {
   color: rgba(255, 255, 255, 0.9);
 }
 
-.glass input[class*="border border-input"]:focus,
-.glass .glass-input:focus {
+.glass.dark input[class*="border border-input"]:focus,
+.glass.dark .glass-input:focus {
   border-color: rgba(100, 200, 255, 0.5);
   box-shadow: 0 0 0 3px rgba(100, 200, 255, 0.15);
 }
 
 /* ---- Glass buttons ---- */
-.glass button[class*="inline-flex"] {
+.glass.dark button[class*="inline-flex"] {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -104,21 +104,139 @@ body.glass {
   color: rgba(255, 255, 255, 0.9);
 }
 
-.glass button[class*="inline-flex"]:hover {
+.glass.dark button[class*="inline-flex"]:hover {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.glass button[class*="inline-flex"]:active {
+.glass.dark button[class*="inline-flex"]:active {
   background: rgba(255, 255, 255, 0.04);
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ---- Glass sidebar ---- */
-.glass [class*="bg-sidebar"],
-.glass .glass-sidebar {
+.glass.dark [class*="bg-sidebar"],
+.glass.dark .glass-sidebar {
   background: rgba(15, 12, 41, 0.75) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ============================================
+   GLASS THEME — Light
+   ============================================ */
+.glass:not(.dark) {
+  --background: 220 20% 92%;
+  --foreground: 220 20% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 20% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 20% 14%;
+  --primary: 215 60% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 88%;
+  --secondary-foreground: 220 20% 14%;
+  --muted: 220 20% 88%;
+  --muted-foreground: 220 10% 42%;
+  --accent: 215 60% 92%;
+  --accent-foreground: 215 60% 30%;
+  --destructive: 0 65% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 18% 82%;
+  --input: 220 18% 82%;
+  --ring: 215 60% 50%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 220 20% 14%;
+  --sidebar-primary: 215 60% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 20% 94%;
+  --sidebar-accent-foreground: 220 20% 14%;
+  --sidebar-border: 220 18% 82%;
+  --sidebar-ring: 215 60% 50%;
+  --hero-from: 215 60% 40%;
+  --hero-to: 210 55% 30%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 220 15% 65%;
+  --stat-1: 215 60% 50%;
+  --stat-2: 260 60% 55%;
+  --stat-3: 160 60% 40%;
+  --stat-4: 35 70% 50%;
+  --stat-5: 340 60% 50%;
+  --stat-6: 280 60% 55%;
+  --chart-1: 215 60% 50%;
+  --chart-2: 260 60% 55%;
+  --chart-3: 160 60% 40%;
+  --chart-4: 35 70% 50%;
+  --chart-5: 340 60% 50%;
+  --chart-6: 280 60% 55%;
+  --success: 160 60% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 35 70% 50%;
+  --warning-foreground: 0 0% 100%;
+  --info: 195 60% 50%;
+  --info-foreground: 0 0% 100%;
+}
+
+body.glass:not(.dark) {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 40%, #dbeafe 70%, #e0e7ff 100%);
+  background-attachment: fixed;
+}
+
+.glass:not(.dark) [class*="rounded-lg border bg-card"],
+.glass:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass:not(.dark) header,
+.glass:not(.dark) nav {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.glass:not(.dark) input[class*="border border-input"],
+.glass:not(.dark) .glass-input {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: rgba(30, 30, 40, 0.9);
+}
+
+.glass:not(.dark) input[class*="border border-input"]:focus,
+.glass:not(.dark) .glass-input:focus {
+  border-color: rgba(100, 150, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.15);
+}
+
+.glass:not(.dark) button[class*="inline-flex"] {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: rgba(30, 30, 40, 0.9);
+}
+
+.glass:not(.dark) button[class*="inline-flex"]:hover {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.glass:not(.dark) button[class*="inline-flex"]:active {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.glass:not(.dark) [class*="bg-sidebar"],
+.glass:not(.dark) .glass-sidebar {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }

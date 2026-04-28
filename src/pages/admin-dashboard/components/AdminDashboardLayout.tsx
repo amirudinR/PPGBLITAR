@@ -14,8 +14,9 @@ interface AdminDashboardLayoutProps {
   currentUser: User | null;
   canAccessFeature: (featureId: string) => boolean;
   title: string;
-  theme: 'light' | 'dark' | 'soft' | 'neu' | 'editorial' | 'glass';
-  toggleTheme: () => void;
+  baseTheme: 'classic' | 'soft' | 'neu' | 'editorial' | 'glass';
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
   loading: boolean;
   children: React.ReactNode;
 }
@@ -31,8 +32,9 @@ export default function AdminDashboardLayout({
   currentUser,
   canAccessFeature,
   title,
-  theme,
-  toggleTheme,
+  baseTheme,
+  isDarkMode,
+  toggleDarkMode,
   loading,
   children,
 }: AdminDashboardLayoutProps) {
@@ -55,8 +57,9 @@ export default function AdminDashboardLayout({
           setSidebarOpen={setSidebarOpen}
           sidebarCollapsed={sidebarCollapsed}
           setSidebarCollapsed={setSidebarCollapsed}
-          theme={theme}
-          toggleTheme={toggleTheme}
+          baseTheme={baseTheme}
+          isDarkMode={isDarkMode}
+          toggleDarkMode={toggleDarkMode}
         />
         <main className="flex-1 overflow-auto p-6">
           {loading ? <div className="text-center p-8">Memuat data...</div> : children}

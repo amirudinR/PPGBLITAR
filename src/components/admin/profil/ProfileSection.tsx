@@ -4,9 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showError } from '@/utils/toast';
-import { Theme, useTheme } from '@/hooks/useTheme';
 
 interface ProfileSectionProps {
   currentUser: User | null;
@@ -16,7 +14,6 @@ interface ProfileSectionProps {
 export default function ProfileSection({ currentUser, onUpdatePassword }: ProfileSectionProps) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { theme, setTheme } = useTheme();
 
   const handleUpdate = async () => {
     if (!newPassword) {
@@ -60,19 +57,6 @@ export default function ProfileSection({ currentUser, onUpdatePassword }: Profil
             <div className="space-y-1">
               <Label>Peran</Label>
               <Input value={currentUser.role} readOnly />
-            </div>
-            <div className="space-y-1">
-              <Label>Tema Aplikasi</Label>
-              <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih tema" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Terang</SelectItem>
-                  <SelectItem value="dark">Gelap</SelectItem>
-                  <SelectItem value="soft">Soft Minimal Enterprise</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
