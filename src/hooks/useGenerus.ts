@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, where, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Generus, User, Desa, Kelompok, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
-import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { generusSeedData } from '@/data/seed';
+import { useBatchOperations } from './useBatchOperations';
 
 export function useGenerus(currentUser: User | null) {
   const [generus, setGenerus] = useState<Generus[]>([]);
@@ -14,6 +15,8 @@ export function useGenerus(currentUser: User | null) {
     statusMondok: STATUS_MONDOK_LIST[3], namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
     desa: '', kelompok: ''
   });
+
+  const { batchImport, batchAddWithCustomRefs } = useBatchOperations();
 
   const fetchGenerus = useCallback(async () => {
     if (!currentUser) return;
@@ -99,31 +102,17 @@ export function useGenerus(currentUser: User | null) {
 
   // Memperbaiki fungsi import data Generus
   const importGenerus = async (data: Omit<Generus, 'id'>[]) => {
-    if (data.length === 0) {
-      showError("Tidak ada data untuk diimpor.");
-      return false;
-    }
-    
-    const toastId = showLoading(`Mengimpor ${data.length} data generus...`);
     try {
-      const batch = writeBatch(db);
-      const generusCollection = collection(db, "generus");
-      
-      // Tambahkan setiap data ke batch
-      data.forEach(item => {
-        const docRef = doc(generusCollection);
-        batch.set(docRef, item);
+      await batchImport({
+        data,
+        collectionName: "generus",
+        db,
+        successMessage: `${data.length} data generus berhasil diimpor.`,
+        loadingMessage: `Mengimpor ${data.length} data generus...`
       });
-      
-      // Commit batch
-      await batch.commit();
-      dismissToast(toastId);
-      showSuccess(`${data.length} data generus berhasil diimpor.`);
-      fetchGenerus(); // Refresh data
+      fetchGenerus();
       return true;
     } catch (error) {
-      console.error("Error importing generus: ", error);
-      dismissToast(toastId);
       showError("Gagal mengimpor data generus.");
       return false;
     }
@@ -193,24 +182,23 @@ export function useGenerus(currentUser: User | null) {
       return;
     }
     setIsPopulating(true);
-    const toastId = showLoading("Menambahkan 50 data generus ke database...");
     try {
-      const batch = writeBatch(db);
-      const generusCollection = collection(db, "generus");
-      generusSeedData.forEach(g => {
+      const seedData = generusSeedData.map(g => {
         const randomDesa = desas[Math.floor(Math.random() * desas.length)];
         const kelompokInDesa = kelompok.filter(k => k.desaId === randomDesa.id);
         let selectedKelompokName = kelompokInDesa.length > 0 ? kelompokInDesa[Math.floor(Math.random() * kelompokInDesa.length)].name : '';
-        const docRef = doc(generusCollection);
-        batch.set(docRef, { ...g, desa: randomDesa.name, kelompok: selectedKelompokName });
+        return { ...g, desa: randomDesa.name, kelompok: selectedKelompokName };
       });
-      await batch.commit();
-      dismissToast(toastId);
-      showSuccess("50 data generus berhasil ditambahkan!");
+
+      await batchImport({
+        data: seedData,
+        collectionName: "generus",
+        db,
+        successMessage: "50 data generus berhasil ditambahkan!",
+        loadingMessage: "Menambahkan 50 data generus ke database..."
+      });
       fetchGenerus();
     } catch (error) {
-      console.error("Error populating database: ", error);
-      dismissToast(toastId);
       showError("Gagal menambahkan data.");
     } finally {
       setIsPopulating(false);

@@ -15,7 +15,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import PaginationControls from '../layout/PaginationControls';
 import StatusBadge from '../shared/StatusBadge';
-import { getStatusVariant, ROLE_LABELS } from '@/hooks/useAccounts';
+import { getStatusVariant, ROLE_LABELS } from '@/utils/roleHelpers';
 
 interface Props {
   users: User[];

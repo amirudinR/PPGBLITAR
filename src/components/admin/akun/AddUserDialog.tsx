@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { ROLE_LABELS } from '@/hooks/useAccounts';
+import { ROLE_LABELS } from '@/utils/roleHelpers';
 
 interface Props {
   open: boolean;

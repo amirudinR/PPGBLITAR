@@ -1,20 +1,17 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { User, Role, ROLES } from '@/types/admin';
+import { useSort } from './useSort';
+import { usePagination } from './usePagination';
+import { useSelection } from './useSelection';
+import {
+  ROLE_LABELS,
+  getStatusVariant,
+  getCreatableRoles,
+  canResetPassword,
+  filterUsersByRoleHierarchy,
+} from '@/utils/roleHelpers';
 
 const ITEMS_PER_PAGE = 10;
-
-export const ROLE_LABELS: Record<Role, string> = {
-  adminsuper: 'Admin Super',
-  admin: 'Admin',
-  desa: 'PJP Desa',
-  kelompok: 'PJP Kelompok',
-  guru: 'Guru',
-  orangtua: 'Orang Tua',
-};
-
-export function getStatusVariant(status: string): 'success' | 'muted' {
-  return status === 'Active' ? 'success' : 'muted';
-}
 
 export function useAccounts(
   users: User[],
@@ -30,42 +27,23 @@ export function useAccounts(
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
     name: '', email: '', role: 'guru', status: 'Active', desa: '', kelompok: '', password: '',
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' } | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
-  /* ---------- role hierarchy for visibility ---------- */
-  const ROLE_HIERARCHY: Record<Role, number> = {
-    adminsuper: 5, admin: 4, desa: 3, kelompok: 2, guru: 1, orangtua: 0,
-  };
+  /* ---------- role hierarchy filtering ---------- */
+  const filteredUsers = useMemo(() => filterUsersByRoleHierarchy(users, currentUser), [users, currentUser]);
 
-  /* ---------- sorting & pagination ---------- */
-  const sortedUsers = useMemo(() => {
-    const currentLevel = currentUser ? ROLE_HIERARCHY[currentUser.role] : -1;
-    const filtered = users.filter(u => ROLE_HIERARCHY[u.role] <= currentLevel);
-    const items = [...filtered];
-    if (sortConfig) {
-      items.sort((a, b) => {
-        const aVal = a[sortConfig.key];
-        const bVal = b[sortConfig.key];
-        if (aVal == null) return 1;
-        if (bVal == null) return -1;
-        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return items;
-  }, [users, sortConfig, currentUser]);
+  /* ---------- sorting ---------- */
+  const { sortedItems: sortedUsers, requestSort, getSortIndicator } = useSort(filteredUsers);
 
-  const paginatedUsers = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return sortedUsers.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedUsers, currentPage]);
+  /* ---------- pagination ---------- */
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    paginatedItems: paginatedUsers,
+  } = usePagination(sortedUsers, ITEMS_PER_PAGE);
 
-  const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
-
+  /* ---------- selection ---------- */
   const selectableUsers = useMemo(
     () => {
       if (currentUser?.role === 'adminsuper') {
@@ -76,31 +54,13 @@ export function useAccounts(
     [paginatedUsers, currentUser],
   );
 
-  const allPageSelected = selectableUsers.length > 0 && selectableUsers.every((u) => selectedIds.has(u.id));
-
-  /* ---------- selection ---------- */
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allPageSelected) {
-        selectableUsers.forEach((u) => next.delete(u.id));
-      } else {
-        selectableUsers.forEach((u) => next.add(u.id));
-      }
-      return next;
-    });
-  }, [allPageSelected, selectableUsers]);
-
-  const toggleSelectOne = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const {
+    selectedIds,
+    allPageSelected,
+    toggleSelectAll,
+    toggleSelectOne,
+    clearSelection,
+  } = useSelection(selectableUsers);
 
   /* ---------- bulk delete ---------- */
   const handleBulkDelete = useCallback(async () => {
@@ -110,61 +70,6 @@ export function useAccounts(
     clearSelection();
     setIsBulkDeleteOpen(false);
   }, [selectedIds, onDeleteUser, clearSelection]);
-
-  /* ---------- sorting ---------- */
-  const requestSort = useCallback(
-    (key: keyof User) => {
-      setSortConfig((prev) => {
-        if (prev && prev.key === key && prev.direction === 'asc') {
-          return { key, direction: 'desc' };
-        }
-        return { key, direction: 'asc' };
-      });
-      setCurrentPage(1);
-    },
-    [],
-  );
-
-  const getSortIndicator = useCallback(
-    (key: keyof User) => {
-      if (!sortConfig || sortConfig.key !== key) return null;
-      return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
-    },
-    [sortConfig],
-  );
-
-  /* ---------- role helpers ---------- */
-  const creatableRoles = useCallback(() => {
-    if (currentUser?.role === 'desa') {
-      return ROLES.filter((r) => ['kelompok', 'guru', 'orangtua'].includes(r));
-    }
-    if (currentUser?.role === 'kelompok') {
-      return ROLES.filter((r) => ['guru', 'orangtua'].includes(r));
-    }
-    if (currentUser?.role === 'admin') {
-      return ROLES.filter((r) => r !== 'adminsuper');
-    }
-    return [...ROLES];
-  }, [currentUser]);
-
-  const canResetPassword = useCallback(
-    (target: User): boolean => {
-      if (!currentUser || target.id === currentUser.id) return false;
-      const hierarchy: Record<Role, number> = {
-        adminsuper: 4, admin: 3, desa: 2, kelompok: 1, guru: 0, orangtua: 0,
-      };
-      const currentLevel = hierarchy[currentUser.role];
-      const targetLevel = hierarchy[target.role];
-      if (currentLevel <= targetLevel) return false;
-      if (currentUser.role === 'desa' && target.desa !== currentUser.desa) return false;
-      if (currentUser.role === 'kelompok') {
-        if (target.desa !== currentUser.desa) return false;
-        if (target.kelompok !== currentUser.kelompok) return false;
-      }
-      return true;
-    },
-    [currentUser],
-  );
 
   /* ---------- add user ---------- */
   useEffect(() => {
@@ -259,8 +164,8 @@ export function useAccounts(
     handleUpdate,
 
     // role helpers
-    creatableRoles,
-    canResetPassword,
+    creatableRoles: getCreatableRoles(currentUser?.role),
+    canResetPassword: (target: User) => canResetPassword(currentUser, target),
 
     // password reset
     onResetUserPassword,
