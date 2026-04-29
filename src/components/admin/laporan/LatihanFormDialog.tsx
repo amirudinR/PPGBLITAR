@@ -81,7 +81,7 @@ export default function LatihanFormDialog({
                         <Label>Tanggal</Label>
                         <Input type="date" value={formData.tanggal} onChange={(e) => onFormDataChange({ ...formData, tanggal: e.target.value })} />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <Label>Bulan</Label>
                             <Select value={formData.bulan} onValueChange={(v) => onFormDataChange({ ...formData, bulan: v })}>

@@ -229,7 +229,7 @@ export default function RekapNilaiSection({
 
       {selectedClassId && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-wrap items-center justify-between gap-2">
             <CardTitle>Rekapitulasi Nilai Kelas: {selectedClass?.namaKelas}</CardTitle>
             <Button onClick={handleExportPDF} variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />

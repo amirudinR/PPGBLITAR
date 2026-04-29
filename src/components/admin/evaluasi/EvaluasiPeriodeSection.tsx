@@ -183,7 +183,7 @@ export default function EvaluasiPeriodeSection({ currentUser }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Tanggal Mulai</Label>
                 <Input type="date" value={startDateStr} onChange={(e) => setStartDateStr(e.target.value)} />

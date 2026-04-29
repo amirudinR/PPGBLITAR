@@ -183,12 +183,12 @@ export default function ChecklistTemplatesSection({ currentUser }: Props) {
             <DialogTitle>{dialog.existing ? 'Edit Template' : 'Template Checklist Baru'}</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="col-span-full">
                 <Label>Nama Template</Label>
                 <Input value={form.nama} onChange={(e) => setForm((p) => ({ ...p, nama: e.target.value }))} />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label>Deskripsi</Label>
                 <Textarea value={form.deskripsi} onChange={(e) => setForm((p) => ({ ...p, deskripsi: e.target.value }))} />
               </div>

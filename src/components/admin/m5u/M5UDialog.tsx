@@ -53,7 +53,7 @@ export default function M5UDialog({
         <DialogHeader>
           <DialogTitle>{isEditMode ? 'Edit Agenda M5U' : 'Tambah Agenda M5U Baru'}</DialogTitle>
         </DialogHeader>
-        <div className="py-4 grid grid-cols-2 gap-4">
+        <div className="py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="bulan">Bulan</Label>
             <Select 
@@ -86,7 +86,7 @@ export default function M5UDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-full">
             <Label htmlFor="agenda">Agenda</Label>
             <Textarea 
               id="agenda" 
@@ -95,7 +95,7 @@ export default function M5UDialog({
               className="mt-1" 
             />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-full">
             <Label htmlFor="hasil">Hasil</Label>
             <Textarea 
               id="hasil" 
@@ -124,7 +124,7 @@ export default function M5UDialog({
             />
           </div>
           {isEditMode && (
-            <div className="col-span-2">
+            <div className="col-span-full">
               <Label htmlFor="statusHasil">Status Hasil</Label>
               <Select 
                 value={formData.statusHasil} 

@@ -112,7 +112,7 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-6">
         <h2 className="text-2xl font-bold">Data Guru</h2>
         <Button onClick={() => openDialog()}>
           <Plus className="w-4 h-4 mr-2" />
