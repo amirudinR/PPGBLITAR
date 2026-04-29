@@ -5,7 +5,7 @@ export interface FeaturePermission {
   featureId: string;
   featureName: string;
   description: string;
-  category: 'dashboard' | 'master' | 'data' | 'kehadiran' | 'nilai' | 'laporan' | 'pengumuman' | 'lainnya';
+  category: 'dashboard' | 'master' | 'data' | 'kehadiran' | 'nilai' | 'laporan' | 'pengumuman' | 'musyawaroh' | 'checklist' | 'evaluasi' | 'lainnya';
   allowedRoles: Role[];
   isEnabled: boolean;
   isCore: boolean; // If true, cannot be disabled (e.g., Dashboard, Profile)
@@ -47,7 +47,23 @@ export const FEATURE_LIST: Omit<FeaturePermission, 'id'>[] = [
 
   // Pengumuman
   { featureId: 'pengumuman', featureName: 'Pengumuman', description: 'Kelola pengumuman', category: 'pengumuman', allowedRoles: ['adminsuper', 'admin'], isEnabled: true, isCore: false },
+
+  // Musyawaroh
+  { featureId: 'musyawaroh-detail', featureName: 'Detail Musyawaroh', description: 'Platform musyawaroh terintegrasi (absensi, notulensi, action items)', category: 'musyawaroh', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], isEnabled: true, isCore: false },
+  { featureId: 'notifikasi', featureName: 'Notifikasi', description: 'Notifikasi in-app dan pengingat outstanding', category: 'musyawaroh', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], isEnabled: true, isCore: false },
+
+  // Checklist
+  { featureId: 'checklist-template', featureName: 'Template Checklist', description: 'Kelola template checklist guru/PJP', category: 'checklist', allowedRoles: ['adminsuper', 'admin', 'desa'], isEnabled: true, isCore: false },
+  { featureId: 'checklist-saya', featureName: 'Checklist Saya', description: 'Isi checklist yang di-assign ke saya', category: 'checklist', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], isEnabled: true, isCore: false },
+  { featureId: 'checklist-rekap', featureName: 'Rekap Checklist', description: 'Rekap completion rate checklist', category: 'checklist', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok'], isEnabled: true, isCore: false },
+
+  // Evaluasi Semesteran
+  { featureId: 'evaluasi-periode', featureName: 'Periode Evaluasi', description: 'Buka/tutup periode evaluasi semesteran', category: 'evaluasi', allowedRoles: ['adminsuper', 'admin'], isEnabled: true, isCore: false },
+  { featureId: 'evaluasi-semester', featureName: 'Evaluasi Semesteran', description: 'Input dan review evaluasi semesteran generus', category: 'evaluasi', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], isEnabled: true, isCore: false },
+
   { featureId: 'pengaturan', featureName: 'Pengaturan', description: 'Pengaturan preferensi aplikasi', category: 'lainnya', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], isEnabled: true, isCore: false },
+  { featureId: 'panduan', featureName: 'Panduan Penggunaan', description: 'Panduan cara menggunakan setiap fitur sesuai peran', category: 'lainnya', allowedRoles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], isEnabled: true, isCore: true },
+  { featureId: 'alur-kerja', featureName: 'Alur Kerja', description: 'Struktur hierarki, setup awal, dan alur operasional aplikasi', category: 'lainnya', allowedRoles: ['adminsuper', 'admin'], isEnabled: true, isCore: true },
 ];
 
 export const FEATURE_CATEGORIES = [
@@ -58,5 +74,8 @@ export const FEATURE_CATEGORIES = [
   { id: 'nilai', name: 'Nilai' },
   { id: 'laporan', name: 'Laporan & Target' },
   { id: 'pengumuman', name: 'Pengumuman' },
+  { id: 'musyawaroh', name: 'Musyawaroh' },
+  { id: 'checklist', name: 'Checklist' },
+  { id: 'evaluasi', name: 'Evaluasi Semesteran' },
   { id: 'lainnya', name: 'Lainnya' },
 ] as const;

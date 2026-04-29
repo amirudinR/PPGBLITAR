@@ -30,6 +30,7 @@ const GENERUS_SECTIONS: AdminSectionId[] = [
   'latihan-asad',
   'jariyah-ppg',
   'detail-pencapaian-kelas',
+  'evaluasi-semester',
 ];
 
 const GURUS_SECTIONS: AdminSectionId[] = ['dashboard', 'dataguru', 'datakelas', 'kehadiran-guru'];
@@ -45,6 +46,7 @@ const KELAS_SECTIONS: AdminSectionId[] = [
   'target-bulanan',
   'rekap-per-kelas',
   'detail-pencapaian-kelas',
+  'evaluasi-semester',
 ];
 
 const ATTENDANCE_SECTIONS: AdminSectionId[] = ['dashboard', 'rekap-kelas', 'rekap-siswa', 'kehadiran-guru'];

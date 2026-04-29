@@ -26,8 +26,18 @@ import LatihanASADSection from '@/components/admin/laporan/LatihanASADSection';
 import JariyahPPGSection from '@/components/admin/laporan/JariyahPPGSection';
 import FeaturePermissionsSection from '@/components/admin/pengaturan/FeaturePermissionsSection';
 import SettingsSection from '@/components/admin/pengaturan/SettingsSection';
+import MusyawarahDetailSection from '@/components/admin/musyawaroh/MusyawarahDetailSection';
+import NotificationsSection from '@/components/admin/notifikasi/NotificationsSection';
+import ChecklistTemplatesSection from '@/components/admin/checklist/ChecklistTemplatesSection';
+import ChecklistAssignmentsSection from '@/components/admin/checklist/ChecklistAssignmentsSection';
+import ChecklistRekapSection from '@/components/admin/checklist/ChecklistRekapSection';
+import EvaluasiPeriodeSection from '@/components/admin/evaluasi/EvaluasiPeriodeSection';
+import EvaluasiSemesterSection from '@/components/admin/evaluasi/EvaluasiSemesterSection';
+import PanduanPenggunaanSection from '@/components/admin/panduan/PanduanPenggunaanSection';
+import AlurKerjaSection from '@/components/admin/panduan/AlurKerjaSection';
 
 interface SectionMapperParams {
+  onNavigate?: (section: string) => void;
   activeSection: AdminSectionId;
   currentUser: User | null;
   detailKelasId: string | null;
@@ -75,6 +85,7 @@ export function renderAdminSection({
   onImportGenerus,
   onViewDetail,
   onBackFromDetail,
+  onNavigate,
   data,
 }: SectionMapperParams): React.ReactNode {
   switch (activeSection) {
@@ -114,6 +125,7 @@ export function renderAdminSection({
           materials={data.materials}
           grades={data.grades}
           announcements={data.announcements}
+          onNavigate={onNavigate}
         />
       );
     case 'generus':
@@ -175,10 +187,28 @@ export function renderAdminSection({
       const selectedKelas = data.kelas.find((k) => k.id === detailKelasId);
       return <DetailPencapaianKelas kelas={selectedKelas} generus={data.generus} materials={data.materials} grades={data.grades} onBack={onBackFromDetail} startDate={{ month: periode.startMonth, year: periode.startYear }} endDate={{ month: periode.endMonth, year: periode.endYear }} />;
     }
+    case 'musyawaroh-detail':
+      return <MusyawarahDetailSection currentUser={currentUser} />;
+    case 'notifikasi':
+      return <NotificationsSection currentUser={currentUser} onNavigate={onNavigate} />;
+    case 'checklist-template':
+      return <ChecklistTemplatesSection currentUser={currentUser} />;
+    case 'checklist-saya':
+      return <ChecklistAssignmentsSection currentUser={currentUser} />;
+    case 'checklist-rekap':
+      return <ChecklistRekapSection currentUser={currentUser} />;
+    case 'evaluasi-periode':
+      return <EvaluasiPeriodeSection currentUser={currentUser} />;
+    case 'evaluasi-semester':
+      return <EvaluasiSemesterSection currentUser={currentUser} generus={data.generus} kelas={data.kelas} onNavigate={onNavigate} />;
     case 'akses-fitur':
       return <FeaturePermissionsSection currentUser={currentUser} />;
     case 'pengaturan':
       return <SettingsSection />;
+    case 'panduan':
+      return <PanduanPenggunaanSection currentUser={currentUser} />;
+    case 'alur-kerja':
+      return <AlurKerjaSection currentUser={currentUser} />;
     default:
       return <div className="text-center p-8">Pilih menu untuk memulai.</div>;
   }

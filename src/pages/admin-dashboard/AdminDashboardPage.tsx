@@ -87,6 +87,7 @@ export default function AdminDashboardPage({ currentUser, handleLogout }: AdminD
       isDarkMode={isDarkMode}
       toggleDarkMode={toggleDarkMode}
       loading={data.loading}
+      onNavigate={setSectionAndPersist}
     >
       <AdminSectionContainer
         activeSection={activeSection}
@@ -108,6 +109,7 @@ export default function AdminDashboardPage({ currentUser, handleLogout }: AdminD
         onImportGenerus={handleImportGenerus}
         onViewDetail={handleViewDetail}
         onBackFromDetail={handleBackFromDetail}
+        onNavigate={setSectionAndPersist}
         data={data}
       />
     </AdminDashboardLayout>

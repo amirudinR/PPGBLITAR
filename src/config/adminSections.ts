@@ -21,6 +21,13 @@ import {
   BookMarked,
   Settings,
   Shield,
+  Bell,
+  ListChecks,
+  BarChart3,
+  MessagesSquare,
+  ClipboardList,
+  HelpCircle,
+  GitBranch,
 } from 'lucide-react';
 
 export type AdminSectionId =
@@ -42,11 +49,20 @@ export type AdminSectionId =
   | 'detail-pencapaian-kelas'
   | 'm5u'
   | 'cari-hasil-m5u'
+  | 'musyawaroh-detail'
+  | 'notifikasi'
   | 'latihan-asad'
   | 'jariyah-ppg'
   | 'pengumuman'
+  | 'checklist-template'
+  | 'checklist-saya'
+  | 'checklist-rekap'
+  | 'evaluasi-periode'
+  | 'evaluasi-semester'
   | 'akses-fitur'
-  | 'pengaturan';
+  | 'pengaturan'
+  | 'panduan'
+  | 'alur-kerja';
 
 type MenuIcon = React.ComponentType<{ className?: string }>;
 
@@ -154,8 +170,6 @@ export const ADMIN_MENU_ITEMS: AdminMenuGroup[] = [
     icon: FileText,
     roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'],
     children: [
-      { id: 'm5u', label: 'M5U', icon: Megaphone, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], featureId: 'm5u' },
-      { id: 'cari-hasil-m5u', label: 'Cari Hasil M5U', icon: Search, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], featureId: 'cari-hasil-m5u' },
       { id: 'latihan-asad', label: 'Latihan ASAD', icon: BookMarked, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], featureId: 'latihan-asad' },
       { id: 'jariyah-ppg', label: 'Jariyah PPG', icon: BookMarked, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], featureId: 'jariyah-ppg' },
     ],
@@ -170,6 +184,39 @@ export const ADMIN_MENU_ITEMS: AdminMenuGroup[] = [
     ],
   },
   {
+    id: 'musyawaroh-group',
+    label: 'Musyawaroh',
+    icon: MessagesSquare,
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'],
+    children: [
+      { id: 'm5u', label: 'Agenda M5U', icon: MessagesSquare, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], featureId: 'm5u' },
+      { id: 'cari-hasil-m5u', label: 'Cari Hasil M5U', icon: Search, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], featureId: 'cari-hasil-m5u' },
+      { id: 'musyawaroh-detail', label: 'Detail & Absensi', icon: ClipboardCheck, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], featureId: 'musyawaroh-detail' },
+      { id: 'notifikasi', label: 'Notifikasi', icon: Bell, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], featureId: 'notifikasi' },
+    ],
+  },
+  {
+    id: 'checklist-group',
+    label: 'Checklist',
+    icon: ListChecks,
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'],
+    children: [
+      { id: 'checklist-template', label: 'Template Checklist', icon: ClipboardList, roles: ['adminsuper', 'admin', 'desa'], featureId: 'checklist-template' },
+      { id: 'checklist-saya', label: 'Checklist Saya', icon: ListChecks, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru'], featureId: 'checklist-saya' },
+      { id: 'checklist-rekap', label: 'Rekap Checklist', icon: BarChart3, roles: ['adminsuper', 'admin', 'desa', 'kelompok'], featureId: 'checklist-rekap' },
+    ],
+  },
+  {
+    id: 'evaluasi-group',
+    label: 'Evaluasi Semesteran',
+    icon: BarChart3,
+    roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'],
+    children: [
+      { id: 'evaluasi-periode', label: 'Periode Evaluasi', icon: Calendar, roles: ['adminsuper', 'admin'], featureId: 'evaluasi-periode' },
+      { id: 'evaluasi-semester', label: 'Evaluasi Semester', icon: BarChart3, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], featureId: 'evaluasi-semester' },
+    ],
+  },
+  {
     id: 'pengaturan',
     label: 'Pengaturan',
     icon: Settings,
@@ -177,6 +224,8 @@ export const ADMIN_MENU_ITEMS: AdminMenuGroup[] = [
     children: [
       { id: 'akses-fitur', label: 'Akses Fitur', icon: Shield, roles: ['adminsuper'], featureId: 'akses-fitur' },
       { id: 'pengaturan', label: 'Pengaturan', icon: Settings, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], featureId: 'pengaturan' },
+      { id: 'panduan', label: 'Panduan Penggunaan', icon: HelpCircle, roles: ['adminsuper', 'admin', 'desa', 'kelompok', 'guru', 'orangtua'], featureId: 'panduan' },
+      { id: 'alur-kerja', label: 'Alur Kerja', icon: GitBranch, roles: ['adminsuper', 'admin'], featureId: 'alur-kerja' },
     ],
   },
 ];
@@ -198,13 +247,22 @@ export const SECTION_LABELS: Record<AdminSectionId, string> = {
   'target-bulanan': 'Target Bulanan',
   'rekap-per-kelas': 'Rekap Per Kelas',
   'detail-pencapaian-kelas': 'Detail Pencapaian Kelas',
-  m5u: 'M5U',
+  m5u: 'Agenda M5U',
   'cari-hasil-m5u': 'Cari Hasil M5U',
+  'musyawaroh-detail': 'Detail & Absensi Musyawaroh',
+  'notifikasi': 'Notifikasi',
   'latihan-asad': 'Latihan ASAD',
   'jariyah-ppg': 'Jariyah PPG',
   pengumuman: 'Pengumuman',
+  'checklist-template': 'Template Checklist',
+  'checklist-saya': 'Checklist Saya',
+  'checklist-rekap': 'Rekap Checklist',
+  'evaluasi-periode': 'Periode Evaluasi',
+  'evaluasi-semester': 'Evaluasi Semesteran',
   'akses-fitur': 'Akses Fitur',
   pengaturan: 'Pengaturan',
+  panduan: 'Panduan Penggunaan',
+  'alur-kerja': 'Alur Kerja',
 };
 
 export function isValidAdminSection(section: string): section is AdminSectionId {

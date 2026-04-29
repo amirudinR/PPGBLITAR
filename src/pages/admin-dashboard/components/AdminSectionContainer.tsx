@@ -29,6 +29,7 @@ interface AdminSectionContainerProps {
   onImportGenerus: (data: Omit<Generus, 'id'>[]) => Promise<boolean>;
   onViewDetail: (kelasId: string) => void;
   onBackFromDetail: () => void;
+  onNavigate?: (section: string) => void;
   data: AdminDashboardDataModel;
 }
 

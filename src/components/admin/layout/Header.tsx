@@ -2,6 +2,9 @@ import React from 'react';
 import { Menu, Sun, Moon, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import NotificationBell from '@/components/admin/notifikasi/NotificationBell';
+import HelpButton from './HelpButton';
+import { User } from '@/types/admin';
 
 interface HeaderProps {
     title: string;
@@ -12,6 +15,8 @@ interface HeaderProps {
     baseTheme: 'classic' | 'soft' | 'neu' | 'editorial' | 'glass';
     isDarkMode: boolean;
     toggleDarkMode: () => void;
+    currentUser?: User | null;
+    onNavigate?: (section: string) => void;
 }
 
 export default function Header({
@@ -23,6 +28,8 @@ export default function Header({
     baseTheme,
     isDarkMode,
     toggleDarkMode,
+    currentUser,
+    onNavigate,
 }: HeaderProps) {
     const getHeaderClass = () => {
         switch (baseTheme) {
@@ -92,8 +99,12 @@ export default function Header({
                     <h1 className="text-lg font-semibold text-foreground">{title}</h1>
                 </div>
 
-                {/* Right side - Dark mode toggle */}
+                {/* Right side - Notification bell + Help + Dark mode toggle */}
                 <div className="flex items-center gap-2">
+                    {currentUser && onNavigate && (
+                        <NotificationBell currentUser={currentUser} onNavigate={onNavigate} />
+                    )}
+                    <HelpButton onNavigate={onNavigate} />
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button

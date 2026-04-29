@@ -279,5 +279,90 @@ service cloud.firestore {
       // Only adminsuper can write
       allow write: if isAuthenticated() && getUserData().role == 'adminsuper';
     }
+    
+    // ============== NOTIFICATIONS COLLECTION ==============
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     resource.data.userId == request.auth.uid);
+      allow create: if isAdmin();
+      allow update: if isAuthenticated() &&
+                     (isAdmin() ||
+                      resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+    
+    // ============== M5U SUBCOLLECTIONS ==============
+    match /m5u/{m5uId}/attendees/{attendeeId} {
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      allow write: if isAuthenticated() &&
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+    }
+    
+    match /m5u/{m5uId}/actionItems/{actionItemId} {
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      allow write: if isAuthenticated() &&
+                     (isAdmin() ||
+                     (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+    }
+    
+    // ============== CHECKLIST TEMPLATES COLLECTION ==============
+    match /checklistTemplates/{templateId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ============== CHECKLIST ASSIGNMENTS COLLECTION ==============
+    match /checklistAssignments/{assignmentId} {
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (resource.data.assigneeId == request.auth.uid));
+      allow create: if isAdmin();
+      allow update: if isAuthenticated() &&
+                     (isAdmin() ||
+                      (isPJPDesa() && getUserData().desa == resource.data.desa) ||
+                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                      (resource.data.assigneeId == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+    
+    // ============== EVALUASI PERIODE COLLECTION ==============
+    match /evaluasiPeriode/{periodeId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ============== EVALUASI SEMESTER COLLECTION ==============
+    match /evaluasiSemester/{evaluasiId} {
+      allow read: if isAuthenticated() &&
+                    (isAdmin() ||
+                     isPJPDesa() ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && resource.data.filledBy == request.auth.uid) ||
+                     (isOrangTua() && getUserData().desa == resource.data.desa && resource.data.status == 'published'));
+      allow create: if isAuthenticated() &&
+                     (isAdmin() ||
+                     (isGuru() && getUserData().desa == request.resource.data.desa && getUserData().kelompok == request.resource.data.kelompok));
+      allow update: if isAuthenticated() &&
+                     (isAdmin() ||
+                     (isGuru() && resource.data.filledBy == request.auth.uid) ||
+                     (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
+      allow delete: if isAdmin();
+    }
   }
 }

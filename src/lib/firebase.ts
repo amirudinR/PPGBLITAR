@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getMessaging } from "firebase/messaging";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -21,9 +22,17 @@ const db = initializeFirestore(app, {
 });
 const auth = getAuth(app);
 
+// Initialize Firebase Messaging (null-safe: throws on non-supporting envs like Node.js)
+let messaging: ReturnType<typeof getMessaging> | null = null;
+try {
+  messaging = getMessaging(app);
+} catch {
+  messaging = null;
+}
+
 // Analytics disabled to prevent blocking by ad blockers
 // Uncomment if needed and accept that it may be blocked
 // import { getAnalytics } from "firebase/analytics";
 // const analytics = getAnalytics(app);
 
-export { db, auth };
+export { db, auth, messaging };

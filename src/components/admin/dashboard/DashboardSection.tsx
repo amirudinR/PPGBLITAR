@@ -4,6 +4,7 @@ import AdminDashboard from './AdminDashboard';
 import DesaDashboard from './DesaDashboard';
 import KelompokDashboard from './KelompokDashboard';
 import GuruDashboard from './GuruDashboard';
+import NewFeaturesWidget from './NewFeaturesWidget';
 
 interface DashboardSectionProps {
   stats: {
@@ -21,6 +22,7 @@ interface DashboardSectionProps {
   materials: Material[];
   grades: Grade[];
   announcements: Announcement[];
+  onNavigate?: (section: string) => void;
 }
 
 export default function DashboardSection({ 
@@ -31,60 +33,77 @@ export default function DashboardSection({
     kelas,
     materials,
     grades,
-    announcements
+    announcements,
+    onNavigate,
 }: DashboardSectionProps) {
+  const widget = onNavigate ? (
+    <NewFeaturesWidget currentUser={currentUser} onNavigate={onNavigate} />
+  ) : null;
+
   switch (currentUser?.role) {
     case 'guru':
       return (
-        <GuruDashboard
-          generusData={generusData}
-          currentUser={currentUser}
-          attendance={attendance}
-          kelas={kelas}
-          materials={materials}
-          grades={grades}
-          announcements={announcements}
-        />
+        <div className="space-y-6">
+          {widget}
+          <GuruDashboard
+            generusData={generusData}
+            currentUser={currentUser}
+            attendance={attendance}
+            kelas={kelas}
+            materials={materials}
+            grades={grades}
+            announcements={announcements}
+          />
+        </div>
       );
     case 'kelompok':
       return (
-        <KelompokDashboard
-          stats={stats}
-          generusData={generusData}
-          currentUser={currentUser}
-          attendance={attendance}
-          kelas={kelas}
-          materials={materials}
-          grades={grades}
-          announcements={announcements}
-        />
+        <div className="space-y-6">
+          {widget}
+          <KelompokDashboard
+            stats={stats}
+            generusData={generusData}
+            currentUser={currentUser}
+            attendance={attendance}
+            kelas={kelas}
+            materials={materials}
+            grades={grades}
+            announcements={announcements}
+          />
+        </div>
       );
     case 'desa':
       return (
-        <DesaDashboard
-          stats={stats}
-          generusData={generusData}
-          currentUser={currentUser}
-          attendance={attendance}
-          kelas={kelas}
-          materials={materials}
-          grades={grades}
-          announcements={announcements}
-        />
+        <div className="space-y-6">
+          {widget}
+          <DesaDashboard
+            stats={stats}
+            generusData={generusData}
+            currentUser={currentUser}
+            attendance={attendance}
+            kelas={kelas}
+            materials={materials}
+            grades={grades}
+            announcements={announcements}
+          />
+        </div>
       );
     case 'admin':
     case 'adminsuper':
       return (
-        <AdminDashboard
-          stats={stats}
-          generusData={generusData}
-          currentUser={currentUser}
-          attendance={attendance}
-          kelas={kelas}
-          materials={materials}
-          grades={grades}
-          announcements={announcements}
-        />
+        <div className="space-y-6">
+          {widget}
+          <AdminDashboard
+            stats={stats}
+            generusData={generusData}
+            currentUser={currentUser}
+            attendance={attendance}
+            kelas={kelas}
+            materials={materials}
+            grades={grades}
+            announcements={announcements}
+          />
+        </div>
       );
     default:
       return (

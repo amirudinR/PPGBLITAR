@@ -3,6 +3,7 @@ import Sidebar from '@/components/admin/layout/Sidebar';
 import Header from '@/components/admin/layout/Header';
 import MobileBottomNav from '@/components/admin/layout/MobileBottomNav';
 import { User } from '@/types/admin';
+import { useFCM } from '@/hooks/useFCM';
 
 interface AdminDashboardLayoutProps {
   activeSection: string;
@@ -20,6 +21,7 @@ interface AdminDashboardLayoutProps {
   toggleDarkMode: () => void;
   loading: boolean;
   children: React.ReactNode;
+  onNavigate?: (section: string) => void;
 }
 
 export default function AdminDashboardLayout({
@@ -38,7 +40,10 @@ export default function AdminDashboardLayout({
   toggleDarkMode,
   loading,
   children,
+  onNavigate,
 }: AdminDashboardLayoutProps) {
+  useFCM(currentUser);
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar
@@ -61,6 +66,8 @@ export default function AdminDashboardLayout({
           baseTheme={baseTheme}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
+          currentUser={currentUser}
+          onNavigate={onNavigate}
         />
         <main className="flex-1 overflow-auto p-6 pb-20 lg:pb-6">
           {loading ? <div className="text-center p-8">Memuat data...</div> : children}
