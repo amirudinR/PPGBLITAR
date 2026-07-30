@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { User } from '@/types/admin';
 import { ChecklistAssignment } from '@/types/checklist';
-import { useChecklistAssignments } from '@/hooks/useChecklist';
 import SectionHeader from '../shared/SectionHeader';
 import EmptyState from '../shared/EmptyState';
 import { Progress } from '@/components/ui/progress';
@@ -20,10 +19,11 @@ interface RoleStats {
 
 interface Props {
   currentUser: User | null;
+  assignments: ChecklistAssignment[];
+  loading: boolean;
 }
 
-export default function ChecklistRekapSection({ currentUser }: Props) {
-  const { assignments, loading } = useChecklistAssignments(currentUser);
+export default function ChecklistRekapSection({ currentUser, assignments, loading }: Props) {
 
   const roleStats = useMemo<RoleStats[]>(() => {
     const map: Record<string, RoleStats> = {};

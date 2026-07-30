@@ -6,7 +6,7 @@ import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast
 
 export function useJariyahPPG(currentUser: User | null) {
     const [jariyahItems, setJariyahItems] = useState<JariyahPPG[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const fetchJariyah = useCallback(async () => {
         if (!currentUser) {
@@ -106,10 +106,6 @@ export function useJariyahPPG(currentUser: User | null) {
 
         return { total, totalNominal, diterima, pending, nominalDiterima, byJenis };
     }, [jariyahItems]);
-
-    useEffect(() => {
-        fetchJariyah();
-    }, [fetchJariyah]);
 
     return {
         jariyahItems,

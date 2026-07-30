@@ -6,7 +6,6 @@ import { AlertTriangle, Lock, Plus } from 'lucide-react';
 import M5UStatsCards from './M5UStatsCards';
 import M5UDataTable from './M5UDataTable';
 import M5UDialog from './M5UDialog';
-import { useM5U } from '@/hooks/useM5U';
 import SectionHeader from '../shared/SectionHeader';
 import EmptyState from '../shared/EmptyState';
 
@@ -26,10 +25,16 @@ const filterOptions = [
 
 interface M5USectionProps {
   currentUser: User | null;
+  m5uItems: M5U[];
+  loading: boolean;
+  hasPermission: boolean;
+  onAdd: (data: Omit<M5U, 'id'>) => Promise<boolean>;
+  onUpdate: (id: string, data: Omit<M5U, 'id'>) => Promise<boolean>;
+  onDeleteMultiple: (bulan: string, tahun: number) => Promise<void>;
+  onRetry: () => void;
 }
 
-export default function M5USection({ currentUser }: M5USectionProps) {
-  const { m5uItems, loading, hasPermission, fetchM5U, addM5U, updateM5U, deleteMultipleM5U } = useM5U(currentUser);
+export default function M5USection({ currentUser, m5uItems, loading, hasPermission, onAdd, onUpdate, onDeleteMultiple, onRetry }: M5USectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('bulan');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,7 +48,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   const canAdd = currentUser?.role === 'adminsuper' || currentUser?.role === 'admin' || currentUser?.role === 'desa' || currentUser?.role === 'kelompok';
 
   const handleDelete = (bulan: string, tahun: number) => {
-    deleteMultipleM5U(bulan, tahun);
+    onDeleteMultiple(bulan, tahun);
   };
 
   const openDialog = (item?: M5U) => {
@@ -76,16 +81,15 @@ export default function M5USection({ currentUser }: M5USectionProps) {
   const handleSave = async (item: Omit<M5U, 'id'>, id: string | null, isEdit: boolean) => {
     let success = false;
     if (isEdit && id) {
-      success = await updateM5U(id, item);
+      success = await onUpdate(id, item);
     } else {
-      // Add desa and kelompok info for role-based access control
       const itemWithMetadata = {
         ...item,
         desa: currentUser?.desa || '',
         kelompok: currentUser?.kelompok || '',
         guruId: currentUser?.role === 'guru' ? (currentUser.id || '') : ''
       };
-      success = await addM5U(itemWithMetadata);
+      success = await onAdd(itemWithMetadata);
     }
     
     if (success) {
@@ -114,7 +118,7 @@ export default function M5USection({ currentUser }: M5USectionProps) {
                 variant="outline"
                 size="sm"
                 className="mt-3"
-                onClick={() => fetchM5U()}
+                onClick={() => onRetry()}
                 aria-label="Muat ulang data M5U"
               >
                 Coba Lagi

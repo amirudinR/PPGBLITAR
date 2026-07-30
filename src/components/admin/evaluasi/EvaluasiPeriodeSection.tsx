@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '@/types/admin';
 import { EvaluasiPeriode, SemesterType } from '@/types/evaluasi';
-import { useEvaluasiPeriode } from '@/hooks/useEvaluasi';
 import SectionHeader from '../shared/SectionHeader';
 import EmptyState from '../shared/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -31,10 +30,15 @@ const EMPTY_FORM: Omit<EvaluasiPeriode, 'id'> = {
 
 interface Props {
   currentUser: User | null;
+  periodes: EvaluasiPeriode[];
+  activePeriode: EvaluasiPeriode | null;
+  loading: boolean;
+  onAdd: (data: Omit<EvaluasiPeriode, 'id'>) => Promise<boolean>;
+  onUpdate: (id: string, data: Partial<EvaluasiPeriode>) => Promise<boolean>;
+  onDelete: (id: string) => Promise<void>;
 }
 
-export default function EvaluasiPeriodeSection({ currentUser }: Props) {
-  const { periodes, loading, addPeriode, updatePeriode, deletePeriode } = useEvaluasiPeriode();
+export default function EvaluasiPeriodeSection({ currentUser, periodes, loading, onAdd, onUpdate, onDelete }: Props) {
   const [dialog, setDialog] = useState<{ open: boolean; existing?: EvaluasiPeriode }>({ open: false });
   const [form, setForm] = useState<Omit<EvaluasiPeriode, 'id'>>(EMPTY_FORM);
   const [startDateStr, setStartDateStr] = useState('');
@@ -61,8 +65,8 @@ export default function EvaluasiPeriodeSection({ currentUser }: Props) {
       endDate: endDateStr ? Timestamp.fromDate(new Date(endDateStr)) : null,
     };
     const ok = dialog.existing
-      ? await updatePeriode(dialog.existing.id, payload)
-      : await addPeriode(payload);
+      ? await onUpdate(dialog.existing.id, payload)
+      : await onAdd(payload);
     if (ok) setDialog({ open: false });
   };
 
@@ -70,9 +74,9 @@ export default function EvaluasiPeriodeSection({ currentUser }: Props) {
     const opening = !p.isOpen;
     if (opening) {
       const others = periodes.filter((x) => x.id !== p.id && x.isOpen);
-      await Promise.all(others.map((x) => updatePeriode(x.id, { isOpen: false })));
+      await Promise.all(others.map((x) => onUpdate(x.id, { isOpen: false })));
     }
-    await updatePeriode(p.id, { isOpen: opening });
+    await onUpdate(p.id, { isOpen: opening });
   };
 
   if (loading) return <div className="text-center p-8 text-muted-foreground">Memuat periode...</div>;
@@ -145,7 +149,7 @@ export default function EvaluasiPeriodeSection({ currentUser }: Props) {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deletePeriode(p.id)}>Hapus</AlertDialogAction>
+                            <AlertDialogAction onClick={() => onDelete(p.id)}>Hapus</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

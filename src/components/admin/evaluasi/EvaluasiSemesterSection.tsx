@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { User, Generus, Kelas } from '@/types/admin';
-import { EvaluasiSemester, AspekKepribadian, EvaluasiMetrics } from '@/types/evaluasi';
-import { useEvaluasiPeriode, useEvaluasiSemester } from '@/hooks/useEvaluasi';
+import { EvaluasiSemester, EvaluasiPeriode, AspekKepribadian, EvaluasiMetrics } from '@/types/evaluasi';
 import SectionHeader from '../shared/SectionHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Eye } from 'lucide-react';
@@ -16,6 +15,12 @@ interface Props {
   currentUser: User | null;
   generus?: Generus[];
   kelas?: Kelas[];
+  evaluasiList: EvaluasiSemester[];
+  activePeriode: EvaluasiPeriode | null;
+  loadingEvaluasi: boolean;
+  loadingPeriode: boolean;
+  onSave: (id: string | null, data: Partial<EvaluasiSemester>) => Promise<boolean>;
+  onPublish: (id: string) => Promise<boolean>;
   onNavigate?: (section: string) => void;
 }
 
@@ -27,9 +32,7 @@ const EMPTY_ASPEK: AspekKepribadian = {
   catatanAspek: '',
 };
 
-export default function EvaluasiSemesterSection({ currentUser, generus = [], kelas = [], onNavigate }: Props) {
-  const { activePeriode, loading: loadingPeriode } = useEvaluasiPeriode();
-  const { evaluasiList, loading, saveEvaluasi, publishEvaluasi } = useEvaluasiSemester(currentUser);
+export default function EvaluasiSemesterSection({ currentUser, generus = [], kelas = [], evaluasiList, activePeriode, loadingEvaluasi, loadingPeriode, onSave, onPublish, onNavigate }: Props) {
 
   const [dialog, setDialog] = useState<{ open: boolean; existing?: EvaluasiSemester; generusItem?: Generus }>({ open: false });
   const [aspek, setAspek] = useState<AspekKepribadian>(EMPTY_ASPEK);
@@ -69,15 +72,15 @@ export default function EvaluasiSemesterSection({ currentUser, generus = [], kel
         activePeriode.endDate.toDate(),
       );
       setDialogMetrics(metrics);
-      await saveEvaluasi(dialog.existing.id || null, { metrics });
+      await onSave(dialog.existing.id || null, { metrics });
     } finally {
       setAggregating(false);
     }
-  }, [dialog, activePeriode, saveEvaluasi]);
+  }, [dialog, activePeriode, onSave]);
 
   const handleSave = async (submit: boolean) => {
     if (!dialog.existing) return;
-    await saveEvaluasi(dialog.existing.id || null, {
+    await onSave(dialog.existing.id || null, {
       ...(dialogMetrics ? { metrics: dialogMetrics } : {}),
       aspekKepribadian: aspek,
       catatanGuru,
@@ -109,7 +112,7 @@ export default function EvaluasiSemesterSection({ currentUser, generus = [], kel
     return myKelas.some((k) => k.studentIds?.includes(g.id));
   });
 
-  if (loadingPeriode || loading) {
+  if (loadingPeriode || loadingEvaluasi) {
     return <div className="text-center p-8 text-muted-foreground">Memuat evaluasi...</div>;
   }
 
@@ -156,7 +159,7 @@ export default function EvaluasiSemesterSection({ currentUser, generus = [], kel
           <EvaluasiViewTable
             evaluasiList={evaluasiList}
             canPublish={canPublish}
-            onPublish={publishEvaluasi}
+            onPublish={onPublish}
           />
         </TabsContent>
       </Tabs>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, getJenjangUsia, JENJANG_USIA_LIST } from '@/types/admin';
+import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, M5U, getJenjangUsia, JENJANG_USIA_LIST } from '@/types/admin';
 import { GraduationCap, Users, Contact, School, AlertTriangle } from 'lucide-react';
 import DashboardStatCard from './DashboardStatCard';
 import AnnouncementCard from './AnnouncementCard';
@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useM5U } from '@/hooks/useM5U';
 
 interface KelompokDashboardProps {
   stats: {
@@ -28,6 +27,7 @@ interface KelompokDashboardProps {
   materials: Material[];
   grades: Grade[];
   announcements: Announcement[];
+  m5uItems: M5U[];
 }
 
 const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -40,10 +40,9 @@ export default function KelompokDashboard({
     kelas,
     materials,
     grades,
-    announcements
+    announcements,
+    m5uItems
 }: KelompokDashboardProps) {
-  // Use M5U hook
-  const { isM5UNotImplemented } = useM5U(currentUser);
   
   // New state for kelompok dashboard filters
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<string[]>([...JENJANG_USIA_LIST]);
@@ -198,7 +197,12 @@ export default function KelompokDashboard({
   }, [kelas, currentUser]);
 
   // Check if M5U has been implemented for current month
-  const showM5UWarning = isM5UNotImplemented();
+  const showM5UWarning = useMemo(() => {
+    if (!currentUser || currentUser.role === 'guru' || currentUser.role === 'orangtua') return false;
+    const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' });
+    const currentYear = new Date().getFullYear();
+    return !m5uItems.some(item => item.bulan === currentMonth && item.tahun === currentYear);
+  }, [m5uItems, currentUser]);
 
   return (
     <div className="space-y-6">

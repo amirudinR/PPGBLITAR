@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { M5U, User } from '@/types/admin';
@@ -6,7 +6,7 @@ import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast
 
 export function useM5U(currentUser: User | null) {
   const [m5uItems, setM5uItems] = useState<M5U[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState(true);
 
   const fetchM5U = useCallback(async () => {
@@ -137,10 +137,6 @@ export function useM5U(currentUser: User | null) {
       item.tahun === currentYear
     );
   }, [m5uItems, currentUser]);
-
-  useEffect(() => {
-    fetchM5U();
-  }, [fetchM5U]);
 
   return { 
     m5uItems, 

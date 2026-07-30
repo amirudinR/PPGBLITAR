@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '@/types/admin';
 import { ChecklistAssignment, ChecklistResponse } from '@/types/checklist';
-import { useChecklistAssignments } from '@/hooks/useChecklist';
 import SectionHeader from '../shared/SectionHeader';
 import EmptyState from '../shared/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -29,10 +28,12 @@ const STATUS_CONFIG: Record<ChecklistAssignment['status'], { label: string; colo
 
 interface Props {
   currentUser: User | null;
+  assignments: ChecklistAssignment[];
+  loading: boolean;
+  onUpdate: (id: string, data: Partial<ChecklistAssignment>) => Promise<boolean>;
 }
 
-export default function ChecklistAssignmentsSection({ currentUser }: Props) {
-  const { assignments, loading, updateAssignment } = useChecklistAssignments(currentUser);
+export default function ChecklistAssignmentsSection({ currentUser, assignments, loading, onUpdate }: Props) {
   const [fillDialog, setFillDialog] = useState<{ open: boolean; assignment?: ChecklistAssignment }>({ open: false });
   const [responses, setResponses] = useState<Record<string, ChecklistResponse>>({});
   const [filter, setFilter] = useState<ChecklistAssignment['status'] | 'semua'>('semua');
@@ -61,7 +62,7 @@ export default function ChecklistAssignmentsSection({ currentUser }: Props) {
     const progress = Math.round((completed / totalItems) * 100);
     const status: ChecklistAssignment['status'] = submit ? 'selesai' : 'proses';
 
-    await updateAssignment(fillDialog.assignment.id, {
+    await onUpdate(fillDialog.assignment.id, {
       responses,
       progress,
       status,

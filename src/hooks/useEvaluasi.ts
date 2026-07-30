@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   collection, query, where, getDocs, addDoc, updateDoc, deleteDoc,
   doc, orderBy, Timestamp,
@@ -10,7 +10,7 @@ import { showError, showSuccess } from '@/utils/toast';
 
 export function useEvaluasiPeriode() {
   const [periodes, setPeriodes] = useState<EvaluasiPeriode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchPeriodes = useCallback(async () => {
     setLoading(true);
@@ -23,8 +23,6 @@ export function useEvaluasiPeriode() {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => { fetchPeriodes(); }, [fetchPeriodes]);
 
   const addPeriode = useCallback(async (data: Omit<EvaluasiPeriode, 'id'>) => {
     try {
@@ -67,7 +65,7 @@ export function useEvaluasiPeriode() {
 
 export function useEvaluasiSemester(currentUser: User | null) {
   const [evaluasiList, setEvaluasiList] = useState<EvaluasiSemester[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchEvaluasi = useCallback(async () => {
     if (!currentUser) { setLoading(false); return; }
@@ -93,8 +91,6 @@ export function useEvaluasiSemester(currentUser: User | null) {
       setLoading(false);
     }
   }, [currentUser]);
-
-  useEffect(() => { fetchEvaluasi(); }, [fetchEvaluasi]);
 
   const saveEvaluasi = useCallback(async (id: string | null, data: Partial<EvaluasiSemester>) => {
     try {

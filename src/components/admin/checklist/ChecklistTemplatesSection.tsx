@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '@/types/admin';
 import { ChecklistTemplate, ChecklistItem, ChecklistFrequency } from '@/types/checklist';
-import { useChecklistTemplates } from '@/hooks/useChecklist';
 import SectionHeader from '../shared/SectionHeader';
 import EmptyState from '../shared/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -47,10 +46,14 @@ const EMPTY_TEMPLATE: Omit<ChecklistTemplate, 'id' | 'createdAt'> = {
 
 interface Props {
   currentUser: User | null;
+  templates: ChecklistTemplate[];
+  loading: boolean;
+  onAdd: (data: Omit<ChecklistTemplate, 'id'>) => Promise<boolean>;
+  onUpdate: (id: string, data: Partial<ChecklistTemplate>) => Promise<boolean>;
+  onDelete: (id: string) => Promise<void>;
 }
 
-export default function ChecklistTemplatesSection({ currentUser }: Props) {
-  const { templates, loading, addTemplate, updateTemplate, deleteTemplate } = useChecklistTemplates(currentUser);
+export default function ChecklistTemplatesSection({ currentUser, templates, loading, onAdd, onUpdate, onDelete }: Props) {
   const [dialog, setDialog] = useState<{ open: boolean; existing?: ChecklistTemplate }>({ open: false });
   const [form, setForm] = useState<Omit<ChecklistTemplate, 'id' | 'createdAt'>>(EMPTY_TEMPLATE);
 
@@ -68,9 +71,9 @@ export default function ChecklistTemplatesSection({ currentUser }: Props) {
     const payload = { ...form, createdBy: form.createdBy || currentUser?.id || '', createdAt: new Date() } as Omit<ChecklistTemplate, 'id'>;
     let ok: boolean;
     if (dialog.existing) {
-      ok = await updateTemplate(dialog.existing.id, form);
+      ok = await onUpdate(dialog.existing.id, form);
     } else {
-      ok = await addTemplate(payload);
+      ok = await onAdd(payload);
     }
     if (ok) setDialog({ open: false });
   };
@@ -165,7 +168,7 @@ export default function ChecklistTemplatesSection({ currentUser }: Props) {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteTemplate(t.id)}>Hapus</AlertDialogAction>
+                          <AlertDialogAction onClick={() => onDelete(t.id)}>Hapus</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

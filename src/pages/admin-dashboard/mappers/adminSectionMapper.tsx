@@ -125,6 +125,7 @@ export function renderAdminSection({
           materials={data.materials}
           grades={data.grades}
           announcements={data.announcements}
+          m5uItems={data.m5uItems}
           onNavigate={onNavigate}
         />
       );
@@ -170,13 +171,13 @@ export function renderAdminSection({
     case 'pengumuman':
       return <AnnouncementsSection announcements={data.announcements} onAdd={data.addAnnouncement} onUpdate={data.updateAnnouncement} onDelete={data.deleteAnnouncement} />;
     case 'm5u':
-      return <M5USection currentUser={currentUser} />;
+      return <M5USection currentUser={currentUser} m5uItems={data.m5uItems} loading={data.loadingM5U} hasPermission={data.hasPermission} onAdd={data.addM5U} onUpdate={data.updateM5U} onDeleteMultiple={data.deleteMultipleM5U} onRetry={() => data.fetchM5U?.()} />;
     case 'cari-hasil-m5u':
       return <M5USearchPage currentUser={currentUser} />;
     case 'latihan-asad':
-      return <LatihanASADSection currentUser={currentUser} generus={data.generus} />;
+      return <LatihanASADSection currentUser={currentUser} generus={data.generus} latihanItems={data.latihanItems} loading={data.loadingLatihan} onAdd={data.addLatihan} onUpdate={data.updateLatihan} onDelete={data.deleteLatihan} />;
     case 'jariyah-ppg':
-      return <JariyahPPGSection currentUser={currentUser} generus={data.generus} />;
+      return <JariyahPPGSection currentUser={currentUser} generus={data.generus} jariyahItems={data.jariyahItems} loading={data.loadingJariyah} onAdd={data.addJariyah} onUpdate={data.updateJariyah} onDelete={data.deleteJariyah} />;
     case 'profile':
       return <ProfileSection currentUser={currentUser} onUpdatePassword={data.updateCurrentUserPassword} />;
     case 'target-bulanan':
@@ -192,15 +193,15 @@ export function renderAdminSection({
     case 'notifikasi':
       return <NotificationsSection currentUser={currentUser} onNavigate={onNavigate} />;
     case 'checklist-template':
-      return <ChecklistTemplatesSection currentUser={currentUser} />;
+      return <ChecklistTemplatesSection currentUser={currentUser} templates={data.templates} loading={data.loadingTemplates} onAdd={data.addTemplate} onUpdate={data.updateTemplate} onDelete={data.deleteTemplate} />;
     case 'checklist-saya':
-      return <ChecklistAssignmentsSection currentUser={currentUser} />;
+      return <ChecklistAssignmentsSection currentUser={currentUser} assignments={data.assignments} loading={data.loadingAssignments} onUpdate={data.updateAssignment} />;
     case 'checklist-rekap':
-      return <ChecklistRekapSection currentUser={currentUser} />;
+      return <ChecklistRekapSection currentUser={currentUser} assignments={data.assignments} loading={data.loadingAssignments} />;
     case 'evaluasi-periode':
-      return <EvaluasiPeriodeSection currentUser={currentUser} />;
+      return <EvaluasiPeriodeSection currentUser={currentUser} periodes={data.periodes} activePeriode={data.activePeriode} loading={data.loadingPeriode} onAdd={data.addPeriode} onUpdate={data.updatePeriode} onDelete={data.deletePeriode} />;
     case 'evaluasi-semester':
-      return <EvaluasiSemesterSection currentUser={currentUser} generus={data.generus} kelas={data.kelas} onNavigate={onNavigate} />;
+      return <EvaluasiSemesterSection currentUser={currentUser} generus={data.generus} kelas={data.kelas} evaluasiList={data.evaluasiList} activePeriode={data.activePeriode} loadingEvaluasi={data.loadingEvaluasi} loadingPeriode={data.loadingPeriode} onSave={data.saveEvaluasi} onPublish={data.publishEvaluasi} onNavigate={onNavigate} />;
     case 'akses-fitur':
       return <FeaturePermissionsSection currentUser={currentUser} />;
     case 'pengaturan':

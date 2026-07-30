@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useLatihanASAD } from '@/hooks/useLatihanASAD';
 import { User, LatihanASAD, JENIS_LATIHAN_LIST, Generus } from '@/types/admin';
 import LatihanStatisticsCards from './LatihanStatisticsCards';
 import LatihanFilters from './LatihanFilters';
@@ -12,12 +11,16 @@ import LatihanDeleteDialog from './LatihanDeleteDialog';
 interface LatihanASADSectionProps {
     currentUser: User | null;
     generus: Generus[];
+    latihanItems: LatihanASAD[];
+    loading: boolean;
+    onAdd: (data: Omit<LatihanASAD, 'id'>) => Promise<boolean>;
+    onUpdate: (id: string, data: Omit<LatihanASAD, 'id'>) => Promise<boolean>;
+    onDelete: (id: string) => Promise<void>;
 }
 
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-export default function LatihanASADSection({ currentUser, generus }: LatihanASADSectionProps) {
-    const { latihanItems, loading, addLatihan, updateLatihan, deleteLatihan, getStatistics } = useLatihanASAD(currentUser);
+export default function LatihanASADSection({ currentUser, generus, latihanItems, loading, onAdd, onUpdate, onDelete }: LatihanASADSectionProps) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -40,7 +43,14 @@ export default function LatihanASADSection({ currentUser, generus }: LatihanASAD
         createdBy: currentUser?.id || ''
     });
 
-    const stats = getStatistics();
+    const stats = useMemo(() => {
+        const total = latihanItems.length;
+        const tercapai = latihanItems.filter(item => item.status === 'Tercapai').length;
+        const tidakTercapai = latihanItems.filter(item => item.status === 'Tidak Tercapai').length;
+        const dalamProses = latihanItems.filter(item => item.status === 'Dalam Proses').length;
+        const persentaseTercapai = total > 0 ? Math.round((tercapai / total) * 100) : 0;
+        return { total, tercapai, tidakTercapai, dalamProses, persentaseTercapai };
+    }, [latihanItems]);
 
     const filteredItems = useMemo(() => {
         return latihanItems.filter(item => {
@@ -93,16 +103,16 @@ export default function LatihanASADSection({ currentUser, generus }: LatihanASAD
         }
 
         if (selectedItem) {
-            await updateLatihan(selectedItem.id, formData);
+            await onUpdate(selectedItem.id, formData);
         } else {
-            await addLatihan(formData);
+            await onAdd(formData);
         }
         setIsDialogOpen(false);
     };
 
     const handleDelete = async () => {
         if (selectedItem) {
-            await deleteLatihan(selectedItem.id);
+            await onDelete(selectedItem.id);
             setIsDeleteDialogOpen(false);
             setSelectedItem(null);
         }

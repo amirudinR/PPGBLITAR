@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useJariyahPPG } from '@/hooks/useJariyahPPG';
 import { User, JariyahPPG, JENIS_JARIYAH_LIST, Generus } from '@/types/admin';
 import JariyahStatisticsCards from './JariyahStatisticsCards';
 import JariyahFilters from './JariyahFilters';
@@ -12,6 +11,11 @@ import JariyahDeleteDialog from './JariyahDeleteDialog';
 interface JariyahPPGSectionProps {
     currentUser: User | null;
     generus: Generus[];
+    jariyahItems: JariyahPPG[];
+    loading: boolean;
+    onAdd: (data: Omit<JariyahPPG, 'id'>) => Promise<boolean>;
+    onUpdate: (id: string, data: Omit<JariyahPPG, 'id'>) => Promise<boolean>;
+    onDelete: (id: string) => Promise<void>;
 }
 
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -25,8 +29,7 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
-export default function JariyahPPGSection({ currentUser, generus }: JariyahPPGSectionProps) {
-    const { jariyahItems, loading, addJariyah, updateJariyah, deleteJariyah, getStatistics } = useJariyahPPG(currentUser);
+export default function JariyahPPGSection({ currentUser, generus, jariyahItems, loading, onAdd, onUpdate, onDelete }: JariyahPPGSectionProps) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -51,7 +54,18 @@ export default function JariyahPPGSection({ currentUser, generus }: JariyahPPGSe
         createdBy: currentUser?.id || ''
     });
 
-    const stats = getStatistics();
+    const stats = useMemo(() => {
+        const total = jariyahItems.length;
+        const totalNominal = jariyahItems.reduce((sum, item) => sum + (item.nominal || 0), 0);
+        const diterima = jariyahItems.filter(item => item.status === 'Diterima').length;
+        const pending = jariyahItems.filter(item => item.status === 'Pending').length;
+        const nominalDiterima = jariyahItems.filter(item => item.status === 'Diterima').reduce((sum, item) => sum + (item.nominal || 0), 0);
+        const byJenis = jariyahItems.reduce((acc, item) => {
+            acc[item.jenisJariyah] = (acc[item.jenisJariyah] || 0) + item.nominal;
+            return acc;
+        }, {} as Record<string, number>);
+        return { total, totalNominal, diterima, pending, nominalDiterima, byJenis };
+    }, [jariyahItems]);
 
     const filteredItems = useMemo(() => {
         return jariyahItems.filter(item => {
@@ -108,16 +122,16 @@ export default function JariyahPPGSection({ currentUser, generus }: JariyahPPGSe
         }
 
         if (selectedItem) {
-            await updateJariyah(selectedItem.id, formData);
+            await onUpdate(selectedItem.id, formData);
         } else {
-            await addJariyah(formData);
+            await onAdd(formData);
         }
         setIsDialogOpen(false);
     };
 
     const handleDelete = async () => {
         if (selectedItem) {
-            await deleteJariyah(selectedItem.id);
+            await onDelete(selectedItem.id);
             setIsDeleteDialogOpen(false);
             setSelectedItem(null);
         }

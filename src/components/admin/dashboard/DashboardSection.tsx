@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement } from '@/types/admin';
+import { User, Generus, MonthlyAttendance, Kelas, Material, Grade, Announcement, M5U } from '@/types/admin';
 import AdminDashboard from './AdminDashboard';
 import DesaDashboard from './DesaDashboard';
 import KelompokDashboard from './KelompokDashboard';
@@ -22,6 +22,7 @@ interface DashboardSectionProps {
   materials: Material[];
   grades: Grade[];
   announcements: Announcement[];
+  m5uItems: M5U[];
   onNavigate?: (section: string) => void;
 }
 
@@ -34,6 +35,7 @@ export default function DashboardSection({
     materials,
     grades,
     announcements,
+    m5uItems,
     onNavigate,
 }: DashboardSectionProps) {
   const widget = onNavigate ? (
@@ -69,6 +71,7 @@ export default function DashboardSection({
             materials={materials}
             grades={grades}
             announcements={announcements}
+            m5uItems={m5uItems}
           />
         </div>
       );

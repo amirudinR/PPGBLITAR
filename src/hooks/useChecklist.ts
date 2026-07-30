@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy, Timestamp,
 } from 'firebase/firestore';
@@ -10,7 +10,7 @@ import { sendPushNotification } from '@/utils/sendPushNotification';
 
 export function useChecklistTemplates(currentUser: User | null) {
   const [templates, setTemplates] = useState<ChecklistTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
@@ -23,8 +23,6 @@ export function useChecklistTemplates(currentUser: User | null) {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
   const addTemplate = useCallback(async (data: Omit<ChecklistTemplate, 'id'>) => {
     try {
@@ -66,7 +64,7 @@ export function useChecklistTemplates(currentUser: User | null) {
 
 export function useChecklistAssignments(currentUser: User | null) {
   const [assignments, setAssignments] = useState<ChecklistAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchAssignments = useCallback(async () => {
     if (!currentUser) { setLoading(false); return; }
@@ -96,8 +94,6 @@ export function useChecklistAssignments(currentUser: User | null) {
       setLoading(false);
     }
   }, [currentUser]);
-
-  useEffect(() => { fetchAssignments(); }, [fetchAssignments]);
 
   const updateAssignment = useCallback(async (id: string, data: Partial<ChecklistAssignment>) => {
     try {

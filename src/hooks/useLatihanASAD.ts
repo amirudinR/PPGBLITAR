@@ -6,7 +6,7 @@ import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast
 
 export function useLatihanASAD(currentUser: User | null) {
     const [latihanItems, setLatihanItems] = useState<LatihanASAD[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const fetchLatihan = useCallback(async () => {
         if (!currentUser) {
@@ -98,10 +98,6 @@ export function useLatihanASAD(currentUser: User | null) {
 
         return { total, tercapai, tidakTercapai, dalamProses, persentaseTercapai };
     }, [latihanItems]);
-
-    useEffect(() => {
-        fetchLatihan();
-    }, [fetchLatihan]);
 
     return {
         latihanItems,
