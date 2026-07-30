@@ -33,7 +33,7 @@ export function useFCM(currentUser: User | null) {
     if (!messaging) return;
 
     const unsubscribe = onMessage(messaging, (payload) => {
-      const title = payload.notification?.title ?? 'PPG Samarinda';
+      const title = payload.notification?.title ?? 'PPG BLITAR';
       const body = payload.notification?.body ?? '';
 
       if ('Notification' in window && Notification.permission === 'granted') {

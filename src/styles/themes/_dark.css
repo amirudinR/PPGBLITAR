@@ -1,68 +1,68 @@
 /* ============================================
-   CLASSIC DARK THEME — Green Islamic Natural
+   CLASSIC DARK THEME — PPG Blitar Midnight Navy & Gold
    ============================================ */
 
 .dark:not(.soft):not(.neu):not(.editorial):not(.glass) {
-  --background: 155 35% 5%;
-  --foreground: 85 12% 94%;
+  --background: 220 50% 7%;
+  --foreground: 215 20% 95%;
 
-  --card: 155 35% 8%;
-  --card-foreground: 85 12% 94%;
+  --card: 220 45% 11%;
+  --card-foreground: 215 20% 95%;
 
-  --popover: 155 35% 8%;
-  --popover-foreground: 85 12% 94%;
+  --popover: 220 45% 11%;
+  --popover-foreground: 215 20% 95%;
 
-  --primary: 85 55% 40%;
+  --primary: 218 85% 55%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 155 30% 10%;
-  --secondary-foreground: 85 12% 94%;
+  --secondary: 220 40% 15%;
+  --secondary-foreground: 215 20% 95%;
 
-  --muted: 155 30% 10%;
-  --muted-foreground: 155 15% 50%;
+  --muted: 220 35% 15%;
+  --muted-foreground: 220 15% 60%;
 
-  --accent: 85 30% 14%;
-  --accent-foreground: 85 40% 80%;
+  --accent: 43 85% 18%;
+  --accent-foreground: 43 95% 75%;
 
-  --destructive: 0 55% 40%;
+  --destructive: 0 65% 45%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 155 30% 12%;
-  --input: 155 30% 12%;
-  --ring: 85 55% 40%;
+  --border: 220 35% 18%;
+  --input: 220 35% 18%;
+  --ring: 218 85% 55%;
 
-  --sidebar-background: 155 35% 5%;
-  --sidebar-foreground: 85 12% 94%;
-  --sidebar-primary: 85 55% 40%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 155 30% 10%;
-  --sidebar-accent-foreground: 85 12% 94%;
-  --sidebar-border: 155 30% 12%;
-  --sidebar-ring: 85 55% 40%;
+  --sidebar-background: 220 50% 6%;
+  --sidebar-foreground: 215 20% 95%;
+  --sidebar-primary: 43 95% 50%;
+  --sidebar-primary-foreground: 220 50% 8%;
+  --sidebar-accent: 220 40% 16%;
+  --sidebar-accent-foreground: 43 95% 75%;
+  --sidebar-border: 220 35% 18%;
+  --sidebar-ring: 43 95% 50%;
 
-  --hero-from: 85 55% 38%;
-  --hero-to: 155 40% 20%;
+  --hero-from: 218 80% 22%;
+  --hero-to: 200 80% 30%;
   --hero-foreground: 0 0% 100%;
-  --hero-muted: 0 0% 88%;
+  --hero-muted: 215 20% 75%;
 
-  --stat-1: 85 55% 50%;
-  --stat-2: 195 50% 40%;
-  --stat-3: 45 70% 40%;
-  --stat-4: 0 55% 40%;
-  --stat-5: 347 55% 42%;
-  --stat-6: 271 55% 50%;
+  --stat-1: 218 85% 55%;
+  --stat-2: 200 85% 55%;
+  --stat-3: 43 95% 50%;
+  --stat-4: 0 65% 45%;
+  --stat-5: 347 55% 50%;
+  --stat-6: 271 55% 60%;
 
-  --chart-1: 85 55% 50%;
-  --chart-2: 195 50% 40%;
-  --chart-3: 45 70% 40%;
-  --chart-4: 0 55% 40%;
-  --chart-5: 347 55% 42%;
-  --chart-6: 271 55% 50%;
+  --chart-1: 218 85% 55%;
+  --chart-2: 200 85% 55%;
+  --chart-3: 43 95% 50%;
+  --chart-4: 0 65% 45%;
+  --chart-5: 347 55% 50%;
+  --chart-6: 271 55% 60%;
 
-  --success: 85 55% 44%;
+  --success: 155 60% 45%;
   --success-foreground: 0 0% 98%;
-  --warning: 45 70% 40%;
-  --warning-foreground: 0 0% 98%;
-  --info: 195 50% 40%;
+  --warning: 43 95% 50%;
+  --warning-foreground: 220 50% 8%;
+  --info: 200 85% 55%;
   --info-foreground: 0 0% 98%;
 }

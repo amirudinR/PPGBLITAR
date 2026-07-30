@@ -1,70 +1,70 @@
 /* ============================================
-   CLASSIC LIGHT THEME — Green Islamic Natural
+   CLASSIC LIGHT THEME — PPG Blitar Royal Navy & Gold
    ============================================ */
 
 :root:not(.dark):not(.soft):not(.neu):not(.editorial):not(.glass) {
-  --background: 85 12% 96%;
-  --foreground: 85 20% 8%;
+  --background: 215 25% 97%;
+  --foreground: 218 50% 12%;
 
   --card: 0 0% 100%;
-  --card-foreground: 85 20% 8%;
+  --card-foreground: 218 50% 12%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 85 20% 8%;
+  --popover-foreground: 218 50% 12%;
 
-  --primary: 85 55% 40%;
+  --primary: 218 78% 28%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 85 10% 93%;
-  --secondary-foreground: 85 20% 10%;
+  --secondary: 43 90% 94%;
+  --secondary-foreground: 218 78% 20%;
 
-  --muted: 85 10% 94%;
-  --muted-foreground: 85 8% 46%;
+  --muted: 218 20% 95%;
+  --muted-foreground: 218 15% 45%;
 
-  --accent: 85 30% 90%;
-  --accent-foreground: 85 50% 20%;
+  --accent: 43 95% 90%;
+  --accent-foreground: 218 85% 20%;
 
-  --destructive: 0 65% 50%;
+  --destructive: 0 75% 52%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 85 10% 88%;
-  --input: 85 10% 88%;
-  --ring: 85 55% 40%;
+  --border: 218 20% 88%;
+  --input: 218 20% 88%;
+  --ring: 218 78% 28%;
 
   --radius: 0.75rem;
 
-  --sidebar-background: 85 55% 40%;
-  --sidebar-foreground: 85 20% 92%;
-  --sidebar-primary: 85 55% 40%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 85 50% 35%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 85 50% 35%;
-  --sidebar-ring: 85 55% 40%;
+  --sidebar-background: 218 78% 22%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 43 95% 48%;
+  --sidebar-primary-foreground: 218 80% 15%;
+  --sidebar-accent: 218 70% 30%;
+  --sidebar-accent-foreground: 43 95% 55%;
+  --sidebar-border: 218 60% 30%;
+  --sidebar-ring: 43 95% 48%;
 
-  --hero-from: 85 55% 40%;
-  --hero-to: 85 50% 30%;
+  --hero-from: 218 78% 26%;
+  --hero-to: 200 85% 40%;
   --hero-foreground: 0 0% 100%;
-  --hero-muted: 0 0% 90%;
+  --hero-muted: 43 90% 90%;
 
-  --stat-1: 85 55% 40%;
-  --stat-2: 195 60% 45%;
-  --stat-3: 45 80% 45%;
-  --stat-4: 0 65% 50%;
+  --stat-1: 218 78% 28%;
+  --stat-2: 200 85% 42%;
+  --stat-3: 43 95% 48%;
+  --stat-4: 0 75% 52%;
   --stat-5: 347 65% 48%;
   --stat-6: 271 60% 55%;
 
-  --chart-1: 85 55% 40%;
-  --chart-2: 195 60% 45%;
-  --chart-3: 45 80% 45%;
-  --chart-4: 0 65% 50%;
+  --chart-1: 218 78% 28%;
+  --chart-2: 200 85% 42%;
+  --chart-3: 43 95% 48%;
+  --chart-4: 0 75% 52%;
   --chart-5: 347 65% 48%;
   --chart-6: 271 60% 55%;
 
-  --success: 85 55% 40%;
+  --success: 155 65% 38%;
   --success-foreground: 0 0% 100%;
-  --warning: 45 80% 45%;
-  --warning-foreground: 0 0% 100%;
-  --info: 195 60% 45%;
+  --warning: 43 95% 48%;
+  --warning-foreground: 218 80% 15%;
+  --info: 200 85% 42%;
   --info-foreground: 0 0% 100%;
 }

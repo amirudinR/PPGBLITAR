@@ -73,20 +73,21 @@ export default function LoginPage() {
       </button>
 
       <div className={`hidden lg:flex flex-col items-center justify-center p-12 gap-8 ${isDarkMode ? 'bg-background' : 'bg-muted'}`}>
-        <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg" alt="PPG BLITAR Logo" className="w-full max-w-md drop-shadow-lg" />
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold text-foreground">PPG BLITAR</h2>
-          <p className="text-muted-foreground text-sm">Sistem Manajemen Data Pendidikan</p>
+        <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg" alt="PPG BLITAR Logo" className="w-full max-w-md drop-shadow-xl rounded-2xl" />
+        <div className="text-center space-y-1">
+          <h2 className="text-2xl font-extrabold text-foreground tracking-tight">PPG BLITAR</h2>
+          <p className="text-amber-500 text-xs font-bold uppercase tracking-wider">Be The Teacher of The World</p>
+          <p className="text-muted-foreground text-xs">Penggerak Pembina Generus</p>
         </div>
       </div>
       <div className={`flex flex-col items-center justify-center p-8 ${isDarkMode ? 'bg-background text-foreground' : 'bg-primary text-primary-foreground'}`}>
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo - visible only on small screens */}
           <div className="flex flex-col items-center gap-4 lg:hidden">
-            <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg" alt="PPG BLITAR Logo" className="w-32 h-auto drop-shadow-lg" />
-            <div className="text-center">
+            <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg" alt="PPG BLITAR Logo" className="w-32 h-auto drop-shadow-lg rounded-xl" />
+            <div className="text-center space-y-0.5">
               <h2 className={`text-lg font-bold ${isDarkMode ? 'text-foreground' : 'text-primary-foreground'}`}>PPG BLITAR</h2>
-              <p className={`text-xs ${isDarkMode ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>Sistem Manajemen Data Pendidikan</p>
+              <p className={`text-xs font-semibold ${isDarkMode ? 'text-amber-500' : 'text-amber-300'}`}>Be The Teacher of The World</p>
             </div>
           </div>
           <div className="text-left">
