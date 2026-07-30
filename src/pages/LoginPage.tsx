@@ -58,108 +58,153 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 relative">
-      {/* Dark Mode Toggle Button */}
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 relative bg-background overflow-hidden">
+      {/* Floating Dark Mode Toggle Button */}
       <button
         onClick={toggleDarkMode}
-        className="absolute top-4 right-4 z-50 p-3 rounded-full bg-card/20 backdrop-blur-sm hover:bg-card/30 transition-all duration-300 shadow-lg"
+        className="absolute top-5 right-5 z-50 p-3 rounded-full bg-card/40 backdrop-blur-md hover:bg-card/70 border border-border/50 text-foreground transition-all duration-300 shadow-md hover:scale-105"
         title={isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
       >
         {isDarkMode ? (
-          <Sun className="h-5 w-5 text-yellow-300" />
+          <Sun className="h-5 w-5 text-amber-400 animate-pulse" />
         ) : (
-          <Moon className="h-5 w-5 text-white" />
+          <Moon className="h-5 w-5 text-slate-700" />
         )}
       </button>
 
-      <div className={`hidden lg:flex flex-col items-center justify-center p-12 gap-8 ${isDarkMode ? 'bg-background' : 'bg-muted'}`}>
-        <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg" alt="PPG BLITAR Logo" className="w-full max-w-md drop-shadow-xl rounded-2xl" />
-        <div className="text-center space-y-1">
-          <h2 className="text-2xl font-extrabold text-foreground tracking-tight">PPG BLITAR</h2>
-          <p className="text-amber-500 text-xs font-bold uppercase tracking-wider">Be The Teacher of The World</p>
-          <p className="text-muted-foreground text-xs">Penggerak Pembina Generus</p>
+      {/* Left Branding Showcase Panel (Desktop) */}
+      <div className="hidden lg:flex flex-col items-center justify-center p-12 relative overflow-hidden bg-gradient-to-br from-[hsl(218,78%,24%)] via-[hsl(218,75%,20%)] to-[hsl(220,80%,14%)] text-white">
+        {/* Background Decorative Glow Blobs */}
+        <div className="absolute -top-20 -left-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col items-center max-w-lg text-center space-y-6">
+          {/* Logo Card with Glassmorphism */}
+          <div className="p-6 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl hover:scale-102 transition-transform duration-300">
+            <img
+              src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg"
+              alt="PPG BLITAR Logo"
+              className="w-full max-w-xs h-auto drop-shadow-2xl rounded-2xl mx-auto"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/30 backdrop-blur-sm">
+              ✨ Penggerak Pembina Generus
+            </span>
+            <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-md">
+              PPG BLITAR
+            </h1>
+            <p className="text-amber-300 text-sm font-semibold tracking-wider uppercase">
+              Be The Teacher of The World
+            </p>
+            <p className="text-slate-300 text-xs max-w-sm mx-auto leading-relaxed">
+              Sistem Manajemen Data Pendidikan Generasi Penerus Terintegrasi & Akuntabel
+            </p>
+          </div>
         </div>
       </div>
-      <div className={`flex flex-col items-center justify-center p-8 ${isDarkMode ? 'bg-background text-foreground' : 'bg-primary text-primary-foreground'}`}>
-        <div className="w-full max-w-sm space-y-8">
-          {/* Mobile logo - visible only on small screens */}
-          <div className="flex flex-col items-center gap-4 lg:hidden">
-            <img src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg" alt="PPG BLITAR Logo" className="w-32 h-auto drop-shadow-lg rounded-xl" />
-            <div className="text-center space-y-0.5">
-              <h2 className={`text-lg font-bold ${isDarkMode ? 'text-foreground' : 'text-primary-foreground'}`}>PPG BLITAR</h2>
-              <p className={`text-xs font-semibold ${isDarkMode ? 'text-amber-500' : 'text-amber-300'}`}>Be The Teacher of The World</p>
+
+      {/* Right Login Form Panel */}
+      <div className="flex flex-col items-center justify-center p-6 sm:p-12 relative bg-card text-card-foreground">
+        <div className="w-full max-w-md space-y-8 p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-xl lg:shadow-none lg:border-none">
+          {/* Mobile Logo Branding */}
+          <div className="flex flex-col items-center gap-3 lg:hidden text-center">
+            <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+              <img
+                src="https://res.cloudinary.com/dqetur2r1/image/upload/v1785414670/WhatsApp_Image_2026-07-30_at_19.27.32_ypyas6.jpg"
+                alt="PPG BLITAR Logo"
+                className="w-24 h-auto drop-shadow-md rounded-xl"
+              />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-foreground">PPG BLITAR</h2>
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">Be The Teacher of The World</p>
             </div>
           </div>
-          <div className="text-left">
-            <h1 className="text-4xl font-bold">Selamat Datang!</h1>
+
+          <div className="text-left space-y-1">
+            <h2 className="text-3xl font-bold text-foreground">Selamat Datang! 👋</h2>
+            <p className="text-sm text-muted-foreground">Silakan masuk ke akun pengurus Anda</p>
           </div>
-          <div className="space-y-6">
+
+          <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-5">
             <div className="space-y-2">
+              <label htmlFor="email" className="text-xs font-semibold text-foreground tracking-wide">
+                Email / ID Pengurus
+              </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Email Anda"
-                  className="bg-background text-foreground rounded-full pl-12 py-6 border-0"
+                  placeholder="nama@email.com"
+                  className="bg-muted/40 text-foreground rounded-xl pl-12 pr-4 py-5 border border-border/80 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
+
             <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-xs font-semibold text-foreground tracking-wide">
+                  Kata Sandi
+                </label>
+                <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                  Lupa Password?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password Anda"
-                  className="bg-background text-foreground rounded-full pl-12 pr-12 py-6 border-0"
+                  placeholder="••••••••"
+                  className="bg-muted/40 text-foreground rounded-xl pl-12 pr-12 py-5 border border-border/80 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                   tabIndex={-1}
+                  title={showPassword ? "Sembunyikan Kata Sandi" : "Tampilkan Kata Sandi"}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
             </div>
-            <div className="flex items-center space-x-2 pt-2">
-              <Checkbox
-                id="rememberMe"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                className="rounded"
-              />
-              <label
-                htmlFor="rememberMe"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Ingat Saya
-              </label>
+
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center space-x-2.5">
+                <Checkbox
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  className="rounded-md border-border"
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="text-xs font-medium text-muted-foreground cursor-pointer select-none"
+                >
+                  Ingat saya di perangkat ini
+                </label>
+              </div>
             </div>
-            <div className="flex items-center justify-end pt-2">
-              <Button
-                className="w-auto bg-background text-primary rounded-full px-8 py-6 font-semibold hover:bg-accent"
-                onClick={handleLogin}
-              >
-                Masuk
-              </Button>
-            </div>
-            <div className="text-center space-y-2">
-              <Link to="/forgot-password" className="text-sm opacity-80 hover:opacity-100 hover:underline">
-                Lupa Password?
-              </Link>
-            </div>
-          </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl py-6 shadow-lg shadow-primary/25 hover:shadow-primary/40 active:scale-[0.99] transition-all text-sm gap-2"
+            >
+              Masuk ke Panel
+            </Button>
+          </form>
         </div>
       </div>
     </div>
