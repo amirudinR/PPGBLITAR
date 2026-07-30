@@ -89,6 +89,7 @@ export default function GenerusActions({
           filteredKelompok={filteredKelompokForNew}
           currentUser={currentUser}
           desas={desas}
+          allGenerus={allGenerus}
         />
         
         <GenerusImportDialog

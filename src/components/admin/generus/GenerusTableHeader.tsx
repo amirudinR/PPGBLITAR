@@ -10,59 +10,41 @@ export default function GenerusTableHeader({ requestSort, getSortIndicator }: Ge
   return (
     <TableHeader>
       <TableRow>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('name')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('name')}>
           Nama Generus{getSortIndicator('name')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('tahunLahir')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('tanggalLahir')}>
+          Tgl Lahir{getSortIndicator('tanggalLahir')}
+        </TableHead>
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('tahunLahir')}>
           Tahun Lahir{getSortIndicator('tahunLahir')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('pendidikan')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('pendidikan')}>
           Pendidikan{getSortIndicator('pendidikan')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('jenjangUsia')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('jurusan')}>
+          Jurusan{getSortIndicator('jurusan')}
+        </TableHead>
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('jenjangUsia')}>
           Jenjang Usia{getSortIndicator('jenjangUsia')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('statusMondok')}
-        >
-          Status Mondok{getSortIndicator('statusMondok')}
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('aktivitas')}>
+          Aktivitas{getSortIndicator('aktivitas')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('desa')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('mt')}>
+          MT{getSortIndicator('mt')}
+        </TableHead>
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('desa')}>
           Desa{getSortIndicator('desa')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('kelompok')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('kelompok')}>
           Kelompok{getSortIndicator('kelompok')}
         </TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('namaAyah')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('namaAyah')}>
           Nama Ayah{getSortIndicator('namaAyah')}
         </TableHead>
         <TableHead className="whitespace-nowrap">Status Ayah</TableHead>
-        <TableHead 
-          className="cursor-pointer hover:bg-muted whitespace-nowrap"
-          onClick={() => requestSort('namaIbu')}
-        >
+        <TableHead className="cursor-pointer hover:bg-muted whitespace-nowrap" onClick={() => requestSort('namaIbu')}>
           Nama Ibu{getSortIndicator('namaIbu')}
         </TableHead>
         <TableHead className="whitespace-nowrap">Status Ibu</TableHead>

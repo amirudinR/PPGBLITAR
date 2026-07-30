@@ -11,8 +11,11 @@ export function useGenerus(currentUser: User | null) {
   const [loading, setLoading] = useState(false);
   const [isPopulating, setIsPopulating] = useState(false);
   const [newGenerus, setNewGenerus] = useState<Omit<Generus, 'id'>>({
-    name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],
-    statusMondok: STATUS_MONDOK_LIST[3], namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
+    name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, tanggalLahir: '',
+    pendidikan: PENDIDIKAN_LIST[0], jurusan: '',
+    aktivitas: '', pekerjaan: '', statusMondok: STATUS_MONDOK_LIST[3], tugas: '',
+    mt: 'Belum MT',
+    namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
     desa: '', kelompok: ''
   });
 
@@ -92,8 +95,11 @@ export function useGenerus(currentUser: User | null) {
       await addDoc(collection(db, "generus"), newGenerus);
       fetchGenerus();
       setNewGenerus({
-        name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, pendidikan: PENDIDIKAN_LIST[0],
-        statusMondok: STATUS_MONDOK_LIST[3], namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
+        name: '', jenisKelamin: 'Laki-laki', tahunLahir: 2010, tanggalLahir: '',
+        pendidikan: PENDIDIKAN_LIST[0], jurusan: '',
+        aktivitas: '', pekerjaan: '', statusMondok: STATUS_MONDOK_LIST[3], tugas: '',
+        mt: 'Belum MT',
+        namaAyah: '', statusAyah: '', namaIbu: '', statusIbu: '',
         desa: '', kelompok: ''
       });
       return true;

@@ -61,69 +61,86 @@ export default function GenerusImportDialog({ isOpen, onClose, onImport, current
       const worksheet = workbook.Sheets[sheetName];
       const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-      // Validasi dan transformasi data
       const validatedData: Omit<any, 'id'>[] = jsonData.map((row, index) => {
-        const rowNum = index + 2; // +2 karena baris pertama header dan index dimulai dari 0
-        
-        // Validasi field wajib
+        const rowNum = index + 2;
+
         if (!row["Nama Generus"] || !row["Nama Generus"].toString().trim()) {
           throw new Error(`Baris ${rowNum}: Nama Generus tidak boleh kosong.`);
         }
-        
+
         if (!row["Jenis Kelamin"]) {
           throw new Error(`Baris ${rowNum}: Jenis Kelamin tidak boleh kosong.`);
         }
-        
+
         const jenisKelamin = row["Jenis Kelamin"].toString().trim();
         if (jenisKelamin !== "Laki-laki" && jenisKelamin !== "Perempuan") {
           throw new Error(`Baris ${rowNum}: Jenis Kelamin harus 'Laki-laki' atau 'Perempuan'.`);
         }
-        
+
         if (!row["Tahun Lahir"]) {
           throw new Error(`Baris ${rowNum}: Tahun Lahir tidak boleh kosong.`);
         }
-        
+
         const tahunLahir = parseInt(row["Tahun Lahir"], 10);
         if (isNaN(tahunLahir) || tahunLahir < 1900 || tahunLahir > new Date().getFullYear()) {
           throw new Error(`Baris ${rowNum}: Tahun Lahir tidak valid.`);
         }
-        
+
         if (!row["Pendidikan"]) {
           throw new Error(`Baris ${rowNum}: Pendidikan tidak boleh kosong.`);
         }
-        
+
         const correctPendidikan = findCorrectCase(PENDIDIKAN_LIST, row["Pendidikan"]);
         if (!correctPendidikan) {
           throw new Error(`Baris ${rowNum}: Pendidikan "${row["Pendidikan"]}" tidak valid.`);
         }
-        
-        if (!row["Status Mondok"]) {
-          throw new Error(`Baris ${rowNum}: Status Mondok tidak boleh kosong.`);
+
+        const isSMKorKULIAH = correctPendidikan === 'SMK' || correctPendidikan === 'KULIAH';
+
+        const aktivitasRaw = row["Aktivitas"] ? row["Aktivitas"].toString().trim().toLowerCase() : '';
+        const aktivitas = ['bekerja', 'mondok', 'tugas'].includes(aktivitasRaw) ? aktivitasRaw : '';
+
+        let statusMondok = '';
+        if (aktivitas === 'mondok') {
+          if (!row["Status Mondok"]) {
+            throw new Error(`Baris ${rowNum}: Status Mondok wajib diisi jika aktivitas Mondok.`);
+          }
+          const correctStatusMondok = findCorrectCase(STATUS_MONDOK_LIST, row["Status Mondok"]);
+          if (!correctStatusMondok) {
+            throw new Error(`Baris ${rowNum}: Status Mondok "${row["Status Mondok"]}" tidak valid.`);
+          }
+          statusMondok = correctStatusMondok;
+        } else if (row["Status Mondok"]) {
+          const found = findCorrectCase(STATUS_MONDOK_LIST, row["Status Mondok"]);
+          if (found) statusMondok = found;
         }
-        
-        const correctStatusMondok = findCorrectCase(STATUS_MONDOK_LIST, row["Status Mondok"]);
-        if (!correctStatusMondok) {
-          throw new Error(`Baris ${rowNum}: Status Mondok "${row["Status Mondok"]}" tidak valid.`);
-        }
-        
-        // Validasi status ayah/ibu
+
         const statusAyah = row["Status Ayah"] ? row["Status Ayah"].toString().trim().toLowerCase() : '';
         const statusIbu = row["Status Ibu"] ? row["Status Ibu"].toString().trim().toLowerCase() : '';
-        
+
         if (statusAyah && statusAyah !== "jm" && statusAyah !== "hum") {
           throw new Error(`Baris ${rowNum}: Status Ayah harus 'jm' atau 'hum'.`);
         }
-        
+
         if (statusIbu && statusIbu !== "jm" && statusIbu !== "hum") {
           throw new Error(`Baris ${rowNum}: Status Ibu harus 'jm' atau 'hum'.`);
         }
+
+        const mtRaw = row["MT"] ? row["MT"].toString().trim() : '';
+        const mt = mtRaw === 'MT' ? 'MT' : 'Belum MT';
 
         return {
           name: row["Nama Generus"].toString().trim(),
           jenisKelamin: jenisKelamin as "Laki-laki" | "Perempuan",
           tahunLahir: tahunLahir,
+          tanggalLahir: row["Tanggal Lahir"] ? row["Tanggal Lahir"].toString().trim() : '',
           pendidikan: correctPendidikan,
-          statusMondok: correctStatusMondok,
+          jurusan: isSMKorKULIAH && row["Jurusan"] ? row["Jurusan"].toString().trim() : '',
+          aktivitas,
+          pekerjaan: aktivitas === 'bekerja' && row["Pekerjaan"] ? row["Pekerjaan"].toString().trim() : '',
+          statusMondok,
+          tugas: aktivitas === 'tugas' && row["Tugas"] ? row["Tugas"].toString().trim() : '',
+          mt,
           namaAyah: row["Nama Ayah"] ? row["Nama Ayah"].toString().trim() : '',
           statusAyah: statusAyah as "jm" | "hum" | "",
           namaIbu: row["Nama Ibu"] ? row["Nama Ibu"].toString().trim() : '',

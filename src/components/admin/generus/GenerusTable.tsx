@@ -20,7 +20,7 @@ interface GenerusTableProps {
   kelompok: Kelompok[];
 }
 
-const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok', 'jenjangUsia'];
+const dropdownCategories = ['tahunLahir', 'pendidikan', 'aktivitas', 'statusMondok', 'mt', 'desa', 'kelompok', 'jenjangUsia'];
 const ITEMS_PER_PAGE = 10;
 
 export default function GenerusTable({
@@ -169,6 +169,7 @@ export default function GenerusTable({
         handleEditSelectChange={handleEditSelectChange}
         handleUpdate={handleUpdate}
         kelompok={kelompok}
+        allGenerus={allGenerus}
       />
     </div>
   );

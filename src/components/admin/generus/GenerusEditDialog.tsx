@@ -5,6 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Generus, Kelompok, PENDIDIKAN_LIST, STATUS_MONDOK_LIST } from '@/types/admin';
+import DatePicker from '@/components/ui/date-picker';
+
+const JURUSAN_TRIGGERS = ['SMK', 'KULIAH'];
 
 interface GenerusEditDialogProps {
   isOpen: boolean;
@@ -14,6 +17,7 @@ interface GenerusEditDialogProps {
   handleEditSelectChange: (field: keyof Omit<Generus, 'id'>, value: string) => void;
   handleUpdate: () => Promise<void>;
   kelompok: Kelompok[];
+  allGenerus: Generus[];
 }
 
 export default function GenerusEditDialog({
@@ -23,12 +27,52 @@ export default function GenerusEditDialog({
   handleEditInputChange,
   handleEditSelectChange,
   handleUpdate,
-  kelompok
+  kelompok,
+  allGenerus,
 }: GenerusEditDialogProps) {
   const filteredKelompok = React.useMemo(() => {
     if (!editingGenerus?.desa) return [];
     return kelompok.filter(k => k.desaName === editingGenerus.desa);
   }, [editingGenerus?.desa, kelompok]);
+
+  const existingJurusan = React.useMemo(() => {
+    if (!allGenerus) return [];
+    const set = new Set<string>();
+    allGenerus.forEach(g => { if (g.jurusan) set.add(g.jurusan); });
+    return Array.from(set).sort();
+  }, [allGenerus]);
+
+  const existingPekerjaan = React.useMemo(() => {
+    if (!allGenerus) return [];
+    const set = new Set<string>();
+    allGenerus.forEach(g => { if (g.pekerjaan) set.add(g.pekerjaan); });
+    return Array.from(set).sort();
+  }, [allGenerus]);
+
+  if (!editingGenerus) return null;
+  const showJurusan = JURUSAN_TRIGGERS.includes(editingGenerus.pendidikan);
+
+  const handleAktivitasChange = (value: string) => {
+    handleEditSelectChange('aktivitas', value);
+    if (value === 'mondok') {
+      if (!editingGenerus.statusMondok || editingGenerus.statusMondok === STATUS_MONDOK_LIST[3]) {
+        handleEditSelectChange('statusMondok', STATUS_MONDOK_LIST[3]);
+      }
+    } else {
+      handleEditInputChange('statusMondok', '');
+    }
+    if (value === 'bekerja') {
+      handleEditInputChange('tugas', '');
+    }
+    if (value === 'tugas') {
+      handleEditInputChange('pekerjaan', '');
+    }
+    if (!value) {
+      handleEditInputChange('pekerjaan', '');
+      handleEditInputChange('tugas', '');
+      handleEditInputChange('statusMondok', '');
+    }
+  };
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -53,24 +97,101 @@ export default function GenerusEditDialog({
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Tanggal Lahir</Label>
+                <DatePicker
+                  value={editingGenerus.tanggalLahir}
+                  onChange={(v) => handleEditInputChange('tanggalLahir', v)}
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-tahunLahir" className="text-sm font-medium">Tahun Lahir</Label>
                 <Input id="edit-tahunLahir" type="number" value={editingGenerus.tahunLahir} onChange={(e) => handleEditInputChange('tahunLahir', parseInt(e.target.value, 10) || 0)} />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="edit-pendidikan" className="text-sm font-medium">Pendidikan</Label>
-                <Select value={editingGenerus.pendidikan} onValueChange={(value) => handleEditSelectChange('pendidikan', value)}>
+                <Select value={editingGenerus.pendidikan} onValueChange={(value) => { handleEditSelectChange('pendidikan', value); if (!JURUSAN_TRIGGERS.includes(value)) handleEditInputChange('jurusan', ''); }}>
                   <SelectTrigger id="edit-pendidikan"><SelectValue /></SelectTrigger>
                   <SelectContent>{PENDIDIKAN_LIST.map((p: string) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+
+              {showJurusan && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Jurusan</Label>
+                  <Input
+                    list="jurusan-list-edit"
+                    placeholder="Masukkan Jurusan"
+                    value={editingGenerus.jurusan}
+                    onChange={(e) => handleEditInputChange('jurusan', e.target.value)}
+                  />
+                  <datalist id="jurusan-list-edit">
+                    {existingJurusan.map(j => <option key={j} value={j} />)}
+                  </datalist>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="edit-statusMondok" className="text-sm font-medium">Status Mondok</Label>
-                <Select value={editingGenerus.statusMondok} onValueChange={(value) => handleEditSelectChange('statusMondok', value)}>
-                  <SelectTrigger id="edit-statusMondok"><SelectValue /></SelectTrigger>
-                  <SelectContent>{STATUS_MONDOK_LIST.map((p: string) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                <Label className="text-sm font-medium">Aktivitas</Label>
+                <Select value={editingGenerus.aktivitas} onValueChange={handleAktivitasChange}>
+                  <SelectTrigger><SelectValue placeholder="Pilih Aktivitas" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bekerja">Bekerja</SelectItem>
+                    <SelectItem value="mondok">Mondok</SelectItem>
+                    <SelectItem value="tugas">Tugas</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
+
+              {editingGenerus.aktivitas === 'bekerja' && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Pekerjaan</Label>
+                  <Input
+                    list="pekerjaan-list-edit"
+                    placeholder="Masukkan Pekerjaan"
+                    value={editingGenerus.pekerjaan}
+                    onChange={(e) => handleEditInputChange('pekerjaan', e.target.value)}
+                  />
+                  <datalist id="pekerjaan-list-edit">
+                    {existingPekerjaan.map(p => <option key={p} value={p} />)}
+                  </datalist>
+                </div>
+              )}
+
+              {editingGenerus.aktivitas === 'mondok' && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-statusMondok" className="text-sm font-medium">Status Mondok</Label>
+                  <Select value={editingGenerus.statusMondok} onValueChange={(value) => handleEditSelectChange('statusMondok', value)}>
+                    <SelectTrigger id="edit-statusMondok"><SelectValue /></SelectTrigger>
+                    <SelectContent>{STATUS_MONDOK_LIST.map((p: string) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {editingGenerus.aktivitas === 'tugas' && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Deskripsi Tugas</Label>
+                  <Input
+                    placeholder="Masukkan deskripsi tugas"
+                    value={editingGenerus.tugas}
+                    onChange={(e) => handleEditInputChange('tugas', e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">MT</Label>
+                <Select value={editingGenerus.mt} onValueChange={(value) => handleEditSelectChange('mt', value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Belum MT">Belum MT</SelectItem>
+                    <SelectItem value="MT">MT</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="edit-desa" className="text-sm font-medium">Desa</Label>
                 <Input id="edit-desa" value={editingGenerus.desa} onChange={(e) => handleEditInputChange('desa', e.target.value)} />

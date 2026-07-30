@@ -12,7 +12,7 @@ interface GenerusFiltersProps {
   currentUser: User | null;
 }
 
-const dropdownCategories = ['tahunLahir', 'pendidikan', 'statusMondok', 'desa', 'kelompok'];
+const dropdownCategories = ['tahunLahir', 'pendidikan', 'aktivitas', 'statusMondok', 'mt', 'desa', 'kelompok'];
 
 export default function GenerusFilters({
   searchTerm,
