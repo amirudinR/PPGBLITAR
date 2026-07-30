@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, setDoc, updateDoc, deleteDoc, doc, query, where, writeBatch } from 'firebase/firestore';
+import { collection, getDoc, getDocs, setDoc, updateDoc, deleteDoc, doc, query, where, writeBatch } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { db } from '@/lib/firebase';
@@ -23,15 +23,20 @@ export function useUsers(currentUser: User | null) {
     if (!currentUser) return;
     setLoading(true);
     try {
-      let usersQuery = query(collection(db, "users"));
-      if (currentUser.role === 'desa') {
-        usersQuery = query(usersQuery, where("desa", "==", currentUser.desa));
-      } else if (currentUser.role === 'kelompok') {
-        usersQuery = query(usersQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+      if (currentUser.role === 'guru' || currentUser.role === 'orangtua') {
+        const userDoc = await getDoc(doc(db, "users", currentUser.id));
+        setUsers(userDoc.exists() ? [{ id: userDoc.id, ...userDoc.data() } as User] : []);
+      } else {
+        let usersQuery = query(collection(db, "users"));
+        if (currentUser.role === 'desa') {
+          usersQuery = query(usersQuery, where("desa", "==", currentUser.desa));
+        } else if (currentUser.role === 'kelompok') {
+          usersQuery = query(usersQuery, where("desa", "==", currentUser.desa), where("kelompok", "==", currentUser.kelompok));
+        }
+        const usersSnap = await getDocs(usersQuery);
+        const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as User[];
+        setUsers(usersData);
       }
-      const usersSnap = await getDocs(usersQuery);
-      const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as User[];
-      setUsers(usersData);
     } catch (error) {
       console.error("Error fetching users: ", error);
       showError("Gagal memuat data pengguna.");

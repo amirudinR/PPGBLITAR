@@ -202,7 +202,7 @@ service cloud.firestore {
                     (isAdmin() ||
                      isPJPDesa() ||
                      (isPJPKelompok() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
-                     (isGuru() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok) ||
+                     (isGuru() && request.auth.uid == resource.data.guruId) ||
                      (isOrangTua() && getUserData().desa == resource.data.desa && getUserData().kelompok == resource.data.kelompok));
 
       allow create: if isAuthenticated() &&
