@@ -82,57 +82,97 @@ export default function AdminDashboard({
   }, [attendance, materials, grades, generusData]);
 
   return (
-    <div className="space-y-6">
-      <div className="hero-gradient rounded-xl p-6">
-        <h2 className="text-3xl font-bold tracking-tight">Assalamualaikum, {currentUser?.name}</h2>
-        <p className="text-[hsl(var(--hero-muted))]">
-          {currentUser?.role === 'adminsuper' || currentUser?.role === 'admin'
-            ? 'Selamat datang di pusat kendali administrasi.'
-            : 'Selamat datang di dashboard.'}
-        </p>
+    <div className="space-y-8">
+      {/* Hero Welcome & Quick Search Banner */}
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+              Pusat Kendali PPG BLITAR
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight mt-1">
+              Assalamu'alaikum, {currentUser?.name || 'Pengurus'}! 👋
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Ada yang ingin dikelola atau ditinjau hari ini?
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <DashboardStatCard title="Total Generus" value={stats.generus} icon={GraduationCap} />
-        <DashboardStatCard title="Total Desa" value={stats.desa} icon={Home} />
-        <DashboardStatCard title="Total Kelompok" value={stats.kelompok} icon={Users2} />
-        <DashboardStatCard title="Total Pengguna" value={stats.users} icon={Users} />
+      {/* Primary & Secondary Stat Cards Grid */}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <DashboardStatCard
+          title="Total Generus"
+          value={stats.generus}
+          icon={GraduationCap}
+          isPrimary={true}
+          subtitle="Generasi penerus terdaftar"
+        />
+        <DashboardStatCard
+          title="Total Desa"
+          value={stats.desa}
+          icon={Home}
+          subtitle="Wilayah desa pembinaan"
+        />
+        <DashboardStatCard
+          title="Total Kelompok"
+          value={stats.kelompok}
+          icon={Users2}
+          subtitle="Kelompok binaan aktif"
+        />
+        <DashboardStatCard
+          title="Total Pengguna"
+          value={stats.users}
+          icon={Users}
+          subtitle="Pengurus & guru terdaftar"
+        />
       </div>
 
+      {/* Secondary Stats & Announcements Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="neu-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-foreground">Statistik Umum</CardTitle>
+        <Card className="rounded-3xl border border-border/60 shadow-xs overflow-hidden">
+          <CardHeader className="border-b border-border/50 pb-4">
+            <CardTitle className="text-base font-bold text-foreground">Ringkasan Pembinaan</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="neu-inset flex items-center justify-between p-4 rounded-xl">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/40 border border-border/40">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full" style={{ background: 'hsl(var(--stat-1) / 0.12)' }}>
-                  <School className="h-5 w-5" style={{ color: 'hsl(var(--stat-1))' }} />
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                  <School className="h-5 w-5" />
                 </div>
-                <span className="font-medium text-foreground">Total Kelas</span>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Total Kelas Aktif</p>
+                  <p className="text-sm font-bold text-foreground">Tingkat Cabe Rawit - Remaja</p>
+                </div>
               </div>
-              <span className="text-2xl font-bold" style={{ color: 'hsl(var(--stat-1))' }}>{stats.kelas}</span>
+              <span className="text-2xl font-extrabold text-primary">{stats.kelas}</span>
             </div>
 
-            <div className="neu-inset flex items-center justify-between p-4 rounded-xl">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/40 border border-border/40">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full" style={{ background: 'hsl(var(--stat-3) / 0.12)' }}>
-                  <BookOpen className="h-5 w-5" style={{ color: 'hsl(var(--stat-3))' }} />
+                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <BookOpen className="h-5 w-5" />
                 </div>
-                <span className="font-medium text-foreground">Total Materi</span>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Total Materi Pembelajaran</p>
+                  <p className="text-sm font-bold text-foreground">Kurikulum PPG Blitar</p>
+                </div>
               </div>
-              <span className="text-2xl font-bold" style={{ color: 'hsl(var(--stat-3))' }}>{materials.length}</span>
+              <span className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">{materials.length}</span>
             </div>
 
-            <div className="neu-inset flex items-center justify-between p-4 rounded-xl">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/40 border border-border/40">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-full" style={{ background: 'hsl(var(--stat-4) / 0.12)' }}>
-                  <Calendar className="h-5 w-5" style={{ color: 'hsl(var(--stat-4))' }} />
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Calendar className="h-5 w-5" />
                 </div>
-                <span className="font-medium text-foreground">Kehadiran Rata-rata</span>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Rata-rata Kehadiran</p>
+                  <p className="text-sm font-bold text-foreground">Kehadiran Bulan Ini</p>
+                </div>
               </div>
-              <span className="text-2xl font-bold" style={{ color: 'hsl(var(--stat-4))' }}>{overallStats.overallAttendanceRate}%</span>
+              <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{overallStats.overallAttendanceRate}%</span>
             </div>
           </CardContent>
         </Card>
