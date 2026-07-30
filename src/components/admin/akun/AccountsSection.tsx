@@ -4,11 +4,11 @@ import { useAccounts } from '@/hooks/useAccounts';
 import SectionHeader from '../shared/SectionHeader';
 import AccountsTable from './AccountsTable';
 import AddUserDialog from './AddUserDialog';
-import BulkAddUserDialog from './BulkAddUserDialog';
+import BulkAddUserFormDialog from './BulkAddUserFormDialog';
 import EditUserDialog from './EditUserDialog';
 import BulkDeleteBar from './BulkDeleteBar';
 import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
 interface AccountsSectionProps {
   users: User[];
@@ -38,14 +38,14 @@ export default function AccountsSection({
         subtitle="Kelola akun berdasarkan peran, desa, dan kelompok."
         action={
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => a.setIsBulkAddOpen(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import Excel
+            <Button variant="outline" onClick={() => a.setIsBulkFormOpen(true)}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Tambah Banyak
             </Button>
-            <BulkAddUserDialog
-              open={a.isBulkAddOpen}
-              setOpen={a.setIsBulkAddOpen}
-              onImport={a.onAddUsersBatch}
+            <BulkAddUserFormDialog
+              open={a.isBulkFormOpen}
+              setOpen={a.setIsBulkFormOpen}
+              onSave={a.onAddUsersBatch}
               desas={desas}
               kelompok={kelompok}
               currentUser={currentUser}

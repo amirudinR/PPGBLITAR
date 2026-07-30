@@ -23,7 +23,7 @@ export function useAccounts(
   onResetUserPassword: (email: string) => Promise<void>,
 ) {
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
+  const [isBulkFormOpen, setIsBulkFormOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
@@ -149,9 +149,9 @@ export function useAccounts(
     setIsBulkDeleteOpen,
     handleBulkDelete,
 
-    // bulk add dialog
-    isBulkAddOpen,
-    setIsBulkAddOpen,
+    // bulk add form dialog
+    isBulkFormOpen,
+    setIsBulkFormOpen,
     onAddUsersBatch,
 
     // add dialog
