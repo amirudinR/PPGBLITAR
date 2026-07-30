@@ -7,8 +7,9 @@ import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Eye } from 'lucide-react';
+import { Eye, Users, Filter, RotateCcw } from 'lucide-react';
 import PaginationControls from '../layout/PaginationControls';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface StudentAttendanceRecapSectionProps {
   attendance: MonthlyAttendance[];
@@ -52,13 +53,20 @@ export default function StudentAttendanceRecapSection({
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
+  const handleResetFilters = () => {
+    if (!isGuruRole && currentUser?.role !== 'desa') setSelectedDesa('');
+    if (!isGuruRole && currentUser?.role !== 'kelompok') setSelectedKelompok('');
+    setSelectedKelas('');
+    setCurrentPage(1);
+  };
+
   const filteredKelompok = useMemo(() => {
     if (!selectedDesa) return kelompok;
     return kelompok.filter(k => k.desaName === selectedDesa);
   }, [selectedDesa, kelompok]);
 
   const filteredKelas = useMemo(() => {
-    if (isGuruRole) return kelas; // Untuk guru, 'kelas' sudah difilter oleh hook
+    if (isGuruRole) return kelas;
     if (!selectedKelompok) return kelas.filter(k => k.desa === selectedDesa);
     return kelas.filter(k => k.kelompok === selectedKelompok);
   }, [selectedKelompok, selectedDesa, kelas, isGuruRole]);
@@ -99,39 +107,10 @@ export default function StudentAttendanceRecapSection({
     let sortableItems = [...studentRecap];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        if (sortConfig.key === 'percentage') {
-          if (a.percentage < b.percentage) {
-            return sortConfig.direction === 'asc' ? -1 : 1;
-          }
-          if (a.percentage > b.percentage) {
-            return sortConfig.direction === 'asc' ? 1 : -1;
-          }
-        } else if (sortConfig.key === 'attended') {
-          const attendedA = a.attended;
-          const attendedB = b.attended;
-          if (attendedA < attendedB) {
-            return sortConfig.direction === 'asc' ? -1 : 1;
-          }
-          if (attendedA > attendedB) {
-            return sortConfig.direction === 'asc' ? 1 : -1;
-          }
-        } else if (sortConfig.key === 'held') {
-          const heldA = a.held;
-          const heldB = b.held;
-          if (heldA < heldB) {
-            return sortConfig.direction === 'asc' ? -1 : 1;
-          }
-          if (heldA > heldB) {
-            return sortConfig.direction === 'asc' ? 1 : -1;
-          }
-        } else {
-          if (a[sortConfig.key as keyof typeof a] < b[sortConfig.key as keyof typeof b]) {
-            return sortConfig.direction === 'asc' ? -1 : 1;
-          }
-          if (a[sortConfig.key as keyof typeof a] > b[sortConfig.key as keyof typeof b]) {
-            return sortConfig.direction === 'asc' ? 1 : -1;
-          }
-        }
+        const aValue = a[sortConfig.key as keyof typeof a];
+        const bValue = b[sortConfig.key as keyof typeof b];
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
@@ -167,7 +146,7 @@ export default function StudentAttendanceRecapSection({
       direction = 'desc';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1); // Reset ke halaman pertama saat sorting berubah
+    setCurrentPage(1); 
   };
 
   const getSortIndicator = (key: string) => {
@@ -176,150 +155,204 @@ export default function StudentAttendanceRecapSection({
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Siswa</h2>
-      <Card className="mb-8">
-        <CardHeader><CardTitle>Filter Data</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+          KEHADIRAN GENERUS
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mt-1">
+          Rekap Kehadiran Per Siswa
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Pantau tingkat kehadiran setiap generasi penerus berdasarkan filter kelas dan periode.
+        </p>
+      </div>
+
+      <Card className="rounded-3xl border border-border/60 bg-card p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+              <Filter className="w-4 h-4" />
+            </div>
+            <h3 className="text-sm font-bold text-foreground">Filter Data & Periode</h3>
+          </div>
+          {(selectedKelas || selectedDesa || selectedKelompok) && (
+            <Button onClick={handleResetFilters} variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground gap-1.5 rounded-xl">
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Filter
+            </Button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {!isGuruRole && currentUser?.role !== 'desa' && currentUser?.role !== 'kelompok' && (
-            <div className="space-y-2">
-              <Label>Desa</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground">Desa</Label>
               <Select value={selectedDesa} onValueChange={setSelectedDesa}>
-                <SelectTrigger><SelectValue placeholder="Semua Desa" /></SelectTrigger>
-                <SelectContent>{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Semua Desa" /></SelectTrigger>
+                <SelectContent className="rounded-2xl">{desas.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           )}
           {!isGuruRole && currentUser?.role !== 'kelompok' && (
-            <div className="space-y-2">
-              <Label>Kelompok</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground">Kelompok</Label>
               <Select value={selectedKelompok} onValueChange={setSelectedKelompok}>
-                <SelectTrigger><SelectValue placeholder="Semua Kelompok" /></SelectTrigger>
-                <SelectContent>{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Semua Kelompok" /></SelectTrigger>
+                <SelectContent className="rounded-2xl">{filteredKelompok.map(k => <SelectItem key={k.id} value={k.name}>{k.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           )}
-          <div className="space-y-2">
-            <Label>Kelas</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground">Kelas</Label>
             <Select value={selectedKelas} onValueChange={setSelectedKelas}>
-              <SelectTrigger><SelectValue placeholder="Semua Kelas" /></SelectTrigger>
-              <SelectContent>{filteredKelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Semua Kelas" /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{filteredKelas.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>Dari</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground">Dari Periode</Label>
             <div className="flex gap-2">
-              <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-              <Select value={startYear} onValueChange={setStartYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+              <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent className="rounded-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={startYear} onValueChange={setStartYear}><SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent className="rounded-2xl">{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Sampai</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground">Sampai Periode</Label>
             <div className="flex gap-2">
-              <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-              <Select value={endYear} onValueChange={setEndYear}><SelectTrigger><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+              <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Bulan" /></SelectTrigger><SelectContent className="rounded-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={endYear} onValueChange={setEndYear}><SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Tahun" /></SelectTrigger><SelectContent className="rounded-2xl">{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader><CardTitle>Hasil Rekapitulasi</CardTitle></CardHeader>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted whitespace-nowrap"
-                  onClick={() => requestSort('name')}
-                >
-                  Nama Siswa{getSortIndicator('name')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted whitespace-nowrap"
-                  onClick={() => requestSort('className')}
-                >
-                  Kelas{getSortIndicator('className')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted whitespace-nowrap"
-                  onClick={() => requestSort('guruName')}
-                >
-                  Guru{getSortIndicator('guruName')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted text-center whitespace-nowrap"
-                  onClick={() => requestSort('attended')}
-                >
-                  Total Kehadiran{getSortIndicator('attended')}
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted w-48 whitespace-nowrap"
-                  onClick={() => requestSort('percentage')}
-                >
-                  Persentase{getSortIndicator('percentage')}
-                </TableHead>
-                <TableHead className="text-center whitespace-nowrap">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedStudentRecap.map(student => (
-                <TableRow key={student.studentId}>
-                  <TableCell>{student.name}</TableCell>
-                  <TableCell>{student.className}</TableCell>
-                  <TableCell>{student.guruName}</TableCell>
-                  <TableCell className="text-center">{student.attended} / {student.held}</TableCell>
-                  <TableCell><div className="flex items-center gap-2"><Progress value={student.percentage} className="w-24" /><span>{student.percentage}%</span></div></TableCell>
-                  <TableCell className="text-center">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(student)}>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Lihat Detail
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         </div>
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={sortedStudentRecap.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={setCurrentPage}
-        />
       </Card>
 
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Detail Kehadiran: {selectedStudent?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Bulan</TableHead>
-                  <TableHead>Tahun</TableHead>
-                  <TableHead className="text-center">Kehadiran</TableHead>
-                  <TableHead className="w-40">Persentase</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {studentDetailData.map(record => (
-                  <TableRow key={record.id}>
-                    <TableCell>{record.month}</TableCell>
-                    <TableCell>{record.year}</TableCell>
-                    <TableCell className="text-center">{record.meetingsAttended} / {record.meetingsHeld}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={record.percentage} className="w-24" />
-                        <span>{record.percentage}%</span>
-                      </div>
-                    </TableCell>
+      {/* Results Table Card */}
+      <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
+        <CardHeader className="border-b border-border/50 px-6 py-4">
+          <CardTitle className="text-base font-bold text-foreground">Hasil Rekapitulasi Siswa</CardTitle>
+        </CardHeader>
+        
+        {sortedStudentRecap.length === 0 ? (
+          <div className="p-8">
+            <EmptyState
+              icon={Users}
+              title="Belum Ada Data Kehadiran Siswa"
+              description="Tidak ditemukan data kehadiran siswa untuk filter kelas dan rentang periode yang Anda pilih."
+              actionLabel={selectedKelas || selectedDesa || selectedKelompok ? "Reset Filter" : undefined}
+              onAction={handleResetFilters}
+            />
+          </div>
+        ) : (
+          <div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/40">
+                  <TableRow className="border-b border-border/60">
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted font-bold text-xs uppercase text-muted-foreground py-3.5 pl-6"
+                      onClick={() => requestSort('name')}
+                    >
+                      Nama Siswa{getSortIndicator('name')}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted font-bold text-xs uppercase text-muted-foreground py-3.5"
+                      onClick={() => requestSort('className')}
+                    >
+                      Kelas{getSortIndicator('className')}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted font-bold text-xs uppercase text-muted-foreground py-3.5"
+                      onClick={() => requestSort('guruName')}
+                    >
+                      Guru Pengajar{getSortIndicator('guruName')}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted text-center font-bold text-xs uppercase text-muted-foreground py-3.5"
+                      onClick={() => requestSort('attended')}
+                    >
+                      Total Hadir / Pertemuan{getSortIndicator('attended')}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted text-center font-bold text-xs uppercase text-muted-foreground py-3.5"
+                      onClick={() => requestSort('percentage')}
+                    >
+                      Persentase Kehadiran{getSortIndicator('percentage')}
+                    </TableHead>
+                    <TableHead className="text-right font-bold text-xs uppercase text-muted-foreground py-3.5 pr-6">Aksi</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedStudentRecap.map(student => (
+                    <TableRow key={student.studentId} className="hover:bg-muted/30 border-b border-border/40 transition-colors">
+                      <TableCell className="font-semibold text-foreground py-4 pl-6">{student.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground py-4">{student.className}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground py-4">{student.guruName}</TableCell>
+                      <TableCell className="text-center font-semibold text-xs py-4">{student.attended} / {student.held}</TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex items-center justify-center gap-3 max-w-xs mx-auto">
+                          <Progress value={student.percentage} className="h-2 flex-1 rounded-full" />
+                          <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full ${
+                            student.percentage >= 85
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : student.percentage >= 65
+                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                          }`}>
+                            {student.percentage}%
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right py-4 pr-6">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleViewDetails(student)}
+                          className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
+                          title="Detail Kehadiran Siswa"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="p-4 border-t border-border/50">
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={sortedStudentRecap.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+              />
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* Student Detail Modal */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="rounded-3xl max-w-lg border border-border/60">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Detail Kehadiran: {selectedStudent?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            {studentDetailData.map(record => (
+              <div key={record.id} className="p-3.5 rounded-2xl bg-muted/40 border border-border/50 flex items-center justify-between text-xs">
+                <div>
+                  <p className="font-bold text-foreground">{record.month} {record.year}</p>
+                  <p className="text-muted-foreground text-[11px] mt-0.5">Pertemuan Hadir: {record.meetingsAttended} dari {record.meetingsHeld}</p>
+                </div>
+                <span className={`font-bold px-2.5 py-1 rounded-full ${
+                  record.percentage >= 85 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'
+                }`}>
+                  {record.percentage}%
+                </span>
+              </div>
+            ))}
           </div>
         </DialogContent>
       </Dialog>

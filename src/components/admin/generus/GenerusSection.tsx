@@ -68,8 +68,18 @@ export default function GenerusSection({
   }, [allGenerus]);
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Data Generus</h2>
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+          MANAJEMEN GENERUS
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mt-1">
+          Data Generasi Penerus
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Kelola database dan informasi lengkap generasi penerus PPG Blitar.
+        </p>
+      </div>
       <GenerusChart data={chartData} />
       <GenerusFilters
         searchTerm={searchTerm}

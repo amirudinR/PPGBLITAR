@@ -136,8 +136,18 @@ export default function AttendanceSection({
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Rekap Kehadiran Per Kelas</h2>
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+          KEHADIRAN GENERUS
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mt-1">
+          Rekap Kehadiran Per Kelas
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Tinjau statistik rekapitulasi kehadiran per kelas dan jenjang pembinaan.
+        </p>
+      </div>
       <AttendanceFilters
         startMonth={startMonth}
         setStartMonth={setStartMonth}

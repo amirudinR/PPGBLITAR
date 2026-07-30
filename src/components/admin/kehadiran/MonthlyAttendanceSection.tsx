@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useMonthlyAttendance } from '@/hooks/useMonthlyAttendance';
 import { Progress } from "@/components/ui/progress";
+import { Filter, CalendarCheck, Users } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface MonthlyAttendanceSectionProps {
   currentUser: User | null;
-  gurus: any[]; // Assuming gurus have id and userId
+  gurus: any[];
   kelas: Kelas[];
   generus: Generus[];
 }
@@ -35,7 +37,7 @@ export default function MonthlyAttendanceSection({ currentUser, gurus, kelas, ge
   const guruInfo = useMemo(() => gurus.find(g => g.userId === currentUser?.id), [gurus, currentUser]);
 
   const availableClasses = useMemo(() => {
-    if (!guruInfo) return [];
+    if (!guruInfo) return kelas;
     return kelas.filter(k => k.guruId === guruInfo.id);
   }, [kelas, guruInfo]);
 
@@ -97,116 +99,174 @@ export default function MonthlyAttendanceSection({ currentUser, gurus, kelas, ge
   }, [monthlyAttendance]);
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold tracking-tight mb-6">Kehadiran Generus</h2>
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Pilih Kelas dan Periode</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-            <SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger>
-            <SelectContent>{availableClasses.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger><SelectValue placeholder="Pilih Bulan..." /></SelectTrigger>
-            <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={String(selectedYear)} onValueChange={(y) => setSelectedYear(Number(y))}>
-            <SelectTrigger><SelectValue placeholder="Pilih Tahun..." /></SelectTrigger>
-            <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-          </Select>
-        </CardContent>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div>
+        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+          KEHADIRAN GENERUS
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mt-1">
+          Input & Rekap Kehadiran Kelas
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Pilih kelas dan periode bulan untuk menginput kehadiran atau meninjau persentase.
+        </p>
+      </div>
+
+      {/* Filter Card */}
+      <Card className="rounded-3xl border border-border/60 bg-card p-6 shadow-xs space-y-4">
+        <div className="flex items-center space-x-2">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <Filter className="w-4 h-4" />
+          </div>
+          <h3 className="text-sm font-bold text-foreground">Pilih Kelas dan Periode</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground">Pilih Kelas</Label>
+            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{availableClasses.map(k => <SelectItem key={k.id} value={k.id}>{k.namaKelas}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground">Pilih Bulan</Label>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Pilih Bulan..." /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground">Pilih Tahun</Label>
+            <Select value={String(selectedYear)} onValueChange={(y) => setSelectedYear(Number(y))}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Pilih Tahun..." /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        </div>
       </Card>
 
-      {selectedClassId && (
+      {!selectedClassId ? (
+        <Card className="rounded-3xl border border-border/60 bg-card p-8 shadow-xs text-center">
+          <EmptyState
+            icon={CalendarCheck}
+            title="Pilih Kelas Terlebih Dahulu"
+            description="Silakan pilih salah satu kelas pada filter di atas untuk menginput atau melihat rekapitulasi kehadiran."
+          />
+        </Card>
+      ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Input Kehadiran - {kelas.find(k => k.id === selectedClassId)?.namaKelas}</CardTitle>
+          {/* Input Attendance Card */}
+          <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
+            <CardHeader className="border-b border-border/50 px-6 py-4">
+              <CardTitle className="text-base font-bold text-foreground">
+                Input Kehadiran — {kelas.find(k => k.id === selectedClassId)?.namaKelas}
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <Label htmlFor="meetingsHeld">Jumlah Pertemuan Bulan Ini</Label>
+            <CardContent className="p-6 space-y-5">
+              <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
+                <Label htmlFor="meetingsHeld" className="text-xs font-bold text-foreground">Jumlah Pertemuan Bulan Ini</Label>
                 <Input 
                   id="meetingsHeld" 
                   type="number" 
                   value={meetingsHeld}
                   onChange={(e) => setMeetingsHeld(parseInt(e.target.value, 10) || 0)}
-                  className="mt-1"
+                  className="rounded-xl bg-background border-border/80 text-sm font-medium"
                 />
               </div>
-              <div className="overflow-auto max-h-96">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nama Siswa</TableHead>
-                      <TableHead className="w-48">Jumlah Kehadiran</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      <TableRow><TableCell colSpan={2} className="text-center">Memuat...</TableCell></TableRow>
-                    ) : (
-                      studentsInClass.map(student => (
-                        <TableRow key={student.id}>
-                          <TableCell>{student.name}</TableCell>
-                          <TableCell>
-                            <Input 
-                              type="number"
-                              value={studentAttendances[student.id] || ''}
-                              onChange={(e) => handleAttendanceChange(student.id, e.target.value)}
-                              max={meetingsHeld}
-                            />
-                          </TableCell>
+
+              {studentsInClass.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title="Belum Ada Siswa di Kelas Ini"
+                  description="Kelas ini belum memiliki daftar generasi penerus yang terdaftar."
+                />
+              ) : (
+                <div className="space-y-4">
+                  <div className="overflow-x-auto rounded-2xl border border-border/50">
+                    <Table>
+                      <TableHeader className="bg-muted/40">
+                        <TableRow className="border-b border-border/60">
+                          <TableHead className="font-bold text-xs uppercase text-muted-foreground py-3">Nama Siswa</TableHead>
+                          <TableHead className="w-48 text-right font-bold text-xs uppercase text-muted-foreground py-3 pr-4">Hadir (Kali)</TableHead>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="mt-6 flex justify-end">
-                <Button onClick={handleSave}>Simpan Perubahan</Button>
-              </div>
+                      </TableHeader>
+                      <TableBody>
+                        {studentsInClass.map(student => (
+                          <TableRow key={student.id} className="hover:bg-muted/30 border-b border-border/40 transition-colors">
+                            <TableCell className="font-semibold text-foreground text-xs py-3">{student.name}</TableCell>
+                            <TableCell className="text-right py-3 pr-4">
+                              <Input 
+                                type="number"
+                                value={studentAttendances[student.id] ?? ''}
+                                onChange={(e) => handleAttendanceChange(student.id, e.target.value)}
+                                max={meetingsHeld}
+                                className="w-24 ml-auto rounded-xl text-xs font-semibold text-center border-border/80"
+                                placeholder="0"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <Button onClick={handleSave} className="rounded-xl px-6 font-semibold shadow-md shadow-primary/20 gap-2">
+                      Simpan Kehadiran
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Rekap Kehadiran - {selectedMonth} {selectedYear}</CardTitle>
+          {/* Recap Card */}
+          <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
+            <CardHeader className="border-b border-border/50 px-6 py-4">
+              <CardTitle className="text-base font-bold text-foreground">
+                Rekapitulasi — {selectedMonth} {selectedYear}
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="overflow-auto max-h-[30rem]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nama Siswa</TableHead>
-                      <TableHead className="text-center">Kehadiran</TableHead>
-                      <TableHead className="w-40">Persentase</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      <TableRow><TableCell colSpan={3} className="text-center">Memuat...</TableCell></TableRow>
-                    ) : attendanceSummary.length > 0 ? (
-                      attendanceSummary.map(record => (
-                        <TableRow key={record.id}>
-                          <TableCell>{record.studentName}</TableCell>
-                          <TableCell className="text-center">{record.meetingsAttended}/{record.meetingsHeld}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Progress value={record.percentage} className="w-24" />
-                              <span>{record.percentage}%</span>
-                            </div>
+            <CardContent className="p-6">
+              {attendanceSummary.length === 0 ? (
+                <EmptyState
+                  icon={CalendarCheck}
+                  title="Belum Ada Data Rekap"
+                  description="Belum ada data kehadiran yang tersimpan untuk kelas dan bulan ini."
+                />
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-border/50">
+                  <Table>
+                    <TableHeader className="bg-muted/40">
+                      <TableRow className="border-b border-border/60">
+                        <TableHead className="font-bold text-xs uppercase text-muted-foreground py-3">Nama Siswa</TableHead>
+                        <TableHead className="text-center font-bold text-xs uppercase text-muted-foreground py-3">Kehadiran</TableHead>
+                        <TableHead className="w-36 text-right font-bold text-xs uppercase text-muted-foreground py-3 pr-4">Persentase</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {attendanceSummary.map(record => (
+                        <TableRow key={record.id} className="hover:bg-muted/30 border-b border-border/40 transition-colors">
+                          <TableCell className="font-semibold text-foreground text-xs py-3.5">{record.studentName}</TableCell>
+                          <TableCell className="text-center font-semibold text-xs py-3.5">{record.meetingsAttended} / {record.meetingsHeld}</TableCell>
+                          <TableCell className="text-right py-3.5 pr-4">
+                            <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${
+                              record.percentage >= 85
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                : record.percentage >= 65
+                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                            }`}>
+                              {record.percentage}%
+                            </span>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow><TableCell colSpan={3} className="text-center">Belum ada data untuk periode ini.</TableCell></TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

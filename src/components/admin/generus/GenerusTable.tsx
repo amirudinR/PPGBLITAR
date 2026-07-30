@@ -5,6 +5,8 @@ import PaginationControls from '../layout/PaginationControls';
 import GenerusTableHeader from './GenerusTableHeader';
 import GenerusTableRow from './GenerusTableRow';
 import GenerusEditDialog from './GenerusEditDialog';
+import { Users } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface GenerusTableProps {
   allGenerus: Generus[];
@@ -137,29 +139,43 @@ export default function GenerusTable({
   };
 
   return (
-    <div className="bg-card rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table>
-          <GenerusTableHeader requestSort={requestSort} getSortIndicator={getSortIndicator} />
-          <TableBody>
-            {paginatedGenerus.map((item) => (
-              <GenerusTableRow 
-                key={item.id} 
-                generus={item}
-                onEdit={openEditDialog}
-                onDelete={handleDeleteWithConfirmation}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={sortedGenerus.length}
-        itemsPerPage={ITEMS_PER_PAGE}
-        onPageChange={setCurrentPage}
-      />
+    <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
+      {paginatedGenerus.length === 0 ? (
+        <div className="p-8">
+          <EmptyState
+            icon={Users}
+            title="Data Generus Tidak Ditemukan"
+            description="Tidak ada data generasi penerus yang sesuai dengan pencarian atau filter yang diterapkan."
+          />
+        </div>
+      ) : (
+        <div>
+          <div className="overflow-x-auto">
+            <Table>
+              <GenerusTableHeader requestSort={requestSort} getSortIndicator={getSortIndicator} />
+              <TableBody>
+                {paginatedGenerus.map((item) => (
+                  <GenerusTableRow 
+                    key={item.id} 
+                    generus={item}
+                    onEdit={openEditDialog}
+                    onDelete={handleDeleteWithConfirmation}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="p-4 border-t border-border/50">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={sortedGenerus.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </div>
+      )}
 
       <GenerusEditDialog
         isOpen={isEditDialogOpen}

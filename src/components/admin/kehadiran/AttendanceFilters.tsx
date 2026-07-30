@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { Filter } from 'lucide-react';
 
 interface AttendanceFiltersProps {
   startMonth: string;
@@ -33,24 +34,41 @@ export default function AttendanceFilters({
   setEndYear
 }: AttendanceFiltersProps) {
   return (
-    <Card className="mb-8">
-      <CardHeader><CardTitle>Filter Periode</CardTitle></CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Dari</Label>
+    <Card className="rounded-3xl border border-border/60 bg-card p-6 shadow-xs mb-6">
+      <div className="flex items-center space-x-2 mb-4">
+        <div className="p-2 rounded-xl bg-primary/10 text-primary">
+          <Filter className="w-4 h-4" />
+        </div>
+        <h3 className="text-sm font-bold text-foreground">Filter Periode Waktu</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">Dari Periode</Label>
           <div className="flex gap-2">
-            <Select value={startMonth} onValueChange={setStartMonth}><SelectTrigger><SelectValue placeholder="Bulan Mulai" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-            <Select value={startYear} onValueChange={setStartYear}><SelectTrigger><SelectValue placeholder="Tahun Mulai" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            <Select value={startMonth} onValueChange={setStartMonth}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Bulan Mulai" /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={startYear} onValueChange={setStartYear}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Tahun Mulai" /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
         </div>
-        <div className="space-y-2">
-          <Label>Sampai</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground">Sampai Periode</Label>
           <div className="flex gap-2">
-            <Select value={endMonth} onValueChange={setEndMonth}><SelectTrigger><SelectValue placeholder="Bulan Selesai" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-            <Select value={endYear} onValueChange={setEndYear}><SelectTrigger><SelectValue placeholder="Tahun Selesai" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+            <Select value={endMonth} onValueChange={setEndMonth}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Bulan Selesai" /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={endYear} onValueChange={setEndYear}>
+              <SelectTrigger className="rounded-xl border-border/80 bg-muted/30 text-xs font-medium"><SelectValue placeholder="Tahun Selesai" /></SelectTrigger>
+              <SelectContent className="rounded-2xl">{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
