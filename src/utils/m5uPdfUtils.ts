@@ -62,7 +62,7 @@ export const generateM5UPDF = (items: M5U[], currentUser: User | null, bulan: st
   yPos += 10;
   const signatureY = yPos > 250 ? 250 : yPos;
   
-  doc.text(`Kutim, ${formatIndonesianDate(new Date())}`, 140, signatureY);
+  doc.text(`Blitar, ${formatIndonesianDate(new Date())}`, 140, signatureY);
   doc.text('PJP Kelompok', 140, signatureY + 30);
   doc.line(130, signatureY + 25, 180, signatureY + 25); // Signature line
   
