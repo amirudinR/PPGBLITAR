@@ -152,7 +152,7 @@ export function renderAdminSection({
     case 'kelompok':
       return <KelompokSection kelompok={data.kelompok} desas={data.desas} onAddKelompok={data.addKelompok} onUpdateKelompok={data.updateKelompok} onDeleteKelompok={data.deleteKelompok} />;
     case 'akun':
-      return <AccountsSection users={data.users} desas={data.desas} kelompok={data.kelompok} onAddUser={data.addUser} onUpdateUser={data.updateUser} onDeleteUser={data.deleteUser} onResetUserPassword={data.resetUserPassword} currentUser={currentUser} />;
+      return <AccountsSection users={data.users} desas={data.desas} kelompok={data.kelompok} onAddUser={data.addUser} onAddUsersBatch={data.addUsersBatch} onUpdateUser={data.updateUser} onDeleteUser={data.deleteUser} onResetUserPassword={data.resetUserPassword} currentUser={currentUser} />;
     case 'dataguru':
       return <GuruSection gurus={data.gurus} onAddGuru={data.addGuru} onUpdateGuru={data.updateGuru} onDeleteGuru={data.deleteGuru} currentUser={currentUser} desas={data.desas} kelompok={data.kelompok} />;
     case 'datakelas':

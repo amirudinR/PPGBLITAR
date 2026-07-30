@@ -4,14 +4,18 @@ import { useAccounts } from '@/hooks/useAccounts';
 import SectionHeader from '../shared/SectionHeader';
 import AccountsTable from './AccountsTable';
 import AddUserDialog from './AddUserDialog';
+import BulkAddUserDialog from './BulkAddUserDialog';
 import EditUserDialog from './EditUserDialog';
 import BulkDeleteBar from './BulkDeleteBar';
+import { Button } from '@/components/ui/button';
+import { Upload } from 'lucide-react';
 
 interface AccountsSectionProps {
   users: User[];
   desas: Desa[];
   kelompok: Kelompok[];
   onAddUser: (user: Omit<User, 'id'>) => Promise<boolean>;
+  onAddUsersBatch: (users: Omit<User, 'id'>[]) => Promise<boolean>;
   onUpdateUser: (id: string, updatedData: Omit<User, 'id'>) => Promise<boolean>;
   onDeleteUser: (id: string) => void;
   onResetUserPassword: (email: string) => Promise<void>;
@@ -19,12 +23,12 @@ interface AccountsSectionProps {
 }
 
 export default function AccountsSection({
-  users, desas, kelompok, onAddUser, onUpdateUser, onDeleteUser,
+  users, desas, kelompok, onAddUser, onAddUsersBatch, onUpdateUser, onDeleteUser,
   onResetUserPassword, currentUser,
 }: AccountsSectionProps) {
   const a = useAccounts(
     users, currentUser,
-    onAddUser, onUpdateUser, onDeleteUser, onResetUserPassword,
+    onAddUser, onAddUsersBatch, onUpdateUser, onDeleteUser, onResetUserPassword,
   );
 
   return (
@@ -33,18 +37,32 @@ export default function AccountsSection({
         title="Daftar Akun Pengguna"
         subtitle="Kelola akun berdasarkan peran, desa, dan kelompok."
         action={
-          <AddUserDialog
-            open={a.isAddOpen}
-            setOpen={a.setIsAddOpen}
-            user={a.newUser}
-            setUser={a.setNewUser}
-            onSave={a.handleAdd}
-            onRoleChange={a.handleRoleChange}
-            creatableRoles={a.creatableRoles}
-            desas={desas}
-            kelompok={kelompok}
-            currentUser={currentUser}
-          />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => a.setIsBulkAddOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import Excel
+            </Button>
+            <BulkAddUserDialog
+              open={a.isBulkAddOpen}
+              setOpen={a.setIsBulkAddOpen}
+              onImport={a.onAddUsersBatch}
+              desas={desas}
+              kelompok={kelompok}
+              currentUser={currentUser}
+            />
+            <AddUserDialog
+              open={a.isAddOpen}
+              setOpen={a.setIsAddOpen}
+              user={a.newUser}
+              setUser={a.setNewUser}
+              onSave={a.handleAdd}
+              onRoleChange={a.handleRoleChange}
+              creatableRoles={a.creatableRoles}
+              desas={desas}
+              kelompok={kelompok}
+              currentUser={currentUser}
+            />
+          </div>
         }
       />
 

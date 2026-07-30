@@ -17,11 +17,13 @@ export function useAccounts(
   users: User[],
   currentUser: User | null,
   onAddUser: (user: Omit<User, 'id'>) => Promise<boolean>,
+  onAddUsersBatch: (users: Omit<User, 'id'>[]) => Promise<boolean>,
   onUpdateUser: (id: string, data: Omit<User, 'id'>) => Promise<boolean>,
   onDeleteUser: (id: string) => void,
   onResetUserPassword: (email: string) => Promise<void>,
 ) {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState<Omit<User, 'id'>>({
@@ -146,6 +148,11 @@ export function useAccounts(
     isBulkDeleteOpen,
     setIsBulkDeleteOpen,
     handleBulkDelete,
+
+    // bulk add dialog
+    isBulkAddOpen,
+    setIsBulkAddOpen,
+    onAddUsersBatch,
 
     // add dialog
     isAddOpen,

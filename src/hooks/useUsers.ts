@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { collection, getDocs, setDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, setDoc, updateDoc, deleteDoc, doc, query, where, writeBatch } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { db } from '@/lib/firebase';
@@ -66,6 +66,61 @@ export function useUsers(currentUser: User | null) {
     }
   };
 
+  const addUsersBatch = async (users: Omit<User, 'id'>[]) => {
+    if (users.length === 0) {
+      showError("Tidak ada data untuk diimpor.");
+      return false;
+    }
+    const toastId = showLoading(`Membuat ${users.length} akun...`);
+    try {
+      const secondaryAppName = 'secondaryAuthApp';
+      const appExists = getApps().some(app => app.name === secondaryAppName);
+      const secondaryApp = appExists ? getApp(secondaryAppName) : initializeApp(firebaseConfig, secondaryAppName);
+      const secondaryAuth = getAuth(secondaryApp);
+
+      const firestoreBatch = writeBatch(db);
+      let successCount = 0;
+      const errors: string[] = [];
+
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+        try {
+          const userCredential = await createUserWithEmailAndPassword(secondaryAuth, user.email, user.password);
+          const { password, ...userDataForFirestore } = user;
+          const docRef = doc(db, "users", userCredential.user.uid);
+          firestoreBatch.set(docRef, userDataForFirestore);
+          successCount++;
+        } catch (err: any) {
+          const rowNum = i + 2;
+          if (err.code === 'auth/email-already-in-use') {
+            errors.push(`Baris ${rowNum}: Email "${user.email}" sudah terdaftar.`);
+          } else {
+            errors.push(`Baris ${rowNum}: Gagal membuat akun "${user.email}".`);
+          }
+        }
+      }
+
+      if (successCount > 0) {
+        await firestoreBatch.commit();
+      }
+
+      dismissToast(toastId);
+
+      if (errors.length > 0) {
+        showError(`${successCount} akun berhasil, ${errors.length} gagal:\n${errors.slice(0, 3).join('\n')}${errors.length > 3 ? `\n...dan ${errors.length - 3} error lainnya.` : ''}`);
+      } else {
+        showSuccess(`${successCount} akun berhasil ditambahkan.`);
+      }
+
+      fetchUsers();
+      return successCount > 0;
+    } catch (error) {
+      dismissToast(toastId);
+      showError("Gagal memproses import akun.");
+      return false;
+    }
+  };
+
   const updateUser = async (id: string, updatedData: Omit<User, 'id'>) => {
     try {
       const { password, ...safeData } = updatedData;
@@ -106,5 +161,5 @@ export function useUsers(currentUser: User | null) {
     } catch (e) { showError("Gagal menghapus akun."); }
   };
 
-  return { users, loading, fetchUsers, addUser, updateUser, resetUserPassword, deleteUser };
+  return { users, loading, fetchUsers, addUser, addUsersBatch, updateUser, resetUserPassword, deleteUser };
 }

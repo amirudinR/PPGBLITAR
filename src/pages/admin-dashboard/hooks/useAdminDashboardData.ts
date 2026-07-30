@@ -57,7 +57,7 @@ export function useAdminDashboardData({ currentUser, activeSection }: UseAdminDa
   const { desas, loading: loadingDesa, fetchDesas, addDesa, updateDesa, deleteDesa } = useDesa();
   const { kelompok, loading: loadingKelompok, fetchKelompok, addKelompok, updateKelompok, deleteKelompok } = useKelompok(desas, currentUser);
   const { generus, loading: loadingGenerus, fetchGenerus, newGenerus, setNewGenerus, addGenerus, importGenerus, updateGenerus, deleteGenerus } = useGenerus(currentUser);
-  const { users, loading: loadingUsers, fetchUsers, addUser, updateUser, resetUserPassword, deleteUser } = useUsers(currentUser);
+  const { users, loading: loadingUsers, fetchUsers, addUser, addUsersBatch, updateUser, resetUserPassword, deleteUser } = useUsers(currentUser);
   const { materials, loading: loadingMaterials, fetchMaterials } = useMaterials();
   const { attendance, loading: loadingAttendance, fetchAttendance } = useAttendance(currentUser);
   const { gurus, loading: loadingGurus, fetchGurus, addGuru, updateGuru, deleteGuru } = useGurus(currentUser, { onDataChange: fetchUsers });
@@ -152,6 +152,7 @@ export function useAdminDashboardData({ currentUser, activeSection }: UseAdminDa
     updateKelompok,
     deleteKelompok,
     addUser,
+    addUsersBatch,
     updateUser,
     resetUserPassword,
     deleteUser,
