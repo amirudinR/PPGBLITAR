@@ -103,7 +103,7 @@ export default function DetailPencapaianKelas({
           </Button>
           <h1 className="text-2xl font-bold">Detail Pencapaian Kelas</h1>
         </div>
-        <div className="bg-card rounded-lg shadow p-6 text-center">
+        <div className="rounded-3xl border border-border/60 bg-card shadow-xs p-6 text-center">
           <p>Kelas tidak ditemukan</p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function DetailPencapaianKelas({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
         <CardHeader>
           <CardTitle>Rekapitulasi Pencapaian per Siswa</CardTitle>
         </CardHeader>

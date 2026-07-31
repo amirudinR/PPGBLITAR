@@ -203,7 +203,7 @@ export default function NilaiGenerusSection({ currentUser, kelas, generus, mater
               const isSomeChecked = studentIdsForMaterial.length > 0 && checkedCount > 0 && !isAllChecked;
 
               return (
-                <AccordionItem value={material.id} key={material.id} className="bg-card rounded-lg shadow border-none">
+                <AccordionItem value={material.id} key={material.id} className="bg-card rounded-3xl shadow-xs border-none">
                   <AccordionTrigger className="px-6 text-lg font-semibold hover:no-underline">
                     <div className="flex justify-between items-center w-full">
                       <span>{material.rincianMateri}</span>

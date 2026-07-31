@@ -25,7 +25,7 @@ export default function EvaluasiViewTable({ evaluasiList, canPublish, onPublish 
   }
 
   return (
-    <div className="rounded-lg border overflow-auto">
+    <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
       <Table>
         <TableHeader>
           <TableRow>

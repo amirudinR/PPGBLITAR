@@ -9,7 +9,7 @@ interface FilteredGenerusTableProps {
 
 export default function FilteredGenerusTable({ generus }: FilteredGenerusTableProps) {
   return (
-    <Card>
+    <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
       <CardHeader>
         <CardTitle>Hasil Filter</CardTitle>
       </CardHeader>

@@ -125,7 +125,7 @@ export default function ChecklistTemplatesSection({ currentUser, templates, load
           action={<Button onClick={() => openDialog()}><Plus className="w-4 h-4 mr-2" />Tambah Template</Button>}
         />
       ) : (
-        <div className="rounded-lg border overflow-auto">
+        <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
           <Table>
             <TableHeader>
               <TableRow>

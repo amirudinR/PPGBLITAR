@@ -119,7 +119,7 @@ export default function GuruSection({ gurus, onAddGuru, onUpdateGuru, onDeleteGu
           Tambah Guru
         </Button>
       </div>
-      <div className="bg-card rounded-lg shadow overflow-hidden">
+      <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

@@ -10,7 +10,7 @@ interface M5UInfoProps {
 
 export default function M5UInfo({ bulan, tahun, canAdd, onAdd }: M5UInfoProps) {
   return (
-    <div className="bg-card rounded-lg shadow p-6 mb-6">
+    <div className="rounded-3xl border border-border/60 bg-card shadow-xs p-6 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <Label className="font-semibold">Bulan</Label>

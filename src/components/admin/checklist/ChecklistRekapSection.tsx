@@ -75,7 +75,7 @@ export default function ChecklistRekapSection({ currentUser, assignments, loadin
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <BarChart3 className="w-5 h-5" />Rekap per Peran
             </h3>
-            <div className="rounded-lg border overflow-auto">
+            <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -116,7 +116,7 @@ export default function ChecklistRekapSection({ currentUser, assignments, loadin
 
           <div>
             <h3 className="text-lg font-semibold mb-3">Rekap per Template</h3>
-            <div className="rounded-lg border overflow-auto">
+            <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
               <Table>
                 <TableHeader>
                   <TableRow>

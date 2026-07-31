@@ -144,7 +144,7 @@ export default function RekapPerKelasSection({ kelas, materials, grades, current
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
         <CardHeader>
           <CardTitle>Rekapitulasi Pencapaian Target Materi</CardTitle>
         </CardHeader>

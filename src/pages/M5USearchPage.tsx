@@ -95,7 +95,7 @@ export default function M5USearchPage({ currentUser }: M5USearchPageProps) {
         </CardHeader>
         <CardContent>
           {filteredResults.length > 0 ? (
-            <div className="rounded-md border">
+            <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
               <Table>
                 <TableHeader>
                   <TableRow>

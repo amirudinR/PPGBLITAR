@@ -34,7 +34,7 @@ export default function M5UDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] rounded-3xl border border-border/60">
         <DialogHeader>
           <DialogTitle>Detail Agenda M5U</DialogTitle>
         </DialogHeader>

@@ -41,7 +41,7 @@ export default function KelasTable({
   onDelete
 }: KelasTableProps) {
   return (
-    <div className="bg-card rounded-lg shadow overflow-auto">
+    <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
       <Table>
         <TableHeader>
           <TableRow>

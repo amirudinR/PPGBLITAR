@@ -14,7 +14,7 @@ interface LatihanTableProps {
 
 export default function LatihanTable({ items, canEdit, onEdit, onDelete }: LatihanTableProps) {
     return (
-        <Card>
+        <Card className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-xs">
             <CardContent className="p-0">
                 {items.length > 0 ? (
                     <Table>
